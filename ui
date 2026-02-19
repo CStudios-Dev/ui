@@ -1,56 +1,131 @@
+-- ╔══════════════════════════════════════╗
+-- ║       CARBON UI  —  by melissa       ║
+-- ║     revamped visuals / same API      ║
+-- ╚══════════════════════════════════════╝
 
---  made by melissa
+local TweenService  = game:GetService('TweenService')
+local UIS           = game:GetService('UserInputService')
+local TextService   = game:GetService('TextService')
+local RunService    = game:GetService('RunService')
+local HttpService   = game:GetService('HttpService')
+local Players       = game:GetService('Players')
+local LocalPlayer   = Players.LocalPlayer
+local CoreGui       = (gethui and gethui()) or game:FindFirstChild('CoreGui') or LocalPlayer.PlayerGui
 
-local Twen        = game:GetService('TweenService')
-local Input       = game:GetService('UserInputService')
-local TextServ    = game:GetService('TextService')
-local RunService  = game:GetService('RunService')
-local LocalPlayer = game:GetService('Players').LocalPlayer
-local CoreGui     = (gethui and gethui()) or game:FindFirstChild('CoreGui') or LocalPlayer.PlayerGui
+-- ══════════════════════════════════════
+--  THEME  — change these to retheme everything
+-- ══════════════════════════════════════
+local T = {
+    -- base backgrounds (darkest → lightest panel)
+    B0  = Color3.fromRGB( 9,  9, 13),   -- window base
+    B1  = Color3.fromRGB(14, 14, 20),   -- panel / section bg
+    B2  = Color3.fromRGB(20, 20, 28),   -- element bg
+    B3  = Color3.fromRGB(26, 26, 36),   -- input / track bg
 
--- ─────────────────────────────────────────────
---  THEME  (edit here — propagates everywhere)
--- ─────────────────────────────────────────────
-local Theme = {
-    -- Backgrounds
-    BG          = Color3.fromRGB(13,  13,  17 ),   -- main window
-    BG2         = Color3.fromRGB(18,  18,  24 ),   -- panels / sections
-    BG3         = Color3.fromRGB(24,  24,  32 ),   -- elements
-    Header      = Color3.fromRGB(16,  16,  22 ),   -- tab / section headers
+    -- accent
+    A   = Color3.fromRGB(99, 102, 241), -- indigo
+    ADim= Color3.fromRGB(67,  70, 190), -- darker accent for pressed
 
-    -- Accent
-    Accent      = Color3.fromRGB(100, 120, 255),   -- toggle on, slider fill, active tab bar
-    AccentDim   = Color3.fromRGB( 60,  70, 180),   -- hover states
+    -- text
+    T1  = Color3.fromRGB(235, 235, 245), -- primary
+    T2  = Color3.fromRGB(130, 130, 155), -- muted
+    T3  = Color3.fromRGB( 80,  80, 105), -- very muted
 
-    -- Text
-    TextPrimary = Color3.fromRGB(240, 240, 245),
-    TextMuted   = Color3.fromRGB(140, 140, 160),
+    -- borders / shadow
+    Border  = Color3.fromRGB(40,  40, 58),
+    Shadow  = Color3.fromRGB( 0,   0,  0),
 
-    -- Borders / Shadows
-    Border      = Color3.fromRGB( 50,  50,  70),
-    Shadow      = Color3.fromRGB(  0,   0,   0),
+    -- radii
+    RLg = UDim.new(0, 8),
+    RMd = UDim.new(0, 5),
+    RSm = UDim.new(0, 3),
 
-    -- Corner radii
-    RadiusLarge  = UDim.new(0, 8),
-    RadiusMedium = UDim.new(0, 5),
-    RadiusSmall  = UDim.new(0, 3),
-
-    -- Tween speeds
-    Fast   = TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-    Medium = TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+    -- tween infos
+    Fast   = TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+    Normal = TweenInfo.new(0.30, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
     Slow   = TweenInfo.new(0.55, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut),
 }
 
--- Helper: tween shorthand
-local function T(obj, info, props) Twen:Create(obj, info, props):Play() end
+-- ══════════════════════════════════════
+--  TINY HELPERS
+-- ══════════════════════════════════════
+local function tw(obj, info, props) TweenService:Create(obj, info, props):Play() end
 
--- ─────────────────────────────────────────────
---  ICON MODULE  (unchanged logic, cleaned up)
--- ─────────────────────────────────────────────
+local function corner(radius, parent)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = radius
+    c.Parent = parent
+    return c
+end
+
+local function stroke(parent, transparency, color)
+    local s = Instance.new("UIStroke")
+    s.Transparency = transparency or 0.7
+    s.Color        = color or T.Border
+    s.Parent       = parent
+    return s
+end
+
+local function shadow(parent, extra, transp)
+    local s = Instance.new("ImageLabel")
+    s.Name               = "__shadow"
+    s.Parent             = parent
+    s.AnchorPoint        = Vector2.new(0.5, 0.5)
+    s.Position           = UDim2.new(0.5, 0, 0.5, 0)
+    s.Size               = UDim2.new(1, extra or 40, 1, extra or 40)
+    s.ZIndex             = 0
+    s.BackgroundTransparency = 1
+    s.BorderSizePixel    = 0
+    s.Image              = "rbxassetid://6015897843"
+    s.ImageColor3        = T.Shadow
+    s.ImageTransparency  = transp or 0.45
+    s.ScaleType          = Enum.ScaleType.Slice
+    s.SliceCenter        = Rect.new(49, 49, 450, 450)
+    s.Rotation           = 0.001
+    return s
+end
+
+local function cfg(data, defaults)
+    data = data or {}
+    for k, v in pairs(defaults) do
+        if data[k] == nil then data[k] = v end
+    end
+    return data
+end
+
+local function newIcon(iconStr, parent, pos, sz, zi)
+    local ok, mod = pcall(function()
+        return loadstring(game:HttpGet(
+            "https://raw.githubusercontent.com/deividcomsono/lucide-roblox-direct/main/source.lua"
+        ))()
+    end)
+    -- try to make a simple ImageLabel fallback
+    local f = Instance.new("ImageLabel")
+    f.Name               = "Icon"
+    f.BackgroundTransparency = 1
+    f.BorderSizePixel    = 0
+    f.AnchorPoint        = Vector2.new(0.5, 0.5)
+    f.Position           = pos or UDim2.new(0.5, 0, 0.5, 0)
+    f.Size               = sz  or UDim2.new(0.6, 0, 0.6, 0)
+    f.SizeConstraint     = Enum.SizeConstraint.RelativeYY
+    f.ZIndex             = zi  or 6
+    f.ImageColor3        = T.T2
+    f.Parent             = parent
+    -- if it looks like an asset id, use directly
+    if type(iconStr) == "string" and iconStr:match("^rbxassetid://") then
+        f.Image = iconStr
+    end
+    return f
+end
+
+-- ══════════════════════════════════════
+--  ICON MODULE  (lucide + spritesheet)
+-- ══════════════════════════════════════
 local Icons = (function()
-    local M = { IconsType = "lucide", New = nil, IconThemeTag = nil,
-                Icons = { lucide={}, craft={}, geist={}, sfsymbols={} } }
-
+    local M = {
+        IconsType = "lucide",
+        Icons = { lucide = {}, craft = {}, geist = {}, sfsymbols = {} },
+    }
     local function safeLoad(url)
         local ok, r = pcall(function() return loadstring(game:HttpGet(url))() end)
         return ok and r or {}
@@ -60,1313 +135,1541 @@ local Icons = (function()
     M.Icons.geist     = safeLoad("https://raw.githubusercontent.com/Footagesus/Icons/refs/heads/main/geist/dist/Icons.lua")
     M.Icons.sfsymbols = safeLoad("https://raw.githubusercontent.com/Footagesus/Icons/refs/heads/main/sfsymbols/dist/Icons.lua")
 
-    local function parseIconString(s)
-        if type(s) == "string" then
-            local i = s:find(":")
-            if i then return s:sub(1,i-1), s:sub(i+1) end
-        end
+    local function parse(s)
+        if type(s) ~= "string" then return nil, s end
+        local i = s:find(":")
+        if i then return s:sub(1, i - 1), s:sub(i + 1) end
         return nil, s
     end
 
-    function M.AddIcons(pack, data)
-        if not M.Icons[pack] then M.Icons[pack] = {Icons={},Spritesheets={}} end
-        for name, v in pairs(data) do
-            local id = type(v)=="number" and "rbxassetid://"..v or v
-            if type(v)=="string" or type(v)=="number" then
-                M.Icons[pack].Icons[name] = { Image=id, ImageRectSize=Vector2.new(0,0), ImageRectPosition=Vector2.new(0,0), Parts=nil }
-                M.Icons[pack].Spritesheets[id] = id
-            elseif type(v)=="table" and v.Image then
-                local img = type(v.Image)=="number" and "rbxassetid://"..v.Image or v.Image
-                M.Icons[pack].Icons[name] = { Image=img, ImageRectSize=v.ImageRectSize or Vector2.new(0,0), ImageRectPosition=v.ImageRectPosition or Vector2.new(0,0), Parts=v.Parts }
-                M.Icons[pack].Spritesheets[img] = img
-            end
-        end
-    end
-
-    function M.SetIconsType(t) M.IconsType = t end
-    function M.Init(New, tag) M.New=New; M.IconThemeTag=tag; return M end
-
-    function M.Icon(Icon, Type)
-        local itype, iname = parseIconString(Icon)
-        local target = itype or Type or M.IconsType
+    function M.Icon(name, itype)
+        local t, n = parse(name)
+        local target = t or itype or M.IconsType
         local set = M.Icons[target]
         if not set then return nil end
-        if set[iname] then
-            local a = type(set[iname])=="number" and "rbxassetid://"..set[iname] or set[iname]
-            return { a, { ImageRectSize=Vector2.new(0,0), ImageRectPosition=Vector2.new(0,0), Parts=nil } }
+        if set[n] then
+            local a = type(set[n]) == "number" and ("rbxassetid://" .. set[n]) or set[n]
+            return { a, { ImageRectSize = Vector2.zero, ImageRectPosition = Vector2.zero, Parts = nil } }
         end
-        if set.Icons and set.Icons[iname] then
-            local d = set.Icons[iname]
-            local img = type(d.Image)=="number" and "rbxassetid://"..d.Image or d.Image
-            return { set.Spritesheets[img] or img, d }
+        if set.Icons and set.Icons[n] then
+            local d   = set.Icons[n]
+            local img = type(d.Image) == "number" and ("rbxassetid://" .. d.Image) or d.Image
+            return { set.Spritesheets and set.Spritesheets[img] or img, d }
         end
         return nil
     end
 
-    function M.Image(cfg)
-        cfg = cfg or {}
-        local icon = { Icon=cfg.Icon, Type=cfg.Type, Colors=cfg.Colors or {Theme.TextPrimary}, Size=cfg.Size or UDim2.new(0,20,0,20), IconFrame=nil }
-        local data = M.Icon(icon.Icon, icon.Type)
-        if not data then
-            local f = Instance.new("ImageLabel")
-            f.Size=icon.Size; f.BackgroundTransparency=1
-            if type(icon.Icon)=="string" and icon.Icon:match("^rbxassetid://") then f.Image=icon.Icon end
-            icon.IconFrame=f; return icon
+    function M.Image(icfg)
+        icfg = icfg or {}
+        local color  = icfg.Color or T.T2
+        local size   = icfg.Size  or UDim2.new(0, 18, 0, 18)
+        local data   = M.Icon(icfg.Icon)
+        local frame  = Instance.new("ImageLabel")
+        frame.BackgroundTransparency = 1
+        frame.BorderSizePixel        = 0
+        frame.Size                   = size
+        frame.ImageColor3            = color
+        if data then
+            frame.Image               = data[1]
+            frame.ImageRectSize       = data[2].ImageRectSize   or Vector2.zero
+            frame.ImageRectOffset     = data[2].ImageRectPosition or Vector2.zero
+        elseif type(icfg.Icon) == "string" and icfg.Icon:match("^rbxassetid://") then
+            frame.Image = icfg.Icon
         end
-        local img = type(data)=="table" and data[1] or data
-        local d   = type(data)=="table" and data[2] or {ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0),Parts=nil}
-        local f = Instance.new("ImageLabel")
-        f.Size=icon.Size; f.BackgroundTransparency=1
-        f.ImageColor3 = icon.Colors[1] or Theme.TextPrimary
-        f.Image=img; f.ImageRectSize=d.ImageRectSize; f.ImageRectOffset=d.ImageRectPosition
-        if d.Parts then
-            for i,p in ipairs(d.Parts) do
-                local pdata = M.Icon(p,icon.Type)
-                if pdata then
-                    local pl = Instance.new("ImageLabel")
-                    pl.Size=UDim2.new(1,0,1,0); pl.BackgroundTransparency=1
-                    pl.ImageColor3 = icon.Colors[1+i] or Theme.TextPrimary
-                    pl.Image=type(pdata)=="table" and pdata[1] or pdata
-                    pl.ImageRectSize=type(pdata)=="table" and pdata[2].ImageRectSize or Vector2.new(0,0)
-                    pl.ImageRectOffset=type(pdata)=="table" and pdata[2].ImageRectPosition or Vector2.new(0,0)
-                    pl.Parent=f
-                end
-            end
-        end
-        icon.IconFrame=f; return icon
+        return frame
     end
+
     return M
 end)()
-Icons.SetIconsType("lucide")
 
--- ─────────────────────────────────────────────
---  BLUR SYSTEM  (less aggressive DoF)
--- ─────────────────────────────────────────────
-local ElBlurSource = (function()
-    local GS = {}
+-- ══════════════════════════════════════
+--  BLUR / GLASS EFFECT
+-- ══════════════════════════════════════
+local BlurSystem = (function()
     local Camera = workspace.CurrentCamera
-
-    function GS:Hash()
-        return string.reverse(string.gsub(game:GetService('HttpService'):GenerateGUID(false),'..',function(a) return string.reverse(a) end))
+    local function hit(pPos, pNorm, rOrig, rDir)
+        local v = rOrig - pPos
+        local a = -((pNorm.X*v.X)+(pNorm.Y*v.Y)+(pNorm.Z*v.Z)) /
+                   ((pNorm.X*rDir.X)+(pNorm.Y*rDir.Y)+(pNorm.Z*rDir.Z))
+        return rOrig + a * rDir
     end
 
-    local function PlaneHit(pPos,pNorm,rOrig,rDir)
-        local n,d,v = pNorm,rDir,rOrig-pPos
-        local num = n.x*v.x+n.y*v.y+n.z*v.z
-        local den = n.x*d.x+n.y*d.y+n.z*d.z
-        return rOrig+(-num/den)*rDir
-    end
+    return function(frame, noBG)
+        local Part  = Instance.new("Part", workspace)
+        local DOF   = Instance.new("DepthOfFieldEffect", game:GetService("Lighting"))
+        local Surf  = Instance.new("SurfaceGui", Part)
+        local Mesh  = Instance.new("BlockMesh", Part)
 
-    function GS.new(frame, NoAutoBG)
-        local Part       = Instance.new('Part', workspace)
-        local DOF        = Instance.new('DepthOfFieldEffect', game:GetService('Lighting'))
-        local SurfGui    = Instance.new('SurfaceGui', Part)
-        local Mesh       = Instance.new("BlockMesh")
+        Part.Material      = Enum.Material.Glass
+        Part.Transparency  = 1; Part.Reflectance = 1
+        Part.CastShadow    = false; Part.Anchored = true
+        Part.CanCollide    = false; Part.CanQuery = false
+        Part.Size          = Vector3.one * 0.01
+        local id = HttpService:GenerateGUID(false)
+        Part.Name = id; Surf.Name = id; DOF.Name = id
 
-        Mesh.Parent            = Part
-        Part.Material          = Enum.Material.Glass
-        Part.Transparency      = 1
-        Part.Reflectance       = 1
-        Part.CastShadow        = false
-        Part.Anchored          = true
-        Part.CanCollide        = false
-        Part.CanQuery          = false
-        Part.CollisionGroup    = GS:Hash()
-        Part.Size              = Vector3.new(1,1,1)*0.01
-        Part.Color             = Color3.new()
+        DOF.Enabled = true; DOF.FarIntensity = 0.55
+        DOF.FocusDistance = 0; DOF.InFocusRadius = 60; DOF.NearIntensity = 0.55
 
-        -- Much softer DOF than original
-        DOF.Enabled        = true
-        DOF.FarIntensity   = 0.6   -- was 1
-        DOF.FocusDistance  = 0
-        DOF.InFocusRadius  = 80    -- was 500 (too aggressive)
-        DOF.NearIntensity  = 0.6   -- was 1
+        Surf.AlwaysOnTop = true; Surf.Adornee = Part; Surf.Active = true
+        Surf.Face = Enum.NormalId.Front; Surf.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
-        SurfGui.AlwaysOnTop    = true
-        SurfGui.Adornee        = Part
-        SurfGui.Active         = true
-        SurfGui.Face           = Enum.NormalId.Front
-        SurfGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-        DOF.Name    = GS:Hash(); Part.Name = GS:Hash(); SurfGui.Name = GS:Hash()
+        tw(Part, TweenInfo.new(0.5, Enum.EasingStyle.Quint), {Transparency = 0.78})
 
-        T(Part, TweenInfo.new(0.5,Enum.EasingStyle.Quint,Enum.EasingDirection.In), {Transparency=0.75})
-
-        local C = { Update=nil, Collection=SurfGui, Enabled=true,
-                    Instances={Mesh=Mesh,Part=Part,DOF=DOF,SurfGui=SurfGui}, Signal=nil }
+        local self = {Enabled = true, Update = nil, Signal = nil}
 
         local function Update()
-            if not C.Enabled then T(Part,TweenInfo.new(0.5),{Transparency=1}) return end
-            T(Part,TweenInfo.new(0.5,Enum.EasingStyle.Quint),{Transparency=0.75})
+            if not self.Enabled then
+                tw(Part, TweenInfo.new(0.4), {Transparency = 1}); return
+            end
+            tw(Part, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {Transparency = 0.78})
             local c0 = frame.AbsolutePosition
             local c1 = c0 + frame.AbsoluteSize
-            local r0 = Camera:ScreenPointToRay(c0.X,c0.Y,1)
-            local r1 = Camera:ScreenPointToRay(c1.X,c1.Y,1)
-            local pO = Camera.CFrame.Position + Camera.CFrame.LookVector*(0.05-Camera.NearPlaneZ)
+            local r0 = Camera:ScreenPointToRay(c0.X, c0.Y, 1)
+            local r1 = Camera:ScreenPointToRay(c1.X, c1.Y, 1)
+            local pO = Camera.CFrame.Position + Camera.CFrame.LookVector * (0.05 - Camera.NearPlaneZ)
             local pN = Camera.CFrame.LookVector
-            local p0 = Camera.CFrame:PointToObjectSpace(PlaneHit(pO,pN,r0.Origin,r0.Direction))
-            local p1 = Camera.CFrame:PointToObjectSpace(PlaneHit(pO,pN,r1.Origin,r1.Direction))
-            local sz = p1-p0; local ctr = (p0+p1)/2
-            Mesh.Offset = ctr; Mesh.Scale = sz/0.0101
+            local p0 = Camera.CFrame:PointToObjectSpace(hit(pO, pN, r0.Origin, r0.Direction))
+            local p1 = Camera.CFrame:PointToObjectSpace(hit(pO, pN, r1.Origin, r1.Direction))
+            local sz  = p1 - p0
+            Mesh.Offset = (p0 + p1) / 2
+            Mesh.Scale  = sz / 0.0101
             Part.CFrame = Camera.CFrame
-
-            if not NoAutoBG then
+            if not noBG then
                 pcall(function()
                     local q = UserSettings():GetService("UserGameSettings").SavedQualityLevel.Value
-                    T(frame, TweenInfo.new(0.5), {BackgroundTransparency = q < 8 and 0 or 0.35})
+                    tw(frame, TweenInfo.new(0.5), {BackgroundTransparency = q < 8 and 0 or 0.35})
                 end)
             end
         end
-
-        C.Update = Update
-        C.Signal = RunService.RenderStepped:Connect(Update)
+        self.Update  = Update
+        self.Signal  = RunService.RenderStepped:Connect(Update)
         pcall(function()
-            C.Signal2 = Camera:GetPropertyChangedSignal('CFrame'):Connect(function() Part.CFrame=Camera.CFrame end)
+            self.Signal2 = Camera:GetPropertyChangedSignal("CFrame"):Connect(function()
+                Part.CFrame = Camera.CFrame
+            end)
         end)
-        C.Destroy = function()
-            C.Signal:Disconnect(); pcall(function() C.Signal2:Disconnect() end)
-            C.Update=function()end
-            T(Part,TweenInfo.new(0.5),{Transparency=1})
+        self.Destroy = function()
+            self.Signal:Disconnect()
+            pcall(function() self.Signal2:Disconnect() end)
+            self.Update = function() end
+            tw(Part, TweenInfo.new(0.5), {Transparency = 1})
             DOF:Destroy(); Part:Destroy()
         end
-        return C
+        return self
     end
-    return GS
 end)()
 
--- ─────────────────────────────────────────────
---  HELPERS
--- ─────────────────────────────────────────────
-local function Config(data, default)
-    data = data or {}
-    for k,v in pairs(default) do if data[k]==nil then data[k]=v end end
-    return data
-end
-
-local function Corner(r, parent)
-    local c = Instance.new("UICorner"); c.CornerRadius=r; c.Parent=parent; return c
-end
-
-local function Shadow(parent, extra, color, trans)
-    local s = Instance.new("ImageLabel")
-    s.Name="Shadow"; s.Parent=parent
-    s.AnchorPoint=Vector2.new(0.5,0.5); s.Position=UDim2.new(0.5,0,0.5,0)
-    s.Size=UDim2.new(1,extra,1,extra); s.ZIndex=0
-    s.BackgroundTransparency=1; s.BorderSizePixel=0
-    s.Image="rbxassetid://6015897843"
-    s.ImageColor3=color or Theme.Shadow
-    s.ImageTransparency=trans or 0.4    -- was 0.6 originally; more visible now
-    s.ScaleType=Enum.ScaleType.Slice
-    s.SliceCenter=Rect.new(49,49,450,450)
-    s.Rotation=0.001
-    return s
-end
-
-local function Stroke(parent, trans, color)
-    local s = Instance.new("UIStroke")
-    s.Transparency=trans or 0.7   -- was 0.95 (nearly invisible); now actually shows
-    s.Color=color or Theme.Border
-    s.Parent=parent
-    return s
-end
-
-local function MakeIconIn(parent, iconStr, pos, sizeUDim, zindex)
-    local ok, obj = pcall(function() return Icons.Image({Icon=iconStr, Size=sizeUDim}) end)
-    if ok and obj and obj.IconFrame then
-        local f = obj.IconFrame
-        f.AnchorPoint=Vector2.new(0.5,0.5); f.Position=pos
-        f.SizeConstraint=Enum.SizeConstraint.RelativeYY
-        f.ZIndex=zindex or 6; f.Parent=parent
-        return f
-    else
-        local f = Instance.new("ImageLabel")
-        f.AnchorPoint=Vector2.new(0.5,0.5); f.Position=pos
-        f.Size=sizeUDim; f.BackgroundTransparency=1; f.BorderSizePixel=0
-        f.ZIndex=zindex or 6; f.Parent=parent
-        return f
-    end
-end
-
--- ─────────────────────────────────────────────
---  GRADIENT  (animated background glow)
--- ─────────────────────────────────────────────
-local function GradientImage(E, Color)
+-- ══════════════════════════════════════
+--  ANIMATED GLOW  (background radial)
+-- ══════════════════════════════════════
+local function spawnGlow(parent, color)
     local GL = Instance.new("ImageLabel")
-    GL.Name="GLImage"; GL.Parent=E
-    GL.AnchorPoint=Vector2.new(0.5,0.5)
-    GL.BackgroundTransparency=1; GL.BorderSizePixel=0
-    GL.Position=UDim2.new(0.5,0,0.5,0)
-    GL.Size=UDim2.new(0.8,0,0.8,0)
-    GL.SizeConstraint=Enum.SizeConstraint.RelativeYY
-    GL.ZIndex=E.ZIndex-1
-    GL.Image="rbxassetid://867619398"
-    GL.ImageColor3=Color or Theme.Accent
-    GL.ImageTransparency=1
-    local upd=tick(); local nU,Spd,Spy,SIZ=4,5,-5,0.8
-    local nm=UDim2.new(); local rng=Random.new(math.random(10,100000)); local TPL=0.65
-    local str='GL_EFFECT_'..tostring(tick())
-    RunService:BindToRenderStep(str,45,function()
-        if(tick()-upd)>nU then
-            nU=rng:NextNumber(1.1,2.5); Spd=rng:NextNumber(-5,5)
-            Spy=rng:NextNumber(-5,5); TPL=rng:NextNumber(0.4,0.75)
-            SIZ=rng:NextNumber(0.6,0.9); upd=tick()
+    GL.Name              = "__glow"
+    GL.Parent            = parent
+    GL.AnchorPoint       = Vector2.new(0.5, 0.5)
+    GL.BackgroundTransparency = 1
+    GL.BorderSizePixel   = 0
+    GL.Position          = UDim2.new(0.5, 0, 0.5, 0)
+    GL.Size              = UDim2.new(0.8, 0, 0.8, 0)
+    GL.SizeConstraint    = Enum.SizeConstraint.RelativeYY
+    GL.ZIndex            = -1
+    GL.Image             = "rbxassetid://867619398"
+    GL.ImageColor3       = color or T.A
+    GL.ImageTransparency = 1
+
+    local rng  = Random.new(math.random(100, 99999))
+    local upd  = tick(); local nextUpd = 3
+    local spd  = Vector2.new(3, -2)
+    local pos  = Vector2.new(0.5, 0.5)
+    local tpl  = 0.7; local tsz = 0.75
+    local tag  = "CarbonGlow_" .. tostring(tick())
+
+    RunService:BindToRenderStep(tag, 45, function()
+        if (tick() - upd) > nextUpd then
+            nextUpd = rng:NextNumber(1.5, 3)
+            spd     = Vector2.new(rng:NextNumber(-4, 4), rng:NextNumber(-4, 4))
+            tpl     = rng:NextNumber(0.50, 0.78)
+            tsz     = rng:NextNumber(0.65, 0.88)
+            upd     = tick()
         end
-        Spd=Spd+rng:NextNumber(-0.08,0.08); Spy=Spy+rng:NextNumber(-0.08,0.08)
-        nm=nm:Lerp(UDim2.new(0.5+Spd/24,0,0.5+Spy/24,0),.02)
-        T(GL,TweenInfo.new(1),{Rotation=GL.Rotation+Spd,Position=nm,Size=UDim2.fromScale(SIZ,SIZ),ImageTransparency=TPL})
+        spd = spd + Vector2.new(rng:NextNumber(-0.05, 0.05), rng:NextNumber(-0.05, 0.05))
+        pos = pos + spd * 0.002
+        tw(GL, TweenInfo.new(1.5, Enum.EasingStyle.Sine), {
+            Rotation         = GL.Rotation + spd.X * 0.8,
+            Position         = UDim2.new(pos.X, 0, pos.Y, 0),
+            Size             = UDim2.fromScale(tsz, tsz),
+            ImageTransparency= tpl,
+        })
     end)
-    return str
+    return tag
 end
 
--- ═════════════════════════════════════════════
---  LIBRARY
--- ═════════════════════════════════════════════
-local Library = {}
-Library['.'] = '2'
-Library.Theme = Theme
-Library.GradientImage = GradientImage
+-- ══════════════════════════════════════
+--  ELEMENT BUILDER  (shared by Section & CollapsibleSection)
+-- ══════════════════════════════════════
+local function buildElements(container, tbl, W_ref)
 
-function Library.new(config)
-    config = Config(config, {
-        Title        = "UI Library",
-        Description  = "discord.gg/BHRUtyTbk2",
+    -- ── TOGGLE ──────────────────────────────────
+    function tbl:NewToggle(opts)
+        opts = cfg(opts, {Title="Toggle", Name=opts.Title, Default=false, Callback=function()end})
+
+        local Root = Instance.new("Frame")
+        Root.Name                 = "Toggle"
+        Root.Parent               = container
+        Root.BackgroundColor3     = T.B2
+        Root.BackgroundTransparency = 0.55
+        Root.BorderSizePixel      = 0
+        Root.Size                 = UDim2.new(0.95, 0, 0, 0)   -- height set by AR
+        Root.ZIndex               = 17
+        corner(T.RSm, Root)
+        stroke(Root, 0.75, T.Border)
+        local AR = Instance.new("UIAspectRatioConstraint")
+        AR.Parent = Root; AR.AspectRatio = 8; AR.AspectType = Enum.AspectType.ScaleWithParentSize
+
+        -- label
+        local Lbl = Instance.new("TextLabel")
+        Lbl.Parent               = Root
+        Lbl.AnchorPoint          = Vector2.new(0, 0.5)
+        Lbl.Position             = UDim2.new(0.04, 0, 0.5, 0)
+        Lbl.Size                 = UDim2.new(0.72, 0, 0.55, 0)
+        Lbl.BackgroundTransparency = 1; Lbl.BorderSizePixel = 0; Lbl.ZIndex = 18
+        Lbl.Font                 = Enum.Font.GothamBold
+        Lbl.Text                 = opts.Title
+        Lbl.TextColor3           = T.T2
+        Lbl.TextScaled           = true; Lbl.TextWrapped = true
+        Lbl.TextXAlignment       = Enum.TextXAlignment.Left
+        Lbl.TextTransparency     = 0.1
+
+        -- pill track
+        local Track = Instance.new("Frame")
+        Track.Parent               = Root
+        Track.AnchorPoint          = Vector2.new(1, 0.5)
+        Track.Position             = UDim2.new(0.97, 0, 0.5, 0)
+        Track.Size                 = UDim2.new(0.145, 0, 0.55, 0)
+        Track.BackgroundColor3     = T.B3
+        Track.BackgroundTransparency = 0.2
+        Track.BorderSizePixel      = 0; Track.ZIndex = 18
+        corner(UDim.new(0.5, 0), Track)
+        stroke(Track, 0.6, T.Border)
+
+        -- knob
+        local Knob = Instance.new("Frame")
+        Knob.Parent               = Track
+        Knob.AnchorPoint          = Vector2.new(0.5, 0.5)
+        Knob.Position             = UDim2.new(0.25, 0, 0.5, 0)
+        Knob.Size                 = UDim2.new(0.85, 0, 0.85, 0)
+        Knob.SizeConstraint       = Enum.SizeConstraint.RelativeYY
+        Knob.BackgroundColor3     = T.T3
+        Knob.BackgroundTransparency = 0
+        Knob.BorderSizePixel      = 0; Knob.ZIndex = 19
+        corner(UDim.new(1, 0), Knob)
+
+        -- invisible button overlay
+        local Btn = Instance.new("TextButton")
+        Btn.Parent = Root; Btn.BackgroundTransparency = 1; Btn.BorderSizePixel = 0
+        Btn.Size   = UDim2.new(1, 0, 1, 0); Btn.ZIndex = 30; Btn.Text = ""
+
+        local function apply(v)
+            if v then
+                tw(Track, T.Fast, {BackgroundColor3 = T.A,    BackgroundTransparency = 0.6})
+                tw(Knob,  T.Fast, {Position = UDim2.new(0.75, 0, 0.5, 0), BackgroundColor3 = Color3.new(1,1,1), BackgroundTransparency = 0})
+                tw(Lbl,   T.Fast, {TextColor3 = T.T1, TextTransparency = 0})
+                tw(Root,  T.Fast, {BackgroundColor3 = T.A,    BackgroundTransparency = 0.9})
+            else
+                tw(Track, T.Fast, {BackgroundColor3 = T.B3,   BackgroundTransparency = 0.2})
+                tw(Knob,  T.Fast, {Position = UDim2.new(0.25, 0, 0.5, 0), BackgroundColor3 = T.T3, BackgroundTransparency = 0})
+                tw(Lbl,   T.Fast, {TextColor3 = T.T2, TextTransparency = 0.1})
+                tw(Root,  T.Fast, {BackgroundColor3 = T.B2,   BackgroundTransparency = 0.55})
+            end
+            task.spawn(opts.Callback, v)
+        end
+        apply(opts.Default)
+        Btn.MouseButton1Click:Connect(function()
+            opts.Default = not opts.Default; apply(opts.Default)
+        end)
+
+        local el = {
+            Name    = opts.Name,
+            Get     = function() return opts.Default end,
+            Set     = function(v) opts.Default = v; apply(v) end,
+            Visible = function(b) Root.Visible = b end,
+        }
+        table.insert(tbl.Elements, el)
+        return el
+    end
+
+    -- ── BUTTON ──────────────────────────────────
+    function tbl:NewButton(opts)
+        opts = cfg(opts, {Title="Button", Callback=function()end})
+
+        local Root = Instance.new("Frame")
+        Root.Name               = "Button"
+        Root.Parent             = container
+        Root.BackgroundColor3   = T.B2
+        Root.BackgroundTransparency = 0.55
+        Root.BorderSizePixel    = 0
+        Root.Size               = UDim2.new(0.95, 0, 0, 0)
+        Root.ZIndex             = 17
+        corner(T.RSm, Root)
+        stroke(Root, 0.75, T.Border)
+        local SH = shadow(Root, 20, 0.65)
+        local AR = Instance.new("UIAspectRatioConstraint")
+        AR.Parent = Root; AR.AspectRatio = 7.5; AR.AspectType = Enum.AspectType.ScaleWithParentSize
+
+        local Lbl = Instance.new("TextLabel")
+        Lbl.Parent               = Root
+        Lbl.AnchorPoint          = Vector2.new(0.5, 0.5)
+        Lbl.Position             = UDim2.new(0.5, 0, 0.5, 0)
+        Lbl.Size                 = UDim2.new(0.88, 0, 0.55, 0)
+        Lbl.BackgroundTransparency = 1; Lbl.BorderSizePixel = 0; Lbl.ZIndex = 18
+        Lbl.Font                 = Enum.Font.GothamBold
+        Lbl.Text                 = opts.Title
+        Lbl.TextColor3           = T.T1
+        Lbl.TextScaled           = true; Lbl.TextWrapped = true
+        Lbl.TextTransparency     = 0.1
+
+        local Btn = Instance.new("TextButton")
+        Btn.Parent = Root; Btn.BackgroundTransparency = 1; Btn.BorderSizePixel = 0
+        Btn.Size   = UDim2.new(1, 0, 1, 0); Btn.ZIndex = 30; Btn.Text = ""
+
+        Btn.MouseEnter:Connect(function()
+            tw(Root, T.Fast, {BackgroundColor3 = T.A, BackgroundTransparency = 0.82})
+            tw(Lbl,  T.Fast, {TextColor3 = T.A, TextTransparency = 0})
+            tw(SH,   T.Fast, {ImageColor3 = T.A, ImageTransparency = 0.35})
+        end)
+        Btn.MouseLeave:Connect(function()
+            tw(Root, T.Fast, {BackgroundColor3 = T.B2, BackgroundTransparency = 0.55})
+            tw(Lbl,  T.Fast, {TextColor3 = T.T1, TextTransparency = 0.1})
+            tw(SH,   T.Fast, {ImageColor3 = T.Shadow, ImageTransparency = 0.65})
+        end)
+        Btn.MouseButton1Click:Connect(function() task.spawn(opts.Callback) end)
+
+        return {
+            Visible = function(b) Root.Visible = b end,
+            Fire    = opts.Callback,
+        }
+    end
+
+    -- ── SLIDER ──────────────────────────────────
+    function tbl:NewSlider(opts)
+        opts = cfg(opts, {Title="Slider", Name=opts.Title, Min=0, Max=100, Default=50, Callback=function()end})
+
+        local Root = Instance.new("Frame")
+        Root.Name               = "Slider"
+        Root.Parent             = container
+        Root.BackgroundColor3   = T.B2
+        Root.BackgroundTransparency = 0.55
+        Root.BorderSizePixel    = 0
+        Root.Size               = UDim2.new(0.95, 0, 0, 0)
+        Root.ZIndex             = 17
+        corner(T.RSm, Root)
+        stroke(Root, 0.75, T.Border)
+        local AR = Instance.new("UIAspectRatioConstraint")
+        AR.Parent = Root; AR.AspectRatio = 6; AR.AspectType = Enum.AspectType.ScaleWithParentSize
+
+        local TitleLbl = Instance.new("TextLabel")
+        TitleLbl.Parent               = Root
+        TitleLbl.AnchorPoint          = Vector2.new(0, 0.5)
+        TitleLbl.Position             = UDim2.new(0.04, 0, 0.28, 0)
+        TitleLbl.Size                 = UDim2.new(0.62, 0, 0.36, 0)
+        TitleLbl.BackgroundTransparency = 1; TitleLbl.BorderSizePixel = 0; TitleLbl.ZIndex = 18
+        TitleLbl.Font                 = Enum.Font.GothamBold
+        TitleLbl.Text                 = opts.Title
+        TitleLbl.TextColor3           = T.T2
+        TitleLbl.TextScaled           = true; TitleLbl.TextWrapped = true
+        TitleLbl.TextXAlignment       = Enum.TextXAlignment.Left
+        TitleLbl.TextTransparency     = 0.1
+
+        local ValLbl = Instance.new("TextLabel")
+        ValLbl.Parent               = Root
+        ValLbl.AnchorPoint          = Vector2.new(1, 0.5)
+        ValLbl.Position             = UDim2.new(0.97, 0, 0.28, 0)
+        ValLbl.Size                 = UDim2.new(0.32, 0, 0.32, 0)
+        ValLbl.BackgroundTransparency = 1; ValLbl.BorderSizePixel = 0; ValLbl.ZIndex = 18
+        ValLbl.Font                 = Enum.Font.GothamBold
+        ValLbl.Text                 = tostring(opts.Default) .. "/" .. tostring(opts.Max)
+        ValLbl.TextColor3           = T.A
+        ValLbl.TextScaled           = true; ValLbl.TextWrapped = true
+        ValLbl.TextXAlignment       = Enum.TextXAlignment.Right
+        ValLbl.TextTransparency     = 0
+
+        -- track container
+        local Track = Instance.new("Frame")
+        Track.Parent               = Root
+        Track.AnchorPoint          = Vector2.new(0.5, 0.5)
+        Track.Position             = UDim2.new(0.5, 0, 0.75, 0)
+        Track.Size                 = UDim2.new(0.92, 0, 0.27, 0)
+        Track.BackgroundColor3     = T.B3
+        Track.BackgroundTransparency = 0.1
+        Track.BorderSizePixel      = 0; Track.ClipsDescendants = true; Track.ZIndex = 18
+        corner(UDim.new(1, 0), Track)
+
+        local Fill = Instance.new("Frame")
+        Fill.Parent             = Track
+        Fill.BackgroundColor3   = T.A
+        Fill.BackgroundTransparency = 0.25
+        Fill.BorderSizePixel    = 0
+        Fill.Size               = UDim2.new((opts.Default - opts.Min) / (opts.Max - opts.Min), 0, 1, 0)
+        corner(UDim.new(1, 0), Fill)
+
+        -- handle dot (outside ClipsDescendants so we put it on Root)
+        local Handle = Instance.new("Frame")
+        Handle.Parent             = Root
+        Handle.AnchorPoint        = Vector2.new(0.5, 0.5)
+        Handle.Size               = UDim2.new(0, 8, 0, 8)
+        Handle.BackgroundColor3   = T.A
+        Handle.BackgroundTransparency = 0
+        Handle.BorderSizePixel    = 0; Handle.ZIndex = 20
+        corner(UDim.new(1, 0), Handle)
+        -- initial position sync happens in update
+
+        local function scaleToPos(sc)
+            -- track is at Y=0.75 of Root, X from 0.04 to 0.96
+            local trackX = 0.04 + sc * 0.92
+            Handle.Position = UDim2.new(trackX, 0, 0.75, 0)
+        end
+        scaleToPos((opts.Default - opts.Min) / (opts.Max - opts.Min))
+
+        local holding = false
+        local function update(inp)
+            local sc  = math.clamp((inp.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
+            local val = math.round(sc * (opts.Max - opts.Min) + opts.Min)
+            ValLbl.Text = tostring(val) .. "/" .. tostring(opts.Max)
+            tw(Fill,   TweenInfo.new(0.06), {Size = UDim2.fromScale(sc, 1)})
+            scaleToPos(sc)
+            opts.Callback(val)
+        end
+        Track.InputBegan:Connect(function(inp)
+            if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+                holding = true; update(inp)
+                tw(TitleLbl, T.Fast, {TextColor3 = T.T1, TextTransparency = 0})
+                tw(Handle, T.Fast, {Size = UDim2.new(0, 11, 0, 11)})
+            end
+        end)
+        Track.InputEnded:Connect(function(inp)
+            if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+                holding = false
+                tw(TitleLbl, T.Fast, {TextColor3 = T.T2, TextTransparency = 0.1})
+                tw(Handle, T.Fast, {Size = UDim2.new(0, 8, 0, 8)})
+            end
+        end)
+        UIS.InputChanged:Connect(function(inp)
+            if holding and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+                update(inp)
+            end
+        end)
+
+        local el = {
+            Name    = opts.Name,
+            Get     = function()
+                local sc = Fill.Size.X.Scale
+                return math.round(sc * (opts.Max - opts.Min) + opts.Min)
+            end,
+            Set     = function(v)
+                local sc = (v - opts.Min) / (opts.Max - opts.Min)
+                Fill.Size   = UDim2.fromScale(sc, 1)
+                ValLbl.Text = tostring(v) .. "/" .. tostring(opts.Max)
+                scaleToPos(sc)
+                opts.Callback(v)
+            end,
+            Visible = function(b) Root.Visible = b end,
+        }
+        table.insert(tbl.Elements, el)
+        return el
+    end
+
+    -- ── KEYBIND ──────────────────────────────────
+    function tbl:NewKeybind(opts)
+        opts = cfg(opts, {Title="Keybind", Name=opts.Title, Default=Enum.KeyCode.E, Callback=function()end})
+
+        local Ev = Instance.new("BindableEvent", container)
+
+        local Root = Instance.new("Frame")
+        Root.Name               = "Keybind"
+        Root.Parent             = container
+        Root.BackgroundColor3   = T.B2
+        Root.BackgroundTransparency = 0.55
+        Root.BorderSizePixel    = 0
+        Root.Size               = UDim2.new(0.95, 0, 0, 0)
+        Root.ZIndex             = 17
+        corner(T.RSm, Root)
+        stroke(Root, 0.75, T.Border)
+        local AR = Instance.new("UIAspectRatioConstraint")
+        AR.Parent = Root; AR.AspectRatio = 8; AR.AspectType = Enum.AspectType.ScaleWithParentSize
+
+        local Lbl = Instance.new("TextLabel")
+        Lbl.Parent               = Root
+        Lbl.AnchorPoint          = Vector2.new(0, 0.5)
+        Lbl.Position             = UDim2.new(0.04, 0, 0.5, 0)
+        Lbl.Size                 = UDim2.new(0.68, 0, 0.5, 0)
+        Lbl.BackgroundTransparency = 1; Lbl.BorderSizePixel = 0; Lbl.ZIndex = 18
+        Lbl.Font                 = Enum.Font.GothamBold
+        Lbl.Text                 = opts.Title
+        Lbl.TextColor3           = T.T2
+        Lbl.TextScaled           = true; Lbl.TextWrapped = true
+        Lbl.TextXAlignment       = Enum.TextXAlignment.Left
+        Lbl.TextTransparency     = 0.1
+
+        -- badge
+        local Badge = Instance.new("Frame")
+        Badge.Parent               = Root
+        Badge.AnchorPoint          = Vector2.new(1, 0.5)
+        Badge.Position             = UDim2.new(0.97, 0, 0.5, 0)
+        Badge.Size                 = UDim2.new(0, 44, 0.58, 0)
+        Badge.BackgroundColor3     = T.B3
+        Badge.BackgroundTransparency = 0.2
+        Badge.BorderSizePixel      = 0; Badge.ZIndex = 18
+        corner(T.RSm, Badge)
+        stroke(Badge, 0.6, T.A)
+
+        local KeyLbl = Instance.new("TextLabel")
+        KeyLbl.Parent               = Badge
+        KeyLbl.AnchorPoint          = Vector2.new(0.5, 0.5)
+        KeyLbl.Position             = UDim2.new(0.5, 0, 0.5, 0)
+        KeyLbl.Size                 = UDim2.new(0.9, 0, 0.72, 0)
+        KeyLbl.BackgroundTransparency = 1; KeyLbl.BorderSizePixel = 0; KeyLbl.ZIndex = 19
+        KeyLbl.Font                 = Enum.Font.GothamBold
+        KeyLbl.TextColor3           = T.A
+        KeyLbl.TextScaled           = true; KeyLbl.TextWrapped = true
+        KeyLbl.TextTransparency     = 0
+
+        local Btn = Instance.new("TextButton")
+        Btn.Parent = Root; Btn.BackgroundTransparency = 1; Btn.BorderSizePixel = 0
+        Btn.Size   = UDim2.new(1, 0, 1, 0); Btn.ZIndex = 30; Btn.Text = ""
+
+        local function resizeBadge(txt)
+            KeyLbl.Text = txt
+            local sz = TextService:GetTextSize(txt, 11, Enum.Font.GothamBold, Vector2.new(math.huge, math.huge))
+            tw(Badge, T.Fast, {Size = UDim2.new(0, sz.X + 14, 0.58, 0)})
+        end
+        resizeBadge(UIS:GetStringForKeyCode(opts.Default) or opts.Default.Name)
+
+        local waiting = false
+        Btn.MouseButton1Click:Connect(function()
+            if waiting then return end
+            waiting = true
+            tw(Badge, T.Fast, {BackgroundColor3 = T.A, BackgroundTransparency = 0.7})
+            resizeBadge("...")
+            local sig = UIS.InputBegan:Connect(function(k)
+                if k.KeyCode and k.KeyCode ~= Enum.KeyCode.Unknown then Ev:Fire(k.KeyCode) end
+            end)
+            local b = Ev.Event:Wait()
+            opts.Default = b
+            sig:Disconnect()
+            tw(Badge, T.Fast, {BackgroundColor3 = T.B3, BackgroundTransparency = 0.2})
+            resizeBadge(UIS:GetStringForKeyCode(b) or b.Name)
+            waiting = false
+            opts.Callback(b)
+        end)
+
+        local el = {
+            Name    = opts.Name,
+            Get     = function() return opts.Default.Name end,
+            Set     = function(v)
+                opts.Default = Enum.KeyCode[v]
+                resizeBadge(UIS:GetStringForKeyCode(opts.Default) or opts.Default.Name)
+                opts.Callback(opts.Default)
+            end,
+            Visible = function(b) Root.Visible = b end,
+        }
+        table.insert(tbl.Elements, el)
+        return el
+    end
+
+    -- ── DROPDOWN ────────────────────────────────
+    function tbl:NewDropdown(opts)
+        opts = cfg(opts, {Title="Dropdown", Name=opts.Title, Data={}, Default="", Callback=function()end})
+
+        local Root = Instance.new("Frame")
+        Root.Name               = "Dropdown"
+        Root.Parent             = container
+        Root.BackgroundColor3   = T.B2
+        Root.BackgroundTransparency = 0.55
+        Root.BorderSizePixel    = 0
+        Root.Size               = UDim2.new(0.95, 0, 0, 0)
+        Root.ZIndex             = 17
+        corner(T.RSm, Root)
+        stroke(Root, 0.75, T.Border)
+        local AR = Instance.new("UIAspectRatioConstraint")
+        AR.Parent = Root; AR.AspectRatio = 5; AR.AspectType = Enum.AspectType.ScaleWithParentSize
+
+        local TitleLbl = Instance.new("TextLabel")
+        TitleLbl.Parent               = Root
+        TitleLbl.AnchorPoint          = Vector2.new(0, 0.5)
+        TitleLbl.Position             = UDim2.new(0.04, 0, 0.22, 0)
+        TitleLbl.Size                 = UDim2.new(0.85, 0, 0.3, 0)
+        TitleLbl.BackgroundTransparency = 1; TitleLbl.BorderSizePixel = 0; TitleLbl.ZIndex = 18
+        TitleLbl.Font                 = Enum.Font.GothamBold
+        TitleLbl.Text                 = opts.Title
+        TitleLbl.TextColor3           = T.T2
+        TitleLbl.TextScaled           = true; TitleLbl.TextWrapped = true
+        TitleLbl.TextXAlignment       = Enum.TextXAlignment.Left
+        TitleLbl.TextTransparency     = 0.1
+
+        -- value row
+        local VRow = Instance.new("Frame")
+        VRow.Parent               = Root
+        VRow.AnchorPoint          = Vector2.new(0.5, 0.5)
+        VRow.Position             = UDim2.new(0.5, 0, 0.7, 0)
+        VRow.Size                 = UDim2.new(0.92, 0, 0.35, 0)
+        VRow.BackgroundColor3     = T.B3
+        VRow.BackgroundTransparency = 0.2
+        VRow.BorderSizePixel      = 0; VRow.ClipsDescendants = false; VRow.ZIndex = 18
+        corner(T.RSm, VRow)
+
+        local ValLbl = Instance.new("TextLabel")
+        ValLbl.Parent               = VRow
+        ValLbl.AnchorPoint          = Vector2.new(0, 0.5)
+        ValLbl.Position             = UDim2.new(0.04, 0, 0.5, 0)
+        ValLbl.Size                 = UDim2.new(0.82, 0, 0.72, 0)
+        ValLbl.BackgroundTransparency = 1; ValLbl.BorderSizePixel = 0; ValLbl.ZIndex = 19
+        ValLbl.Font                 = Enum.Font.GothamBold
+        ValLbl.Text                 = tostring(opts.Default) ~= "" and tostring(opts.Default) or "Select..."
+        ValLbl.TextColor3           = T.A
+        ValLbl.TextScaled           = true; ValLbl.TextWrapped = true
+        ValLbl.TextXAlignment       = Enum.TextXAlignment.Left
+        ValLbl.TextTransparency     = 0.05
+
+        -- chevron icon in VRow
+        local ChevFrame = Icons.Image({Icon = "chevron-down", Color = T.T3, Size = UDim2.new(0, 14, 0, 14)})
+        ChevFrame.AnchorPoint = Vector2.new(1, 0.5)
+        ChevFrame.Position    = UDim2.new(0.96, 0, 0.5, 0)
+        ChevFrame.ZIndex      = 19
+        ChevFrame.Parent      = VRow
+
+        -- ── FLOATING DROPDOWN PANEL ──────────────
+        local Panel = Instance.new("Frame")
+        Panel.Name               = "DDPanel"
+        Panel.Parent             = VRow
+        Panel.BackgroundColor3   = T.B1
+        Panel.BackgroundTransparency = 0.08
+        Panel.BorderSizePixel    = 0
+        Panel.Position           = UDim2.new(0, 0, 1.1, 0)
+        Panel.Size               = UDim2.new(1, 0, 0, 0)
+        Panel.ZIndex             = 200
+        Panel.ClipsDescendants   = true
+        Panel.Visible            = false
+        corner(T.RSm, Panel)
+        stroke(Panel, 0.65, T.Border)
+        shadow(Panel, 30, 0.4)
+
+        local PanelSF = Instance.new("ScrollingFrame")
+        PanelSF.Parent               = Panel
+        PanelSF.Size                 = UDim2.new(1, 0, 1, 0)
+        PanelSF.BackgroundTransparency = 1; PanelSF.BorderSizePixel = 0
+        PanelSF.ScrollBarThickness   = 2
+        PanelSF.ZIndex               = 201; PanelSF.Active = true
+
+        local PanelLayout = Instance.new("UIListLayout")
+        PanelLayout.Parent              = PanelSF
+        PanelLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        PanelLayout.SortOrder           = Enum.SortOrder.LayoutOrder
+        PanelLayout.Padding             = UDim.new(0, 3)
+        local PanelPad = Instance.new("UIPadding"); PanelPad.Parent = PanelSF
+        PanelPad.PaddingTop = UDim.new(0, 4); PanelPad.PaddingBottom = UDim.new(0, 4)
+
+        PanelLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            local h = math.min(PanelLayout.AbsoluteContentSize.Y + 8, 130)
+            PanelSF.CanvasSize = UDim2.fromOffset(0, PanelLayout.AbsoluteContentSize.Y + 8)
+            Panel.Size         = UDim2.new(1, 0, 0, h)
+        end)
+
+        local isOpen = false
+        local function closePanel()
+            isOpen = false
+            tw(Panel, T.Fast, {Size = UDim2.new(1, 0, 0, 0)})
+            task.delay(0.18, function() Panel.Visible = false end)
+            tw(ChevFrame, T.Fast, {Rotation = 0})
+        end
+        local function openPanel()
+            isOpen = true
+            Panel.Visible = true
+            local h = math.min(PanelLayout.AbsoluteContentSize.Y + 8, 130)
+            tw(Panel, T.Fast, {Size = UDim2.new(1, 0, 0, h)})
+            tw(ChevFrame, T.Fast, {Rotation = 180})
+        end
+
+        local function buildOptions()
+            for _, v in ipairs(PanelSF:GetChildren()) do if v:IsA("Frame") then v:Destroy() end end
+            for _, v in ipairs(opts.Data) do
+                local Opt = Instance.new("Frame")
+                Opt.Parent               = PanelSF
+                Opt.BackgroundColor3     = v == opts.Default and T.A or T.B3
+                Opt.BackgroundTransparency = v == opts.Default and 0.78 or 0.45
+                Opt.BorderSizePixel      = 0
+                Opt.Size                 = UDim2.new(0.94, 0, 0, 22)
+                Opt.ZIndex               = 202
+                corner(T.RSm, Opt)
+
+                local OLbl = Instance.new("TextLabel")
+                OLbl.Parent               = Opt
+                OLbl.AnchorPoint          = Vector2.new(0, 0.5)
+                OLbl.Position             = UDim2.new(0.04, 0, 0.5, 0)
+                OLbl.Size                 = UDim2.new(0.93, 0, 0.7, 0)
+                OLbl.BackgroundTransparency = 1; OLbl.BorderSizePixel = 0; OLbl.ZIndex = 203
+                OLbl.Font                 = Enum.Font.GothamBold
+                OLbl.Text                 = tostring(v)
+                OLbl.TextColor3           = v == opts.Default and T.A or T.T1
+                OLbl.TextScaled           = true; OLbl.TextWrapped = true
+                OLbl.TextXAlignment       = Enum.TextXAlignment.Left
+                OLbl.TextTransparency     = v == opts.Default and 0 or 0.15
+
+                local OBtn = Instance.new("TextButton")
+                OBtn.Parent = Opt; OBtn.BackgroundTransparency = 1; OBtn.BorderSizePixel = 0
+                OBtn.Size   = UDim2.new(1, 0, 1, 0); OBtn.ZIndex = 204; OBtn.Text = ""
+
+                OBtn.MouseEnter:Connect(function()
+                    if v ~= opts.Default then
+                        tw(Opt,  T.Fast, {BackgroundTransparency = 0.6})
+                        tw(OLbl, T.Fast, {TextColor3 = T.T1, TextTransparency = 0})
+                    end
+                end)
+                OBtn.MouseLeave:Connect(function()
+                    if v ~= opts.Default then
+                        tw(Opt,  T.Fast, {BackgroundTransparency = 0.45})
+                        tw(OLbl, T.Fast, {TextColor3 = T.T1, TextTransparency = 0.15})
+                    end
+                end)
+                OBtn.MouseButton1Click:Connect(function()
+                    opts.Default = v
+                    ValLbl.Text  = tostring(v)
+                    buildOptions()
+                    closePanel()
+                    opts.Callback(v)
+                end)
+            end
+        end
+        buildOptions()
+
+        -- open/close on click
+        local Btn = Instance.new("TextButton")
+        Btn.Parent = Root; Btn.BackgroundTransparency = 1; Btn.BorderSizePixel = 0
+        Btn.Size   = UDim2.new(1, 0, 0.55, 0); Btn.Position = UDim2.new(0, 0, 0.45, 0)
+        Btn.ZIndex = 30; Btn.Text = ""
+        Btn.MouseButton1Click:Connect(function()
+            if isOpen then closePanel() else openPanel() end
+        end)
+
+        -- close when clicking outside
+        UIS.InputBegan:Connect(function(inp)
+            if isOpen and (inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch) then
+                task.wait()
+                if isOpen then closePanel() end
+            end
+        end)
+        VRow.MouseButton1Click = Btn.MouseButton1Click  -- alias
+
+        local el = {
+            Name      = opts.Name,
+            Get       = function() return opts.Default end,
+            Set       = function(v) opts.Default = v; ValLbl.Text = tostring(v); buildOptions(); opts.Callback(v) end,
+            Visible   = function(b) Root.Visible = b end,
+            Refresh   = function(newData)
+                if newData then opts.Data = newData end
+                ValLbl.Text = opts.Default ~= "" and tostring(opts.Default) or "Select..."
+                buildOptions()
+                if isOpen then closePanel() end
+            end,
+            Open      = function() openPanel() end,
+            Close     = function() closePanel() end,
+            Clear     = function() opts.Data = {}; buildOptions() end,
+            SetOptions= function(d) opts.Data = d; buildOptions() end,
+        }
+        table.insert(tbl.Elements, el)
+        return el
+    end
+
+    -- ── TEXTBOX ─────────────────────────────────
+    function tbl:NewTextbox(opts)
+        opts = cfg(opts, {Title="Textbox", Name=opts.Title, Default="", FileType="", Callback=function()end})
+
+        local Root = Instance.new("Frame")
+        Root.Name               = "Textbox"
+        Root.Parent             = container
+        Root.BackgroundColor3   = T.B2
+        Root.BackgroundTransparency = 0.55
+        Root.BorderSizePixel    = 0
+        Root.Size               = UDim2.new(0.95, 0, 0, 0)
+        Root.ZIndex             = 17
+        corner(T.RSm, Root)
+        stroke(Root, 0.75, T.Border)
+        local AR = Instance.new("UIAspectRatioConstraint")
+        AR.Parent = Root; AR.AspectRatio = 5; AR.AspectType = Enum.AspectType.ScaleWithParentSize
+
+        local TitleLbl = Instance.new("TextLabel")
+        TitleLbl.Parent               = Root
+        TitleLbl.AnchorPoint          = Vector2.new(0, 0.5)
+        TitleLbl.Position             = UDim2.new(0.04, 0, 0.22, 0)
+        TitleLbl.Size                 = UDim2.new(0.85, 0, 0.3, 0)
+        TitleLbl.BackgroundTransparency = 1; TitleLbl.BorderSizePixel = 0; TitleLbl.ZIndex = 18
+        TitleLbl.Font                 = Enum.Font.GothamBold
+        TitleLbl.Text                 = opts.Title
+        TitleLbl.TextColor3           = T.T2
+        TitleLbl.TextScaled           = true; TitleLbl.TextWrapped = true
+        TitleLbl.TextXAlignment       = Enum.TextXAlignment.Left
+        TitleLbl.TextTransparency     = 0.1
+
+        local InputRow = Instance.new("Frame")
+        InputRow.Parent               = Root
+        InputRow.AnchorPoint          = Vector2.new(0.5, 0.5)
+        InputRow.Position             = UDim2.new(0.5, 0, 0.7, 0)
+        InputRow.Size                 = UDim2.new(0.92, 0, 0.34, 0)
+        InputRow.BackgroundColor3     = T.B3
+        InputRow.BackgroundTransparency = 0.2
+        InputRow.BorderSizePixel      = 0; InputRow.ClipsDescendants = true; InputRow.ZIndex = 18
+        corner(T.RSm, InputRow)
+        local IR_stroke = stroke(InputRow, 0.75, T.Border)
+
+        if opts.FileType ~= "" then
+            local FT = Instance.new("TextLabel")
+            FT.Parent               = InputRow
+            FT.AnchorPoint          = Vector2.new(1, 0.5)
+            FT.Position             = UDim2.new(0.98, 0, 0.5, 0)
+            FT.Size                 = UDim2.new(0.28, 0, 0.7, 0)
+            FT.BackgroundTransparency = 1; FT.BorderSizePixel = 0; FT.ZIndex = 19
+            FT.Font                 = Enum.Font.GothamBold
+            FT.Text                 = opts.FileType
+            FT.TextColor3           = T.T3
+            FT.TextScaled           = true; FT.TextXAlignment = Enum.TextXAlignment.Right
+        end
+
+        local TB = Instance.new("TextBox")
+        TB.Parent               = InputRow
+        TB.AnchorPoint          = Vector2.new(0, 0.5)
+        TB.Position             = UDim2.new(0.03, 0, 0.5, 0)
+        TB.Size                 = UDim2.new(0.82, 0, 0.75, 0)
+        TB.BackgroundTransparency = 1; TB.BorderSizePixel = 0; TB.ZIndex = 35
+        TB.ClearTextOnFocus     = false
+        TB.Font                 = Enum.Font.GothamBold
+        TB.Text                 = tostring(opts.Default)
+        TB.PlaceholderText      = "Type here..."
+        TB.TextColor3           = T.T1
+        TB.TextScaled           = true; TB.TextWrapped = true
+        TB.TextXAlignment       = Enum.TextXAlignment.Left
+        TB.TextTransparency     = 0.1
+
+        TB.Focused:Connect(function()
+            tw(InputRow, T.Fast, {BackgroundColor3 = T.A,  BackgroundTransparency = 0.88})
+            tw(IR_stroke, T.Fast, {Transparency = 0.45, Color = T.A})
+        end)
+        TB.FocusLost:Connect(function(enter)
+            tw(InputRow, T.Fast, {BackgroundColor3 = T.B3, BackgroundTransparency = 0.2})
+            tw(IR_stroke, T.Fast, {Transparency = 0.75, Color = T.Border})
+            if enter then opts.Callback(TB.Text) end
+        end)
+
+        local el = {
+            Name    = opts.Name,
+            Get     = function() return TB.Text end,
+            Set     = function(v) TB.Text = v end,
+            Visible = function(b) Root.Visible = b end,
+        }
+        table.insert(tbl.Elements, el)
+        return el
+    end
+
+    -- ── TITLE ────────────────────────────────────
+    function tbl:NewTitle(text)
+        local Root = Instance.new("Frame")
+        Root.Name               = "Title"
+        Root.Parent             = container
+        Root.BackgroundColor3   = T.A
+        Root.BackgroundTransparency = 0.9
+        Root.BorderSizePixel    = 0
+        Root.Size               = UDim2.new(0.95, 0, 0, 0)
+        Root.ZIndex             = 17
+        corner(T.RSm, Root)
+        local AR = Instance.new("UIAspectRatioConstraint")
+        AR.Parent = Root; AR.AspectRatio = 9; AR.AspectType = Enum.AspectType.ScaleWithParentSize
+
+        -- left accent bar
+        local Bar = Instance.new("Frame")
+        Bar.Parent = Root; Bar.Position = UDim2.new(0, 0, 0.15, 0)
+        Bar.Size   = UDim2.new(0, 2, 0.7, 0)
+        Bar.BackgroundColor3 = T.A; Bar.BackgroundTransparency = 0.2; Bar.BorderSizePixel = 0
+        corner(UDim.new(1, 0), Bar)
+
+        local Lbl = Instance.new("TextLabel")
+        Lbl.Parent               = Root
+        Lbl.AnchorPoint          = Vector2.new(0, 0.5)
+        Lbl.Position             = UDim2.new(0.05, 0, 0.5, 0)
+        Lbl.Size                 = UDim2.new(0.93, 0, 0.58, 0)
+        Lbl.BackgroundTransparency = 1; Lbl.BorderSizePixel = 0; Lbl.ZIndex = 18
+        Lbl.Font                 = Enum.Font.GothamBold
+        Lbl.Text                 = text
+        Lbl.TextColor3           = T.A
+        Lbl.TextScaled           = true; Lbl.TextWrapped = true
+        Lbl.TextXAlignment       = Enum.TextXAlignment.Left
+        Lbl.TextTransparency     = 0.1
+
+        return {
+            Visible = function(b) Root.Visible = b end,
+            Set     = function(s) Lbl.Text = s end,
+        }
+    end
+
+    -- ── LABEL ────────────────────────────────────
+    function tbl:NewLabel(text)
+        local Root = Instance.new("Frame")
+        Root.Name               = "Label"
+        Root.Parent             = container
+        Root.BackgroundColor3   = T.B2
+        Root.BackgroundTransparency = 0.6
+        Root.BorderSizePixel    = 0
+        Root.Size               = UDim2.new(0.95, 0, 0, 0)
+        Root.ZIndex             = 17
+        corner(T.RSm, Root)
+        local AR = Instance.new("UIAspectRatioConstraint")
+        AR.Parent = Root; AR.AspectRatio = 9; AR.AspectType = Enum.AspectType.ScaleWithParentSize
+
+        local Lbl = Instance.new("TextLabel")
+        Lbl.Parent               = Root
+        Lbl.AnchorPoint          = Vector2.new(0, 0.5)
+        Lbl.Position             = UDim2.new(0.04, 0, 0.5, 0)
+        Lbl.Size                 = UDim2.new(0.93, 0, 0.58, 0)
+        Lbl.BackgroundTransparency = 1; Lbl.BorderSizePixel = 0; Lbl.ZIndex = 18
+        Lbl.Font                 = Enum.Font.GothamBold
+        Lbl.Text                 = text
+        Lbl.TextColor3           = T.T2
+        Lbl.TextScaled           = true; Lbl.TextWrapped = true
+        Lbl.TextXAlignment       = Enum.TextXAlignment.Left
+        Lbl.TextTransparency     = 0.1
+
+        return {
+            Visible = function(b) Root.Visible = b end,
+            Set     = function(s) Lbl.Text = s end,
+        }
+    end
+
+    -- ── IMAGE ─────────────────────────────────────
+    function tbl:NewImage(opts)
+        opts = cfg(opts, {ImageId = "rbxassetid://0", Size = UDim2.new(0.95, 0, 0, 80)})
+        local Root = Instance.new("Frame")
+        Root.Name               = "Image"
+        Root.Parent             = container
+        Root.BackgroundColor3   = T.B2
+        Root.BackgroundTransparency = 0.55
+        Root.BorderSizePixel    = 0
+        Root.Size               = opts.Size
+        Root.ZIndex             = 17
+        corner(T.RSm, Root)
+        stroke(Root, 0.75, T.Border)
+
+        local Img = Instance.new("ImageLabel")
+        Img.Parent               = Root
+        Img.AnchorPoint          = Vector2.new(0.5, 0.5)
+        Img.Position             = UDim2.new(0.5, 0, 0.5, 0)
+        Img.Size                 = UDim2.new(1, 0, 1, 0)
+        Img.BackgroundTransparency = 1; Img.BorderSizePixel = 0; Img.ZIndex = 18
+        Img.Image                = opts.ImageId
+        Img.ScaleType            = Enum.ScaleType.Fit
+        corner(T.RSm, Root)
+
+        return {
+            Visible  = function(b) Root.Visible = b end,
+            SetImage = function(id) Img.Image = id end,
+        }
+    end
+end  -- buildElements
+
+-- ════════════════════════════════════════════════════════
+--  CARBON LIBRARY
+-- ════════════════════════════════════════════════════════
+local Carbon = {}
+Carbon["."] = "2"
+Carbon.Theme = T
+
+-- ──────────────────────────────────────────────────────
+--  NOTIFICATION
+-- ──────────────────────────────────────────────────────
+function Carbon.Notification()
+    local SGui = Instance.new("ScreenGui")
+    SGui.Name             = HttpService:GenerateGUID(false)
+    SGui.Parent           = CoreGui
+    SGui.ResetOnSpawn     = false
+    SGui.ZIndexBehavior   = Enum.ZIndexBehavior.Global
+    SGui.IgnoreGuiInset   = true
+
+    local Stack = Instance.new("Frame"); Stack.Parent = SGui
+    Stack.AnchorPoint    = Vector2.new(1, 1)
+    Stack.Position       = UDim2.new(0.985, 0, 0.975, 0)
+    Stack.Size           = UDim2.new(0, 290, 0.6, 0)
+    Stack.BackgroundTransparency = 1; Stack.BorderSizePixel = 0
+
+    local StackLayout = Instance.new("UIListLayout"); StackLayout.Parent = Stack
+    StackLayout.SortOrder          = Enum.SortOrder.LayoutOrder
+    StackLayout.VerticalAlignment  = Enum.VerticalAlignment.Bottom
+    StackLayout.HorizontalAlignment= Enum.HorizontalAlignment.Right
+    StackLayout.Padding            = UDim.new(0, 6)
+
+    return {
+        new = function(opts)
+            opts = cfg(opts, {Title="Notification", Description="", Duration=4, Icon="bell"})
+
+            local N = Instance.new("Frame"); N.Name = "Notif"; N.Parent = Stack
+            N.BackgroundColor3 = T.B1; N.BackgroundTransparency = 1
+            N.BorderSizePixel  = 0; N.ClipsDescendants = true
+            N.Size             = UDim2.new(1, 0, 0, 68)
+            N.Position         = UDim2.new(1.1, 0, 0, 0)
+            corner(T.RMd, N)
+            stroke(N, 0.72, T.Border)
+            local NSH = shadow(N, 28, 0.9)
+
+            -- accent left strip
+            local Strip = Instance.new("Frame"); Strip.Parent = N
+            Strip.Position = UDim2.new(0, 0, 0.1, 0); Strip.Size = UDim2.new(0, 3, 0.8, 0)
+            Strip.BackgroundColor3 = T.A; Strip.BackgroundTransparency = 0; Strip.BorderSizePixel = 0
+            corner(UDim.new(1, 0), Strip)
+
+            -- icon container
+            local IconBg = Instance.new("Frame"); IconBg.Parent = N
+            IconBg.AnchorPoint        = Vector2.new(0, 0.5)
+            IconBg.Position           = UDim2.new(0, 12, 0.5, 0)
+            IconBg.Size               = UDim2.new(0, 32, 0, 32)
+            IconBg.BackgroundColor3   = T.A; IconBg.BackgroundTransparency = 0.78; IconBg.BorderSizePixel = 0
+            corner(UDim.new(0, 7), IconBg)
+            local IcoFrame = Icons.Image({Icon = opts.Icon, Color = T.A, Size = UDim2.new(0, 17, 0, 17)})
+            IcoFrame.AnchorPoint = Vector2.new(0.5, 0.5); IcoFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+            IcoFrame.ZIndex = 49; IcoFrame.Parent = IconBg
+
+            local TitleLbl = Instance.new("TextLabel"); TitleLbl.Parent = N
+            TitleLbl.Position         = UDim2.new(0, 54, 0, 8)
+            TitleLbl.Size             = UDim2.new(1, -62, 0, 22)
+            TitleLbl.BackgroundTransparency = 1; TitleLbl.BorderSizePixel = 0
+            TitleLbl.Font             = Enum.Font.GothamBold
+            TitleLbl.Text             = opts.Title
+            TitleLbl.TextColor3       = T.T1; TitleLbl.TextSize = 13
+            TitleLbl.TextXAlignment   = Enum.TextXAlignment.Left; TitleLbl.TextTransparency = 1
+
+            local DescLbl = Instance.new("TextLabel"); DescLbl.Parent = N
+            DescLbl.Position          = UDim2.new(0, 54, 0, 32)
+            DescLbl.Size              = UDim2.new(1, -62, 0, 28)
+            DescLbl.BackgroundTransparency = 1; DescLbl.BorderSizePixel = 0
+            DescLbl.Font              = Enum.Font.Gotham
+            DescLbl.Text             = opts.Description
+            DescLbl.TextColor3        = T.T2; DescLbl.TextSize = 11
+            DescLbl.TextWrapped       = true; DescLbl.TextXAlignment = Enum.TextXAlignment.Left
+            DescLbl.TextYAlignment    = Enum.TextYAlignment.Top; DescLbl.TextTransparency = 1
+
+            -- progress bar
+            local PBg = Instance.new("Frame"); PBg.Parent = N
+            PBg.AnchorPoint = Vector2.new(0, 1); PBg.Position = UDim2.new(0, 0, 1, 0)
+            PBg.Size = UDim2.new(1, 0, 0, 2); PBg.BackgroundColor3 = T.B3
+            PBg.BackgroundTransparency = 0.3; PBg.BorderSizePixel = 0
+            local PFill = Instance.new("Frame"); PFill.Parent = PBg
+            PFill.BackgroundColor3 = T.A; PFill.BackgroundTransparency = 0.1; PFill.BorderSizePixel = 0
+            PFill.Size = UDim2.fromScale(1, 1)
+            corner(UDim.new(1, 0), PFill)
+
+            -- animate in
+            local easeIn = TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+            tw(N,        easeIn, {BackgroundTransparency = 0.12, Position = UDim2.fromOffset(0, 0)})
+            tw(NSH,      easeIn, {ImageTransparency = 0.4})
+            tw(TitleLbl, easeIn, {TextTransparency = 0})
+            tw(DescLbl,  easeIn, {TextTransparency = 0.1})
+            -- drain progress bar
+            tw(PFill, TweenInfo.new(opts.Duration, Enum.EasingStyle.Linear), {Size = UDim2.fromScale(0, 1)})
+
+            -- animate out
+            task.delay(opts.Duration, function()
+                local easeOut = TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+                tw(N,        easeOut, {BackgroundTransparency = 1, Position = UDim2.new(1.1, 0, 0, 0)})
+                tw(NSH,      easeOut, {ImageTransparency = 1})
+                tw(TitleLbl, easeOut, {TextTransparency = 1})
+                tw(DescLbl,  easeOut, {TextTransparency = 1})
+                task.delay(0.38, function() N:Destroy() end)
+            end)
+        end
+    }
+end
+
+-- ──────────────────────────────────────────────────────
+--  MAIN WINDOW
+-- ──────────────────────────────────────────────────────
+function Carbon.new(opts)
+    opts = cfg(opts, {
+        Title        = "Carbon UI",
+        Description  = "discord.gg/example",
         Keybind      = Enum.KeyCode.LeftControl,
-        Logo         = "http://www.roblox.com/asset/?id=18810965406",
-        Size         = UDim2.new(0.1,445, 0.1,315),
+        Logo         = "rbxassetid://0",
+        Size         = UDim2.new(0.1, 445, 0.1, 315),
         ConfigFolder = "CarbonConfigs",
-        AccentColor  = nil,   -- override Theme.Accent
     })
-    if config.AccentColor then Theme.Accent = config.AccentColor end
 
-    local W = {}   -- WindowTable
-    W.Tabs          = {}
-    W.Elements      = {}
-    W.Dropdown      = {}
-    W.WindowToggle  = true
-    W.Keybind       = config.Keybind
-    W.ToggleButton  = nil
-    W.LastPosition  = UDim2.new(0.5,0,0.05,0)
-    W.ConfigFolder  = config.ConfigFolder
+    -- ── state
+    local W = {}
+    W.Tabs         = {}
+    W.Elements     = {}
+    W.Dropdown     = {}
+    W.WindowToggle = true
+    W.Keybind      = opts.Keybind
+    W.ToggleButton = nil
+    W.LastPosition = UDim2.new(0.5, 0, 0.5, 0)
+    W.ConfigFolder = opts.ConfigFolder
 
     -- config folder
     if not isfolder(W.ConfigFolder) then makefolder(W.ConfigFolder) end
-    local Http = game:GetService("HttpService")
 
-    W.ListConfigs  = function() local t={} for _,f in ipairs(listfiles(W.ConfigFolder) or {}) do if f:match("%.json$") then table.insert(t,f:match("([^/\\]+)%.json$")) end end return t end
-    W.SaveConfig   = function(_,name) writefile(W.ConfigFolder.."/"..name..".json", Http:JSONEncode(W:GetConfig())) end
-    W.LoadConfig   = function(_,name) if isfile(W.ConfigFolder.."/"..name..".json") then W:SetConfig(Http:JSONDecode(readfile(W.ConfigFolder.."/"..name..".json"))) end end
-    W.DeleteConfig = function(_,name) if isfile(W.ConfigFolder.."/"..name..".json") then delfile(W.ConfigFolder.."/"..name..".json") end end
-
-    -- ── SCREEN GUI
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Parent=CoreGui; ScreenGui.ZIndexBehavior=Enum.ZIndexBehavior.Global
-    ScreenGui.ResetOnSpawn=false; ScreenGui.IgnoreGuiInset=true; ScreenGui.Name="CarbonUI"
-
-    -- ── MAIN FRAME
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Name="MainFrame"; MainFrame.Parent=ScreenGui
-    MainFrame.AnchorPoint=Vector2.new(0.5,0.5); MainFrame.Position=UDim2.new(0.5,0,0.5,0)
-    MainFrame.Size=UDim2.fromOffset(config.Size.X.Offset,config.Size.Y.Offset)
-    MainFrame.BackgroundColor3=Theme.BG; MainFrame.BackgroundTransparency=1
-    MainFrame.BorderSizePixel=0; MainFrame.Active=true; MainFrame.ClipsDescendants=true
-    Corner(Theme.RadiusLarge, MainFrame)
-    local MainShadow = Shadow(MainFrame, 50, Theme.Shadow, 1)
-    Stroke(MainFrame, 0.75, Theme.Border)
-    T(MainFrame, Theme.Slow, {BackgroundTransparency=0.3, Size=config.Size})
-    T(MainShadow, Theme.Slow, {ImageTransparency=0.35})
-
-    W.ElBlurUI = ElBlurSource.new(MainFrame)
-    W.AddEffect = function(col) GradientImage(MainFrame, col or Theme.Accent) end
-
-    -- ── HEADER BAR  (left panel)
-    local Headers = Instance.new("Frame")
-    Headers.Name="Headers"; Headers.Parent=MainFrame
-    Headers.BackgroundColor3=Theme.Header; Headers.BackgroundTransparency=1
-    Headers.BorderSizePixel=0; Headers.ClipsDescendants=true
-    Headers.Position=UDim2.new(0.01,0,0.015,0)
-    Headers.Size=UDim2.new(0.3,0,0.178,0)
-    Headers.ZIndex=3
-    Corner(Theme.RadiusMedium, Headers)
-    T(Headers, Theme.Slow, {BackgroundTransparency=0.5})
-
-    local Logo = Instance.new("ImageLabel")
-    Logo.Name="Logo"; Logo.Parent=Headers
-    Logo.AnchorPoint=Vector2.new(0.5,0.5); Logo.Position=UDim2.new(0.5,0,0.5,0)
-    Logo.Size=UDim2.new(0.95,0,0.95,0); Logo.ZIndex=4
-    Logo.BackgroundTransparency=1; Logo.BorderSizePixel=0
-    Logo.Image=config.Logo; Logo.ScaleType=Enum.ScaleType.Crop; Logo.ImageTransparency=1
-    Corner(UDim.new(0,4), Logo)
-    T(Logo, Theme.Slow, {ImageTransparency=0})
-
-    local Title = Instance.new("TextLabel")
-    Title.Name="Title"; Title.Parent=MainFrame
-    Title.Position=UDim2.new(0.328,0,0.013,0); Title.Size=UDim2.new(0.67,0,0.052,0)
-    Title.BackgroundTransparency=1; Title.BorderSizePixel=0
-    Title.Font=Enum.Font.GothamBold; Title.Text=config.Title
-    Title.TextColor3=Theme.TextPrimary; Title.TextScaled=true; Title.TextWrapped=true
-    Title.TextXAlignment=Enum.TextXAlignment.Left; Title.TextTransparency=1
-    T(Title, Theme.Slow, {TextTransparency=0})
-
-    local Desc = Instance.new("TextLabel")
-    Desc.Name="Description"; Desc.Parent=MainFrame
-    Desc.Position=UDim2.new(0.328,0,0.071,0); Desc.Size=UDim2.new(0.67,0,0.029,0)
-    Desc.BackgroundTransparency=1; Desc.BorderSizePixel=0
-    Desc.Font=Enum.Font.GothamBold; Desc.Text=config.Description
-    Desc.TextColor3=Theme.TextMuted; Desc.TextScaled=true; Desc.TextWrapped=true
-    Desc.TextXAlignment=Enum.TextXAlignment.Left; Desc.TextTransparency=1
-    T(Desc, Theme.Slow, {TextTransparency=0})
-
-    -- ── DIVIDERS
-    local function makeDivider(parent, pos, size, zIndex)
-        local f = Instance.new("Frame"); f.Parent=parent
-        f.AnchorPoint=Vector2.new(0,0.5); f.Position=pos; f.Size=size
-        f.BackgroundColor3=Theme.Border; f.BackgroundTransparency=0.5
-        f.BorderSizePixel=0; f.ZIndex=zIndex or 3
-        Corner(UDim.new(0.5,0),f)
-        local g=Instance.new("UIGradient"); g.Parent=f
-        g.Transparency=NumberSequence.new{
-            NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(0.05,0),
-            NumberSequenceKeypoint.new(0.95,0),NumberSequenceKeypoint.new(1,1)}
-        T(f,Theme.Slow,{BackgroundTransparency=0.6})
-        return f
+    W.ListConfigs = function()
+        local out = {}
+        for _, f in ipairs(listfiles(W.ConfigFolder) or {}) do
+            if f:match("%.json$") then table.insert(out, f:match("([^/\\]+)%.json$")) end
+        end
+        return out
     end
-    makeDivider(MainFrame, UDim2.new(0.317,0,0.5,0),  UDim2.new(0,1,1,0), 3)
-    makeDivider(MainFrame, UDim2.new(0.317,0,0.12,0), UDim2.new(0.683,0,0,1), 3)
-    makeDivider(MainFrame, UDim2.new(-0.001,0,0.205,0), UDim2.new(0.318,0,0,1), 3)
-
-    -- ── TAB BUTTON FRAME
-    local TabButtonFrame = Instance.new("Frame")
-    TabButtonFrame.Name="TabButtonFrame"; TabButtonFrame.Parent=MainFrame
-    TabButtonFrame.AnchorPoint=Vector2.new(0.5,0)
-    TabButtonFrame.BackgroundColor3=Theme.BG2; TabButtonFrame.BackgroundTransparency=1
-    TabButtonFrame.BorderSizePixel=0; TabButtonFrame.ClipsDescendants=true
-    TabButtonFrame.Position=UDim2.new(0.16,0,0.215,0)
-    TabButtonFrame.Size=UDim2.new(0.3,0,0.775,0)
-    Corner(Theme.RadiusSmall, TabButtonFrame)
-    T(TabButtonFrame, Theme.Slow, {BackgroundTransparency=0.6})
-
-    local TabButtons = Instance.new("ScrollingFrame")
-    TabButtons.Name="TabButtons"; TabButtons.Parent=TabButtonFrame
-    TabButtons.AnchorPoint=Vector2.new(0.5,0.5); TabButtons.Position=UDim2.new(0.5,0,0.5,0)
-    TabButtons.Size=UDim2.new(0.97,0,0.97,0)
-    TabButtons.BackgroundTransparency=1; TabButtons.BorderSizePixel=0
-    TabButtons.ScrollBarThickness=0; TabButtons.ClipsDescendants=false; TabButtons.Active=true
-
-    local TabUILayout = Instance.new("UIListLayout")
-    TabUILayout.Parent=TabButtons; TabUILayout.HorizontalAlignment=Enum.HorizontalAlignment.Center
-    TabUILayout.SortOrder=Enum.SortOrder.LayoutOrder; TabUILayout.Padding=UDim.new(0,4)
-    TabUILayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-        TabButtons.CanvasSize=UDim2.fromOffset(0,TabUILayout.AbsoluteContentSize.Y)
-    end)
-
-    -- ── MAIN TAB FRAME
-    local MainTabFrame = Instance.new("Frame")
-    MainTabFrame.Name="MainTabFrame"; MainTabFrame.Parent=MainFrame
-    MainTabFrame.AnchorPoint=Vector2.new(0.5,0)
-    MainTabFrame.BackgroundColor3=Theme.BG2; MainTabFrame.BackgroundTransparency=1
-    MainTabFrame.BorderSizePixel=0; MainTabFrame.ClipsDescendants=true
-    MainTabFrame.Position=UDim2.new(0.658,0,0.131,0)
-    MainTabFrame.Size=UDim2.new(0.67,0,0.86,0)
-    Corner(Theme.RadiusSmall, MainTabFrame)
-    T(MainTabFrame, Theme.Slow, {BackgroundTransparency=0.6})
-
-    -- ── MINIMIZE BUTTON
-    local MinBtn = Instance.new("ImageButton")
-    MinBtn.Parent=MainFrame; MinBtn.AnchorPoint=Vector2.new(1,0)
-    MinBtn.BackgroundTransparency=1; MinBtn.BorderSizePixel=0
-    MinBtn.Position=UDim2.new(0.993,0,0.01,0)
-    MinBtn.Size=UDim2.new(0.085,0,0.085,0); MinBtn.SizeConstraint=Enum.SizeConstraint.RelativeYY
-    MinBtn.ZIndex=50; MinBtn.Image="rbxassetid://10002398990"; MinBtn.ImageTransparency=0.5
-    MinBtn.ImageColor3=Theme.TextPrimary
-
-    local HomeIcon = Instance.new("ImageLabel")
-    HomeIcon.Parent=MinBtn; HomeIcon.AnchorPoint=Vector2.new(0.5,0.5)
-    HomeIcon.Position=UDim2.new(0.5,0,0.5,0); HomeIcon.Size=UDim2.new(0.7,0,0.7,0)
-    HomeIcon.BackgroundTransparency=1; HomeIcon.BorderSizePixel=0; HomeIcon.ZIndex=49
-    HomeIcon.Image="rbxassetid://7733993211"; HomeIcon.ScaleType=Enum.ScaleType.Fit
-    HomeIcon.ImageTransparency=1; HomeIcon.ImageColor3=Theme.Accent
-
-    -- ── INPUT FRAME (drag)
-    local InputFrame = Instance.new("Frame")
-    InputFrame.Name="InputFrame"; InputFrame.Parent=MainFrame
-    InputFrame.BackgroundTransparency=1; InputFrame.BorderSizePixel=0
-    InputFrame.Position=UDim2.new(0,0,0,0); InputFrame.Size=UDim2.new(1,0,0.12,0)
-    InputFrame.ZIndex=15
-
-    -- ── DROPDOWN (built once, reused)
-    task.spawn(function()
-        local Locked, Looped = nil, false
-
-        local DFrame = Instance.new("Frame")
-        DFrame.Name="DropdownFrame"; DFrame.Parent=ScreenGui
-        DFrame.BackgroundColor3=Theme.BG3; DFrame.BackgroundTransparency=0.15
-        DFrame.BorderSizePixel=0; DFrame.Position=UDim2.new(0,289,0,213)
-        DFrame.Size=UDim2.new(0,150,0,145); DFrame.ZIndex=100; DFrame.Visible=false
-        Corner(Theme.RadiusMedium, DFrame)
-        Shadow(DFrame,47,Theme.Shadow,0.5)
-        Stroke(DFrame,0.75, Theme.Border)
-
-        local DValueId = Instance.new("TextLabel")
-        DValueId.Name="ValueId"; DValueId.Parent=DFrame
-        DValueId.AnchorPoint=Vector2.new(0.5,0); DValueId.Position=UDim2.new(0.5,0,0,0)
-        DValueId.Size=UDim2.new(0.97,0,0.5,0); DValueId.ZIndex=101
-        DValueId.BackgroundTransparency=1; DValueId.BorderSizePixel=0
-        DValueId.Font=Enum.Font.GothamBold; DValueId.Text="NONE"
-        DValueId.TextColor3=Theme.TextMuted; DValueId.TextScaled=true; DValueId.TextWrapped=true
-        DValueId.TextXAlignment=Enum.TextXAlignment.Right; DValueId.TextTransparency=0.5
-        local DAR=Instance.new("UIAspectRatioConstraint"); DAR.Parent=DValueId; DAR.AspectRatio=15
-
-        local DSF = Instance.new("ScrollingFrame"); DSF.Parent=DFrame
-        DSF.Active=true; DSF.AnchorPoint=Vector2.new(0.5,0.5)
-        DSF.BackgroundTransparency=1; DSF.BorderSizePixel=0
-        DSF.Position=UDim2.new(0.5,0,0.56,0); DSF.Size=UDim2.new(0.95,0,0.89,0)
-        DSF.ZIndex=102; DSF.ScrollBarThickness=2; DSF.BottomImage=""; DSF.TopImage=""
-
-        local DSFLayout = Instance.new("UIListLayout"); DSFLayout.Parent=DSF
-        DSFLayout.HorizontalAlignment=Enum.HorizontalAlignment.Center
-        DSFLayout.SortOrder=Enum.SortOrder.LayoutOrder; DSFLayout.Padding=UDim.new(0,4)
-        DSFLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-            DSF.CanvasSize=UDim2.fromOffset(0,DSFLayout.AbsoluteContentSize.Y)
-        end)
-
-        -- separator line in dropdown
-        local DSep=Instance.new("Frame"); DSep.Parent=DFrame
-        DSep.AnchorPoint=Vector2.new(0,0.5); DSep.Position=UDim2.new(0,0,0.08,0)
-        DSep.Size=UDim2.new(1,0,0,1); DSep.BackgroundColor3=Theme.Border
-        DSep.BackgroundTransparency=0.7; DSep.BorderSizePixel=0; DSep.ZIndex=102
-        Corner(UDim.new(0.5,0),DSep)
-
-        -- Option builder
-        local function GetOption(title, isSelected)
-            local Sel=Instance.new("Frame"); Sel.Parent=DSF
-            Sel.BackgroundColor3=isSelected and Theme.Accent or Theme.BG3
-            Sel.BackgroundTransparency=isSelected and 0.7 or 0.85
-            Sel.BorderSizePixel=0; Sel.ClipsDescendants=true
-            Sel.Size=UDim2.new(0.97,0,0.5,0); Sel.ZIndex=103
-            Corner(Theme.RadiusSmall,Sel)
-            local AR=Instance.new("UIAspectRatioConstraint"); AR.Parent=Sel
-            AR.AspectRatio=6.25; AR.AspectType=Enum.AspectType.ScaleWithParentSize
-
-            local Lbl=Instance.new("TextLabel"); Lbl.Parent=Sel
-            Lbl.AnchorPoint=Vector2.new(0,0.5); Lbl.Position=UDim2.new(0.04,0,0.5,0)
-            Lbl.Size=UDim2.new(0.9,0,0.6,0); Lbl.ZIndex=104
-            Lbl.BackgroundTransparency=1; Lbl.BorderSizePixel=0
-            Lbl.Font=Enum.Font.GothamBold; Lbl.Text=title
-            Lbl.TextColor3=isSelected and Theme.Accent or Theme.TextPrimary
-            Lbl.TextScaled=true; Lbl.TextWrapped=true
-            Lbl.TextXAlignment=Enum.TextXAlignment.Left
-            Lbl.TextTransparency=isSelected and 0 or 0.2
-
-            local Btn=Instance.new("TextButton"); Btn.Parent=Sel
-            Btn.BackgroundTransparency=1; Btn.BorderSizePixel=0
-            Btn.Size=UDim2.new(1,0,1,0); Btn.ZIndex=105; Btn.Text=""
-            Stroke(Sel, 0.85, Theme.Border)
-
-            local function setActive(v)
-                T(Sel,Theme.Fast,{BackgroundColor3=v and Theme.Accent or Theme.BG3, BackgroundTransparency=v and 0.7 or 0.85})
-                T(Lbl,Theme.Fast,{TextColor3=v and Theme.Accent or Theme.TextPrimary, TextTransparency=v and 0 or 0.2})
-            end
-            setActive(isSelected)
-            return {effect=setActive, button=Btn, delete=function() Sel:Destroy() end}
-        end
-
-        local MouseInDD = false
-        function W.Dropdown:Setup(tf) Locked=tf end
-
-        function W.Dropdown:Open(args, default, callback)
-            Looped=true
-            DValueId.Text=tostring(default)
-            T(DFrame,Theme.Fast,{BackgroundTransparency=0.1})
-            T(DValueId,Theme.Fast,{TextTransparency=0.5})
-            for _,v in pairs(DSF:GetChildren()) do if v:IsA('Frame') then v:Destroy() end end
-            local list={}
-            for _,v in pairs(args) do
-                local opt=GetOption(tostring(v), v==default)
-                opt.button.MouseButton1Click:Connect(function()
-                    for _,s in ipairs(list) do s[2].effect(s[1]==v) end
-                    DValueId.Text=tostring(v); callback(v)
-                end)
-                table.insert(list,{v,opt})
-            end
-        end
-
-        function W.Dropdown:Close()
-            Looped=false
-            T(DFrame,Theme.Fast,{BackgroundTransparency=1})
-            T(DValueId,Theme.Fast,{TextTransparency=1})
-            for _,v in pairs(DSF:GetChildren()) do if v:IsA('Frame') then v:Destroy() end end
-        end
-
-        DFrame.MouseEnter:Connect(function() MouseInDD=true end)
-        DFrame.MouseLeave:Connect(function() MouseInDD=false end)
-        Input.InputBegan:Connect(function(io)
-            if io.UserInputType==Enum.UserInputType.MouseButton1 or io.UserInputType==Enum.UserInputType.Touch then
-                if not MouseInDD then W.Dropdown:Close() end
-            end
-        end)
-
-        RunService:BindToRenderStep('__CARBON_DD__',20,function()
-            W.Dropdown.Value=Looped
-            if Looped then
-                DFrame.Visible=true
-                if Locked then
-                    T(DFrame,TweenInfo.new(0.12),{
-                        Position=UDim2.fromOffset(Locked.AbsolutePosition.X+5, Locked.AbsolutePosition.Y+(DFrame.AbsoluteSize.Y/1.5)),
-                        Size=UDim2.fromOffset(Locked.AbsoluteSize.X,150)
-                    })
-                end
-            else
-                if Locked then
-                    DFrame.Size=DFrame.Size:Lerp(UDim2.fromOffset(Locked.AbsoluteSize.X,0),.2)
-                    DFrame.Position=DFrame.Position:Lerp(UDim2.fromOffset(Locked.AbsolutePosition.X,Locked.AbsolutePosition.Y+DFrame.AbsoluteSize.Y),.1)
-                else
-                    DFrame.Size=DFrame.Size:Lerp(UDim2.fromOffset(0,0),.1)
-                    DFrame.Position=DFrame.Position:Lerp(UDim2.fromOffset(0,0),.1)
-                end
-                if DFrame.Size.Y.Offset==0 then DFrame.Visible=false end
-            end
-        end)
-    end)
-
-    -- ── WINDOW TOGGLE / MINIMIZE LOGIC
-    local function UpdateWindow()
-        if W.WindowToggle then
-            T(MainFrame,Theme.Slow,{BackgroundTransparency=0.3,Size=config.Size})
-            T(MainFrame,TweenInfo.new(0.3,Enum.EasingStyle.Quint),{Position=UDim2.fromScale(0.5,0.5)})
-            T(MainShadow,Theme.Slow,{ImageTransparency=0.35})
-            T(Headers,Theme.Slow,{BackgroundTransparency=0.5,Position=UDim2.fromScale(0.01,0.015)})
-            T(Logo,Theme.Slow,{ImageTransparency=0})
-            T(Title,Theme.Slow,{Position=UDim2.fromScale(0.328,0.013)})
-            T(Desc,Theme.Slow,{Position=UDim2.fromScale(0.328,0.071)})
-            T(TabButtonFrame,Theme.Slow,{Position=UDim2.fromScale(0.16,0.215)})
-            T(MainTabFrame,Theme.Slow,{Position=UDim2.fromScale(0.658,0.131)})
-            T(MinBtn,Theme.Medium,{Position=UDim2.new(0.993,0,0.01,0),Size=UDim2.new(0.085,0,0.085,0),ImageTransparency=0.5,AnchorPoint=Vector2.new(1,0)})
-            T(HomeIcon,Theme.Fast,{ImageTransparency=1})
-            T(MainFrame,TweenInfo.new(0.5),{BackgroundColor3=Theme.BG})
-            Corner(Theme.RadiusLarge,MainFrame)
-            InputFrame.Size=UDim2.new(1,0,0.12,0)
-            W.ElBlurUI.Enabled=true
-        else
-            T(MainFrame,Theme.Slow,{BackgroundTransparency=1,Size=UDim2.new(0.07,10,0.045,0)})
-            T(MainFrame,TweenInfo.new(0.3,Enum.EasingStyle.Quint),{Position=W.LastPosition})
-            T(MainShadow,Theme.Slow,{ImageTransparency=1})
-            T(Headers,Theme.Slow,{BackgroundTransparency=1,Position=UDim2.fromScale(0.01,-0.2)})
-            T(Logo,Theme.Slow,{ImageTransparency=1})
-            T(TabButtonFrame,Theme.Slow,{Position=UDim2.fromScale(0.16,1.1)})
-            T(MainTabFrame,Theme.Slow,{Position=UDim2.fromScale(1.5,0.131)})
-            T(Desc,Theme.Slow,{Position=UDim2.fromScale(1.5,0.071)})
-            T(Title,Theme.Slow,{Position=UDim2.fromScale(1,0.071)})
-            T(MinBtn,Theme.Medium,{Position=UDim2.new(0.5,0,0.5,0),Size=UDim2.new(1,0,1,0),ImageTransparency=1,AnchorPoint=Vector2.new(0.5,0.5)})
-            T(HomeIcon,Theme.Medium,{ImageTransparency=0.3})
-            local uc=Instance.new("UICorner"); uc.CornerRadius=UDim.new(0.15,0); uc.Parent=MainFrame
-            InputFrame.Size=UDim2.new(1,0,1,0)
-            W.ElBlurUI.Enabled=false
-        end
-        W.Dropdown:Close()
-        if W.ToggleButton then W.ToggleButton() end
-        task.delay(0.5, W.ElBlurUI.Update)
+    W.SaveConfig  = function(name)
+        local d = {}
+        for _, el in ipairs(W:_allElements()) do if el.Name then d[el.Name] = el.Get() end end
+        writefile(W.ConfigFolder .. "/" .. name .. ".json", HttpService:JSONEncode(d))
     end
-
-    MinBtn.MouseButton1Click:Connect(function() W.WindowToggle=not W.WindowToggle; UpdateWindow() end)
-    Input.InputBegan:Connect(function(io)
-        if io.KeyCode==W.Keybind then W.WindowToggle=not W.WindowToggle; UpdateWindow() end
-    end)
-    UpdateWindow()   -- initial state
-
-    -- ── CONFIG HELPERS
-    function W:GetAllElements()
-        local all={}
-        for _,tab in ipairs(self.Tabs) do
-            for _,sec in ipairs(tab.Sections or {}) do
-                for _,el in ipairs(sec.Elements or {}) do table.insert(all,el) end
+    W.LoadConfig  = function(name)
+        local path = W.ConfigFolder .. "/" .. name .. ".json"
+        if isfile(path) then
+            local d = HttpService:JSONDecode(readfile(path))
+            for _, el in ipairs(W:_allElements()) do if el.Name and d[el.Name] ~= nil then el.Set(d[el.Name]) end end
+        end
+    end
+    function W:_allElements()
+        local all = {}
+        for _, tab in ipairs(self.Tabs) do
+            for _, sec in ipairs(tab.Sections or {}) do
+                for _, el in ipairs(sec.Elements or {}) do table.insert(all, el) end
             end
         end
         return all
     end
-    function W:GetConfig() local c={} for _,e in ipairs(self:GetAllElements()) do if e.Name then c[e.Name]=e.Get() end end return c end
-    function W:SetConfig(c) for _,e in ipairs(self:GetAllElements()) do if e.Name and c[e.Name]~=nil then e.Set(c[e.Name]) end end end
 
-    -- ── DRAG
-    local dragToggle,dragStart,startPos
-    InputFrame.InputBegan:Connect(function(io)
-        if io.UserInputType==Enum.UserInputType.MouseButton1 or io.UserInputType==Enum.UserInputType.Touch then
-            dragToggle=true; dragStart=io.Position; startPos=MainFrame.Position
-            io.Changed:Connect(function()
-                if io.UserInputState==Enum.UserInputState.End then dragToggle=false end
-            end)
-        end
+    -- ── screen gui
+    local SGui = Instance.new("ScreenGui")
+    SGui.Parent         = CoreGui; SGui.Name = "CarbonUI"
+    SGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    SGui.ResetOnSpawn   = false; SGui.IgnoreGuiInset = true
+
+    -- ── main frame
+    local MF = Instance.new("Frame"); MF.Name = "MainFrame"; MF.Parent = SGui
+    MF.AnchorPoint        = Vector2.new(0.5, 0.5)
+    MF.Position           = UDim2.new(0.5, 0, 0.5, 0)
+    MF.Size               = UDim2.fromOffset(opts.Size.X.Offset, opts.Size.Y.Offset)
+    MF.BackgroundColor3   = T.B0
+    MF.BackgroundTransparency = 1
+    MF.BorderSizePixel    = 0; MF.Active = true; MF.ClipsDescendants = true
+    corner(T.RLg, MF)
+    local MF_stroke = stroke(MF, 0.65, T.Border)
+    local MF_shadow = shadow(MF, 55, 1)
+    tw(MF, T.Slow, {BackgroundTransparency = 0.25, Size = opts.Size})
+    tw(MF_shadow, T.Slow, {ImageTransparency = 0.35})
+
+    local glowTag = spawnGlow(MF, T.A)
+    W.BlurFX = BlurSystem(MF)
+
+    -- ── left header panel (logo area)
+    local Header = Instance.new("Frame"); Header.Parent = MF
+    Header.Position           = UDim2.new(0.01, 0, 0.015, 0)
+    Header.Size               = UDim2.new(0.3, 0, 0.178, 0)
+    Header.BackgroundColor3   = T.B1
+    Header.BackgroundTransparency = 1
+    Header.BorderSizePixel    = 0; Header.ClipsDescendants = true; Header.ZIndex = 3
+    corner(T.RMd, Header)
+    tw(Header, T.Slow, {BackgroundTransparency = 0.55})
+
+    local LogoImg = Instance.new("ImageLabel"); LogoImg.Parent = Header
+    LogoImg.AnchorPoint = Vector2.new(0.5, 0.5); LogoImg.Position = UDim2.new(0.5, 0, 0.5, 0)
+    LogoImg.Size = UDim2.new(0.95, 0, 0.95, 0); LogoImg.ZIndex = 4
+    LogoImg.BackgroundTransparency = 1; LogoImg.BorderSizePixel = 0
+    LogoImg.Image = opts.Logo; LogoImg.ScaleType = Enum.ScaleType.Crop
+    LogoImg.ImageTransparency = 1
+    corner(UDim.new(0, 4), LogoImg)
+    tw(LogoImg, T.Slow, {ImageTransparency = 0})
+
+    -- ── title / description
+    local TitleLbl = Instance.new("TextLabel"); TitleLbl.Parent = MF
+    TitleLbl.Position = UDim2.new(0.328, 0, 0.013, 0); TitleLbl.Size = UDim2.new(0.67, 0, 0.052, 0)
+    TitleLbl.BackgroundTransparency = 1; TitleLbl.BorderSizePixel = 0
+    TitleLbl.Font = Enum.Font.GothamBold; TitleLbl.Text = opts.Title
+    TitleLbl.TextColor3 = T.T1; TitleLbl.TextScaled = true; TitleLbl.TextWrapped = true
+    TitleLbl.TextXAlignment = Enum.TextXAlignment.Left; TitleLbl.TextTransparency = 1
+    tw(TitleLbl, T.Slow, {TextTransparency = 0})
+
+    local DescLbl = Instance.new("TextLabel"); DescLbl.Parent = MF
+    DescLbl.Position = UDim2.new(0.328, 0, 0.071, 0); DescLbl.Size = UDim2.new(0.67, 0, 0.029, 0)
+    DescLbl.BackgroundTransparency = 1; DescLbl.BorderSizePixel = 0
+    DescLbl.Font = Enum.Font.GothamBold; DescLbl.Text = opts.Description
+    DescLbl.TextColor3 = T.T2; DescLbl.TextScaled = true; DescLbl.TextWrapped = true
+    DescLbl.TextXAlignment = Enum.TextXAlignment.Left; DescLbl.TextTransparency = 1
+    tw(DescLbl, T.Slow, {TextTransparency = 0.2})
+
+    -- ── dividers
+    local function divider(pos, size)
+        local f = Instance.new("Frame"); f.Parent = MF
+        f.AnchorPoint = Vector2.new(0, 0.5); f.Position = pos; f.Size = size
+        f.BackgroundColor3 = T.Border; f.BackgroundTransparency = 0.5; f.BorderSizePixel = 0; f.ZIndex = 3
+        corner(UDim.new(0.5, 0), f)
+        local g = Instance.new("UIGradient"); g.Parent = f
+        g.Transparency = NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.06, 0),
+            NumberSequenceKeypoint.new(0.94, 0), NumberSequenceKeypoint.new(1, 1)}
+        tw(f, T.Slow, {BackgroundTransparency = 0.55})
+    end
+    divider(UDim2.new(0.317, 0, 0.5, 0),    UDim2.new(0, 1, 1, 0))
+    divider(UDim2.new(0.317, 0, 0.12, 0),   UDim2.new(0.683, 0, 0, 1))
+    divider(UDim2.new(-0.001, 0, 0.205, 0), UDim2.new(0.319, 0, 0, 1))
+
+    -- ── tab button pane
+    local TabPane = Instance.new("Frame"); TabPane.Parent = MF
+    TabPane.Name = "TabPane"; TabPane.AnchorPoint = Vector2.new(0.5, 0)
+    TabPane.Position = UDim2.new(0.16, 0, 0.215, 0); TabPane.Size = UDim2.new(0.3, 0, 0.775, 0)
+    TabPane.BackgroundColor3 = T.B1; TabPane.BackgroundTransparency = 1
+    TabPane.BorderSizePixel  = 0; TabPane.ClipsDescendants = true
+    corner(T.RSm, TabPane)
+    tw(TabPane, T.Slow, {BackgroundTransparency = 0.62})
+
+    local TabSF = Instance.new("ScrollingFrame"); TabSF.Parent = TabPane
+    TabSF.AnchorPoint = Vector2.new(0.5, 0.5); TabSF.Position = UDim2.new(0.5, 0, 0.5, 0)
+    TabSF.Size = UDim2.new(0.97, 0, 0.97, 0)
+    TabSF.BackgroundTransparency = 1; TabSF.BorderSizePixel = 0
+    TabSF.ScrollBarThickness = 0; TabSF.ClipsDescendants = false; TabSF.Active = true
+
+    local TabLayout = Instance.new("UIListLayout"); TabLayout.Parent = TabSF
+    TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder; TabLayout.Padding = UDim.new(0, 4)
+    TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabSF.CanvasSize = UDim2.fromOffset(0, TabLayout.AbsoluteContentSize.Y)
     end)
-    Input.InputChanged:Connect(function(io)
-        if (io.UserInputType==Enum.UserInputType.MouseMovement or io.UserInputType==Enum.UserInputType.Touch) and dragToggle then
-            local d=io.Position-dragStart
-            local pos=UDim2.new(startPos.X.Scale,startPos.X.Offset+d.X,startPos.Y.Scale,startPos.Y.Offset+d.Y)
-            T(MainFrame,TweenInfo.new(0.1),{Position=pos})
-            if not W.WindowToggle then W.LastPosition=pos end
-            W.ElBlurUI.Update()
+
+    -- ── content frame
+    local ContentFrame = Instance.new("Frame"); ContentFrame.Parent = MF
+    ContentFrame.Name = "ContentFrame"; ContentFrame.AnchorPoint = Vector2.new(0.5, 0)
+    ContentFrame.Position = UDim2.new(0.658, 0, 0.131, 0); ContentFrame.Size = UDim2.new(0.67, 0, 0.86, 0)
+    ContentFrame.BackgroundColor3 = T.B1; ContentFrame.BackgroundTransparency = 1
+    ContentFrame.BorderSizePixel  = 0; ContentFrame.ClipsDescendants = true
+    corner(T.RSm, ContentFrame)
+    tw(ContentFrame, T.Slow, {BackgroundTransparency = 0.62})
+
+    -- ── minimize button
+    local MinBtn = Instance.new("ImageButton"); MinBtn.Parent = MF
+    MinBtn.AnchorPoint = Vector2.new(1, 0); MinBtn.Position = UDim2.new(0.993, 0, 0.01, 0)
+    MinBtn.Size = UDim2.new(0.085, 0, 0.085, 0); MinBtn.SizeConstraint = Enum.SizeConstraint.RelativeYY
+    MinBtn.BackgroundTransparency = 1; MinBtn.BorderSizePixel = 0
+    MinBtn.ZIndex = 50; MinBtn.Image = "rbxassetid://10002398990"
+    MinBtn.ImageTransparency = 0.45; MinBtn.ImageColor3 = T.T2
+
+    local HomeIcon = Instance.new("ImageLabel"); HomeIcon.Parent = MinBtn
+    HomeIcon.AnchorPoint = Vector2.new(0.5, 0.5); HomeIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
+    HomeIcon.Size = UDim2.new(0.7, 0, 0.7, 0); HomeIcon.BackgroundTransparency = 1; HomeIcon.BorderSizePixel = 0
+    HomeIcon.ZIndex = 49; HomeIcon.Image = "rbxassetid://7733993211"
+    HomeIcon.ScaleType = Enum.ScaleType.Fit; HomeIcon.ImageTransparency = 1; HomeIcon.ImageColor3 = T.A
+
+    -- ── drag frame
+    local DragFrame = Instance.new("Frame"); DragFrame.Parent = MF
+    DragFrame.BackgroundTransparency = 1; DragFrame.BorderSizePixel = 0
+    DragFrame.Position = UDim2.new(0, 0, 0, 0); DragFrame.Size = UDim2.new(1, 0, 0.12, 0); DragFrame.ZIndex = 15
+
+    -- ── show/hide
+    local function UpdateWindow()
+        if W.WindowToggle then
+            tw(MF,        T.Slow, {BackgroundTransparency = 0.25, Size = opts.Size})
+            tw(MF,        TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Position = UDim2.fromScale(0.5, 0.5)})
+            tw(MF_shadow, T.Slow, {ImageTransparency = 0.35})
+            tw(Header,    T.Slow, {BackgroundTransparency = 0.55, Position = UDim2.fromScale(0.01, 0.015)})
+            tw(LogoImg,   T.Slow, {ImageTransparency = 0})
+            tw(TitleLbl,  T.Slow, {Position = UDim2.fromScale(0.328, 0.013)})
+            tw(DescLbl,   T.Slow, {Position = UDim2.fromScale(0.328, 0.071)})
+            tw(TabPane,   T.Slow, {Position = UDim2.fromScale(0.16, 0.215)})
+            tw(ContentFrame, T.Slow, {Position = UDim2.fromScale(0.658, 0.131)})
+            tw(MinBtn,    T.Normal, {Position = UDim2.new(0.993, 0, 0.01, 0), Size = UDim2.new(0.085, 0, 0.085, 0), ImageTransparency = 0.45, AnchorPoint = Vector2.new(1, 0)})
+            tw(HomeIcon,  T.Fast,   {ImageTransparency = 1})
+            DragFrame.Size = UDim2.new(1, 0, 0.12, 0)
+            W.BlurFX.Enabled = true
+        else
+            tw(MF,        T.Slow, {BackgroundTransparency = 1, Size = UDim2.new(0.065, 10, 0.04, 0)})
+            tw(MF,        TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Position = W.LastPosition})
+            tw(MF_shadow, T.Slow, {ImageTransparency = 1})
+            tw(Header,    T.Slow, {BackgroundTransparency = 1, Position = UDim2.fromScale(0.01, -0.3)})
+            tw(LogoImg,   T.Slow, {ImageTransparency = 1})
+            tw(TitleLbl,  T.Slow, {Position = UDim2.fromScale(1.2, 0.013)})
+            tw(DescLbl,   T.Slow, {Position = UDim2.fromScale(1.2, 0.071)})
+            tw(TabPane,   T.Slow, {Position = UDim2.fromScale(0.16, 1.2)})
+            tw(ContentFrame, T.Slow, {Position = UDim2.fromScale(1.8, 0.131)})
+            tw(MinBtn,    T.Normal, {Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(1, 0, 1, 0), ImageTransparency = 1, AnchorPoint = Vector2.new(0.5, 0.5)})
+            tw(HomeIcon,  T.Normal, {ImageTransparency = 0.25})
+            DragFrame.Size = UDim2.new(1, 0, 1, 0)
+            W.BlurFX.Enabled = false
         end
-    end)
-
-    W.SetKeybind = function(k) W.Keybind=k end
-
-    -- ══════════════════════════════════════════
-    --  ELEMENT FACTORY  (shared between Section & CollapsibleSection)
-    -- ══════════════════════════════════════════
-    local function BuildElements(container, parentTable)
-
-        -- ── TOGGLE  (revamped: visible pill track, accent color on)
-        function parentTable:NewToggle(cfg)
-            cfg=Config(cfg,{Title="Toggle",Name=cfg.Title,Default=false,Callback=function()end})
-
-            local Root=Instance.new("Frame"); Root.Name="FunctionToggle"; Root.Parent=container
-            Root.BackgroundColor3=Theme.BG3; Root.BackgroundTransparency=1
-            Root.BorderSizePixel=0; Root.Size=UDim2.new(0.95,0,0.5,0); Root.ZIndex=17
-            Corner(Theme.RadiusSmall,Root)
-            Stroke(Root,0.8,Theme.Border)
-            local RAR=Instance.new("UIAspectRatioConstraint"); RAR.Parent=Root; RAR.AspectRatio=8; RAR.AspectType=Enum.AspectType.ScaleWithParentSize
-            T(Root,Theme.Slow,{BackgroundTransparency=0.75})
-
-            local Lbl=Instance.new("TextLabel"); Lbl.Parent=Root
-            Lbl.AnchorPoint=Vector2.new(0,0.5); Lbl.Position=UDim2.new(0.04,0,0.5,0)
-            Lbl.Size=UDim2.new(0.7,0,0.5,0); Lbl.ZIndex=18
-            Lbl.BackgroundTransparency=1; Lbl.BorderSizePixel=0
-            Lbl.Font=Enum.Font.GothamBold; Lbl.Text=cfg.Title
-            Lbl.TextColor3=Theme.TextMuted; Lbl.TextScaled=true; Lbl.TextWrapped=true
-            Lbl.TextXAlignment=Enum.TextXAlignment.Left; Lbl.TextTransparency=0.2
-
-            local Btn=Instance.new("TextButton"); Btn.Parent=Root
-            Btn.BackgroundTransparency=1; Btn.BorderSizePixel=0
-            Btn.Size=UDim2.new(1,0,1,0); Btn.ZIndex=25; Btn.Text=""; Btn.TextTransparency=1
-
-            -- Pill track
-            local Track=Instance.new("Frame"); Track.Parent=Root
-            Track.AnchorPoint=Vector2.new(1,0.5); Track.Position=UDim2.new(0.97,0,0.5,0)
-            Track.Size=UDim2.new(0.155,0,0.52,0); Track.ZIndex=18
-            Track.BackgroundColor3=Theme.BG; Track.BackgroundTransparency=0.5
-            Track.BorderSizePixel=0
-            Corner(UDim.new(0.5,0),Track)
-            Stroke(Track,0.6,Theme.Border)
-
-            -- Pill knob
-            local Knob=Instance.new("Frame"); Knob.Parent=Track
-            Knob.AnchorPoint=Vector2.new(0.5,0.5); Knob.Position=UDim2.new(0.25,0,0.5,0)
-            Knob.Size=UDim2.new(0.9,0,0.9,0); Knob.SizeConstraint=Enum.SizeConstraint.RelativeYY
-            Knob.ZIndex=19; Knob.BackgroundColor3=Theme.TextMuted; Knob.BackgroundTransparency=0.1
-            Knob.BorderSizePixel=0
-            Corner(UDim.new(1,0),Knob)
-
-            local function OnChange(v)
-                if v then
-                    T(Track,Theme.Fast,{BackgroundColor3=Theme.Accent,BackgroundTransparency=0.65})
-                    T(Knob,Theme.Fast,{Position=UDim2.new(0.75,0,0.5,0),BackgroundColor3=Theme.Accent,BackgroundTransparency=0})
-                    T(Lbl,Theme.Fast,{TextColor3=Theme.TextPrimary,TextTransparency=0})
-                else
-                    T(Track,Theme.Fast,{BackgroundColor3=Theme.BG,BackgroundTransparency=0.5})
-                    T(Knob,Theme.Fast,{Position=UDim2.new(0.25,0,0.5,0),BackgroundColor3=Theme.TextMuted,BackgroundTransparency=0.1})
-                    T(Lbl,Theme.Fast,{TextColor3=Theme.TextMuted,TextTransparency=0.2})
-                end
-                task.spawn(cfg.Callback,v)
-            end
-            OnChange(cfg.Default)
-            Btn.MouseButton1Click:Connect(function() cfg.Default=not cfg.Default; OnChange(cfg.Default) end)
-
-            local el={Name=cfg.Name,Get=function()return cfg.Default end,Set=function(v)cfg.Default=v;OnChange(v)end,Visible=function(b)Root.Visible=b end}
-            table.insert(parentTable.Elements,el); return el
-        end
-
-        -- ── BUTTON
-        function parentTable:NewButton(cfg)
-            cfg=Config(cfg,{Title="Button",Callback=function()end})
-
-            local Root=Instance.new("Frame"); Root.Name="FunctionButton"; Root.Parent=container
-            Root.BackgroundColor3=Theme.BG3; Root.BackgroundTransparency=1
-            Root.BorderSizePixel=0; Root.Size=UDim2.new(0.95,0.5,0); Root.ZIndex=17
-            Corner(Theme.RadiusSmall,Root)
-            local SH=Shadow(Root,20,Theme.Shadow,0.5)
-            Stroke(Root,0.75,Theme.Border)
-            local RAR=Instance.new("UIAspectRatioConstraint"); RAR.Parent=Root; RAR.AspectRatio=7.65; RAR.AspectType=Enum.AspectType.ScaleWithParentSize
-            T(Root,Theme.Slow,{BackgroundTransparency=0.7})
-
-            local Lbl=Instance.new("TextLabel"); Lbl.Parent=Root
-            Lbl.AnchorPoint=Vector2.new(0.5,0.5); Lbl.Position=UDim2.new(0.5,0,0.5,0)
-            Lbl.Size=UDim2.new(0.9,0,0.55,0); Lbl.ZIndex=18
-            Lbl.BackgroundTransparency=1; Lbl.BorderSizePixel=0
-            Lbl.Font=Enum.Font.GothamBold; Lbl.Text=cfg.Title
-            Lbl.TextColor3=Theme.TextPrimary; Lbl.TextScaled=true; Lbl.TextWrapped=true
-            Lbl.TextTransparency=0.15
-
-            local Btn=Instance.new("TextButton"); Btn.Parent=Root
-            Btn.BackgroundTransparency=1; Btn.BorderSizePixel=0
-            Btn.Size=UDim2.new(1,0,1,0); Btn.ZIndex=25; Btn.Text=""; Btn.TextTransparency=1
-
-            Btn.MouseEnter:Connect(function()
-                T(Root,Theme.Fast,{BackgroundColor3=Theme.Accent,BackgroundTransparency=0.82})
-                T(Lbl,Theme.Fast,{TextTransparency=0,TextColor3=Theme.Accent})
-                T(SH,Theme.Fast,{ImageTransparency=0.3,ImageColor3=Theme.Accent})
-            end)
-            Btn.MouseLeave:Connect(function()
-                T(Root,Theme.Fast,{BackgroundColor3=Theme.BG3,BackgroundTransparency=0.7})
-                T(Lbl,Theme.Fast,{TextTransparency=0.15,TextColor3=Theme.TextPrimary})
-                T(SH,Theme.Fast,{ImageTransparency=0.5,ImageColor3=Theme.Shadow})
-            end)
-            Btn.MouseButton1Click:Connect(function() task.spawn(cfg.Callback) end)
-
-            return {Visible=function(b)Root.Visible=b end, Fire=cfg.Callback}
-        end
-
-        -- ── SLIDER  (revamped: accent fill, cleaner track)
-        function parentTable:NewSlider(cfg)
-            cfg=Config(cfg,{Title="Slider",Name=cfg.Title,Min=0,Max=100,Default=50,Callback=function()end})
-
-            local Root=Instance.new("Frame"); Root.Name="FunctionSlider"; Root.Parent=container
-            Root.BackgroundColor3=Theme.BG3; Root.BackgroundTransparency=0.7
-            Root.BorderSizePixel=0; Root.Size=UDim2.new(0.95,0,0.5,0); Root.ZIndex=17
-            Corner(Theme.RadiusSmall,Root)
-            Stroke(Root,0.8,Theme.Border)
-            local SAR=Instance.new("UIAspectRatioConstraint"); SAR.Parent=Root; SAR.AspectRatio=6; SAR.AspectType=Enum.AspectType.ScaleWithParentSize
-
-            local TitleLbl=Instance.new("TextLabel"); TitleLbl.Parent=Root
-            TitleLbl.AnchorPoint=Vector2.new(0,0.5); TitleLbl.Position=UDim2.new(0.04,0,0.28,0)
-            TitleLbl.Size=UDim2.new(0.6,0,0.38,0); TitleLbl.ZIndex=18
-            TitleLbl.BackgroundTransparency=1; TitleLbl.BorderSizePixel=0
-            TitleLbl.Font=Enum.Font.GothamBold; TitleLbl.Text=cfg.Title
-            TitleLbl.TextColor3=Theme.TextPrimary; TitleLbl.TextScaled=true; TitleLbl.TextWrapped=true
-            TitleLbl.TextXAlignment=Enum.TextXAlignment.Left; TitleLbl.TextTransparency=0.1
-
-            local ValLbl=Instance.new("TextLabel"); ValLbl.Parent=Root
-            ValLbl.AnchorPoint=Vector2.new(1,0.5); ValLbl.Position=UDim2.new(0.97,0,0.28,0)
-            ValLbl.Size=UDim2.new(0.35,0,0.35,0); ValLbl.ZIndex=18
-            ValLbl.BackgroundTransparency=1; ValLbl.BorderSizePixel=0
-            ValLbl.Font=Enum.Font.GothamBold; ValLbl.Text=tostring(cfg.Default).."/"..tostring(cfg.Max)
-            ValLbl.TextColor3=Theme.Accent; ValLbl.TextScaled=true; ValLbl.TextWrapped=true
-            ValLbl.TextXAlignment=Enum.TextXAlignment.Right; ValLbl.TextTransparency=0.1
-
-            -- Track
-            local Track=Instance.new("Frame"); Track.Parent=Root
-            Track.AnchorPoint=Vector2.new(0.5,0.5); Track.Position=UDim2.new(0.5,0,0.75,0)
-            Track.Size=UDim2.new(0.92,0,0.28,0); Track.ZIndex=18
-            Track.BackgroundColor3=Theme.BG; Track.BackgroundTransparency=0.4
-            Track.BorderSizePixel=0; Track.ClipsDescendants=true
-            Corner(UDim.new(0,2),Track)
-
-            -- Fill
-            local Fill=Instance.new("Frame"); Fill.Parent=Track
-            Fill.BackgroundColor3=Theme.Accent; Fill.BackgroundTransparency=0.3
-            Fill.BorderSizePixel=0; Fill.Size=UDim2.new(cfg.Default/cfg.Max,0,1,0)
-            Corner(UDim.new(0,2),Fill)
-
-            -- Knob dot at right edge of fill
-            local Knob=Instance.new("Frame"); Knob.Parent=Track
-            Knob.AnchorPoint=Vector2.new(0.5,0.5); Knob.Size=UDim2.new(0,8,0.8,0)
-            Knob.ZIndex=19; Knob.BackgroundColor3=Theme.Accent; Knob.BackgroundTransparency=0
-            Knob.BorderSizePixel=0; Knob.Position=UDim2.new(cfg.Default/cfg.Max,0,0.5,0)
-            Corner(UDim.new(1,0),Knob)
-
-            local Holding=false
-            local function update(inp)
-                local sc=math.clamp((inp.Position.X-Track.AbsolutePosition.X)/Track.AbsoluteSize.X,0,1)
-                local val=math.round(((cfg.Max-cfg.Min)*sc)+cfg.Min)
-                ValLbl.Text=tostring(val).."/"..tostring(cfg.Max)
-                T(Fill,TweenInfo.new(0.07),{Size=UDim2.fromScale(sc,1)})
-                T(Knob,TweenInfo.new(0.07),{Position=UDim2.new(sc,0,0.5,0)})
-                cfg.Callback(val)
-            end
-            Track.InputBegan:Connect(function(inp)
-                if inp.UserInputType==Enum.UserInputType.MouseButton1 or inp.UserInputType==Enum.UserInputType.Touch then
-                    Holding=true; update(inp)
-                    T(TitleLbl,Theme.Fast,{TextTransparency=0})
-                end
-            end)
-            Track.InputEnded:Connect(function(inp)
-                if inp.UserInputType==Enum.UserInputType.MouseButton1 or inp.UserInputType==Enum.UserInputType.Touch then
-                    Holding=false
-                    T(TitleLbl,Theme.Fast,{TextTransparency=0.1})
-                end
-            end)
-            Input.InputChanged:Connect(function(inp)
-                if Holding and (inp.UserInputType==Enum.UserInputType.MouseMovement or inp.UserInputType==Enum.UserInputType.Touch) then
-                    update(inp)
-                end
-            end)
-
-            local el={
-                Name=cfg.Name,
-                Get=function()return math.round(Fill.Size.X.Scale*(cfg.Max-cfg.Min)+cfg.Min)end,
-                Set=function(v)
-                    local sc=(v-cfg.Min)/(cfg.Max-cfg.Min)
-                    Fill.Size=UDim2.new(sc,0,1,0); Knob.Position=UDim2.new(sc,0,0.5,0)
-                    ValLbl.Text=tostring(v).."/"..tostring(cfg.Max); cfg.Callback(v)
-                end,
-                Visible=function(b)Root.Visible=b end
-            }
-            table.insert(parentTable.Elements,el); return el
-        end
-
-        -- ── DROPDOWN
-        function parentTable:NewDropdown(cfg)
-            cfg=Config(cfg,{Title="Dropdown",Name=cfg.Title,Data={'One','Two','Three'},Default='One',Callback=function()end})
-
-            local Root=Instance.new("Frame"); Root.Name="FunctionDropdown"; Root.Parent=container
-            Root.BackgroundColor3=Theme.BG3; Root.BackgroundTransparency=0.7
-            Root.BorderSizePixel=0; Root.Size=UDim2.new(0.95,0,0.5,0); Root.ZIndex=17
-            Corner(Theme.RadiusSmall,Root)
-            Stroke(Root,0.8,Theme.Border)
-            local DAR=Instance.new("UIAspectRatioConstraint"); DAR.Parent=Root; DAR.AspectRatio=5; DAR.AspectType=Enum.AspectType.ScaleWithParentSize
-
-            local TitleLbl=Instance.new("TextLabel"); TitleLbl.Parent=Root
-            TitleLbl.AnchorPoint=Vector2.new(0,0.5); TitleLbl.Position=UDim2.new(0.04,0,0.22,0)
-            TitleLbl.Size=UDim2.new(0.85,0,0.32,0); TitleLbl.ZIndex=18
-            TitleLbl.BackgroundTransparency=1; TitleLbl.BorderSizePixel=0
-            TitleLbl.Font=Enum.Font.GothamBold; TitleLbl.Text=cfg.Title
-            TitleLbl.TextColor3=Theme.TextPrimary; TitleLbl.TextScaled=true; TitleLbl.TextWrapped=true
-            TitleLbl.TextXAlignment=Enum.TextXAlignment.Left; TitleLbl.TextTransparency=0.1
-
-            -- Value row
-            local VRow=Instance.new("Frame"); VRow.Parent=Root
-            VRow.AnchorPoint=Vector2.new(0.5,0.5); VRow.Position=UDim2.new(0.5,0,0.7,0)
-            VRow.Size=UDim2.new(0.92,0,0.36,0); VRow.ZIndex=18
-            VRow.BackgroundColor3=Theme.BG; VRow.BackgroundTransparency=0.5
-            VRow.BorderSizePixel=0; VRow.ClipsDescendants=true
-            Corner(UDim.new(0,2),VRow)
-
-            local ValLbl=Instance.new("TextLabel"); ValLbl.Parent=VRow
-            ValLbl.AnchorPoint=Vector2.new(0,0.5); ValLbl.Position=UDim2.new(0.04,0,0.5,0)
-            ValLbl.Size=UDim2.new(0.8,0,0.75,0); ValLbl.ZIndex=19
-            ValLbl.BackgroundTransparency=1; ValLbl.BorderSizePixel=0
-            ValLbl.Font=Enum.Font.GothamBold; ValLbl.Text=cfg.Default or "NONE"
-            ValLbl.TextColor3=Theme.Accent; ValLbl.TextScaled=true; ValLbl.TextWrapped=true
-            ValLbl.TextXAlignment=Enum.TextXAlignment.Left; ValLbl.TextTransparency=0.1
-
-            -- Chevron icon
-            MakeIconIn(VRow,"chevron-down",UDim2.new(0.93,0,0.5,0),UDim2.new(0.5,0,0.5,0),19)
-
-            local Btn=Instance.new("TextButton"); Btn.Parent=Root
-            Btn.BackgroundTransparency=1; Btn.BorderSizePixel=0
-            Btn.Size=UDim2.new(1,0,1,0); Btn.ZIndex=25; Btn.Text=""; Btn.TextTransparency=1
-
-            VRow.MouseEnter:Connect(function() T(ValLbl,Theme.Fast,{TextTransparency=0}) end)
-            VRow.MouseLeave:Connect(function() T(ValLbl,Theme.Fast,{TextTransparency=0.1}) end)
-
-            local function Updater(v) cfg.Default=v; ValLbl.Text=tostring(v); cfg.Callback(v) end
-            Btn.MouseButton1Click:Connect(function() W.Dropdown:Setup(VRow); W.Dropdown:Open(cfg.Data,cfg.Default,Updater) end)
-
-            local el={
-                Name=cfg.Name, Get=function()return cfg.Default end,
-                Set=function(v)Updater(v)end,
-                Visible=function(b)Root.Visible=b end,
-                Refresh=function(d) if d then cfg.Data=d end W.Dropdown:Close(); W.Dropdown:Open(cfg.Data,cfg.Default,Updater) end,
-                Open=function() W.Dropdown:Setup(VRow); W.Dropdown:Open(cfg.Data,cfg.Default,Updater) end,
-                Close=function() W.Dropdown:Close() end,
-                Clear=function() cfg.Data={} end,
-                SetOptions=function(t) cfg.Data=t end,
-            }
-            table.insert(parentTable.Elements,el); return el
-        end
-
-        -- ── TEXTBOX
-        function parentTable:NewTextbox(cfg)
-            cfg=Config(cfg,{Title="Textbox",Name=cfg.Title,Default='',FileType="",Callback=function()end})
-
-            local Root=Instance.new("Frame"); Root.Name="FunctionTextbox"; Root.Parent=container
-            Root.BackgroundColor3=Theme.BG3; Root.BackgroundTransparency=0.7
-            Root.BorderSizePixel=0; Root.Size=UDim2.new(0.95,0,0.5,0); Root.ZIndex=17
-            Corner(Theme.RadiusSmall,Root)
-            Stroke(Root,0.8,Theme.Border)
-            local TAR=Instance.new("UIAspectRatioConstraint"); TAR.Parent=Root; TAR.AspectRatio=5; TAR.AspectType=Enum.AspectType.ScaleWithParentSize
-
-            local TitleLbl=Instance.new("TextLabel"); TitleLbl.Parent=Root
-            TitleLbl.AnchorPoint=Vector2.new(0,0.5); TitleLbl.Position=UDim2.new(0.04,0,0.22,0)
-            TitleLbl.Size=UDim2.new(0.85,0,0.32,0); TitleLbl.ZIndex=18
-            TitleLbl.BackgroundTransparency=1; TitleLbl.BorderSizePixel=0
-            TitleLbl.Font=Enum.Font.GothamBold; TitleLbl.Text=cfg.Title
-            TitleLbl.TextColor3=Theme.TextPrimary; TitleLbl.TextScaled=true; TitleLbl.TextWrapped=true
-            TitleLbl.TextXAlignment=Enum.TextXAlignment.Left; TitleLbl.TextTransparency=0.1
-
-            local InputRow=Instance.new("Frame"); InputRow.Parent=Root
-            InputRow.AnchorPoint=Vector2.new(0.5,0.5); InputRow.Position=UDim2.new(0.5,0,0.7,0)
-            InputRow.Size=UDim2.new(0.92,0,0.36,0); InputRow.ZIndex=18
-            InputRow.BackgroundColor3=Theme.BG; InputRow.BackgroundTransparency=0.5
-            InputRow.BorderSizePixel=0; InputRow.ClipsDescendants=true
-            Corner(UDim.new(0,2),InputRow)
-
-            if cfg.FileType~="" then
-                local FT=Instance.new("TextLabel"); FT.Parent=InputRow
-                FT.AnchorPoint=Vector2.new(1,0.5); FT.Position=UDim2.new(0.98,0,0.5,0)
-                FT.Size=UDim2.new(0.25,0,0.75,0); FT.ZIndex=19
-                FT.BackgroundTransparency=1; FT.BorderSizePixel=0
-                FT.Font=Enum.Font.GothamBold; FT.Text=cfg.FileType
-                FT.TextColor3=Theme.TextMuted; FT.TextScaled=true; FT.TextWrapped=true
-                FT.TextXAlignment=Enum.TextXAlignment.Right; FT.TextTransparency=0.3
-            end
-
-            local TB=Instance.new("TextBox"); TB.Parent=InputRow
-            TB.AnchorPoint=Vector2.new(0,0.5); TB.Position=UDim2.new(0.04,0,0.5,0)
-            TB.Size=UDim2.new(0.8,0,0.75,0); TB.ZIndex=35
-            TB.BackgroundTransparency=1; TB.BorderSizePixel=0
-            TB.ClearTextOnFocus=false; TB.Font=Enum.Font.GothamBold
-            TB.Text=tostring(cfg.Default); TB.PlaceholderText="Type here..."
-            TB.TextColor3=Theme.TextPrimary; TB.TextScaled=true; TB.TextWrapped=true
-            TB.TextXAlignment=Enum.TextXAlignment.Left; TB.TextTransparency=0.15
-
-            TB.FocusLost:Connect(function(enter)
-                if enter then cfg.Callback(TB.Text) end
-            end)
-            TB.Focused:Connect(function() T(InputRow,Theme.Fast,{BackgroundColor3=Theme.Accent,BackgroundTransparency=0.85}) end)
-            TB.FocusLost:Connect(function() T(InputRow,Theme.Fast,{BackgroundColor3=Theme.BG,BackgroundTransparency=0.5}) end)
-
-            local el={Name=cfg.Name,Get=function()return TB.Text end,Set=function(v)TB.Text=v end,Visible=function(b)Root.Visible=b end}
-            table.insert(parentTable.Elements,el); return el
-        end
-
-        -- ── KEYBIND
-        function parentTable:NewKeybind(cfg)
-            cfg=Config(cfg,{Title="Keybind",Name=cfg.Title,Callback=function()end,Default=Enum.KeyCode.E})
-
-            local BindEvent=Instance.new('BindableEvent',container); BindEvent.Name=cfg.Title
-
-            local Root=Instance.new("Frame"); Root.Name="FunctionKeybind"; Root.Parent=container
-            Root.BackgroundColor3=Theme.BG3; Root.BackgroundTransparency=0.7
-            Root.BorderSizePixel=0; Root.Size=UDim2.new(0.95,0,0.5,0); Root.ZIndex=17
-            Corner(Theme.RadiusSmall,Root)
-            Stroke(Root,0.8,Theme.Border)
-            local KAR=Instance.new("UIAspectRatioConstraint"); KAR.Parent=Root; KAR.AspectRatio=8; KAR.AspectType=Enum.AspectType.ScaleWithParentSize
-
-            local Lbl=Instance.new("TextLabel"); Lbl.Parent=Root
-            Lbl.AnchorPoint=Vector2.new(0,0.5); Lbl.Position=UDim2.new(0.04,0,0.5,0)
-            Lbl.Size=UDim2.new(0.7,0,0.5,0); Lbl.ZIndex=18
-            Lbl.BackgroundTransparency=1; Lbl.BorderSizePixel=0
-            Lbl.Font=Enum.Font.GothamBold; Lbl.Text=cfg.Title
-            Lbl.TextColor3=Theme.TextPrimary; Lbl.TextScaled=true; Lbl.TextWrapped=true
-            Lbl.TextXAlignment=Enum.TextXAlignment.Left; Lbl.TextTransparency=0.1
-
-            -- Key badge
-            local Badge=Instance.new("Frame"); Badge.Parent=Root
-            Badge.AnchorPoint=Vector2.new(1,0.5); Badge.Position=UDim2.new(0.97,0,0.5,0)
-            Badge.Size=UDim2.new(0,50,0.55,0); Badge.ZIndex=18
-            Badge.BackgroundColor3=Theme.BG; Badge.BackgroundTransparency=0.4
-            Badge.BorderSizePixel=0
-            Corner(UDim.new(0,3),Badge)
-            Stroke(Badge,0.65,Theme.Accent)
-
-            local KeyLbl=Instance.new("TextLabel"); KeyLbl.Parent=Badge
-            KeyLbl.AnchorPoint=Vector2.new(0.5,0.5); KeyLbl.Position=UDim2.new(0.5,0,0.5,0)
-            KeyLbl.Size=UDim2.new(0.9,0,0.7,0); KeyLbl.ZIndex=19
-            KeyLbl.BackgroundTransparency=1; KeyLbl.BorderSizePixel=0
-            KeyLbl.Font=Enum.Font.GothamBold; KeyLbl.Text=Input:GetStringForKeyCode(cfg.Default) or cfg.Default.Name
-            KeyLbl.TextColor3=Theme.Accent; KeyLbl.TextScaled=true; KeyLbl.TextWrapped=true
-            KeyLbl.TextTransparency=0.1
-
-            local Btn=Instance.new("TextButton"); Btn.Parent=Root
-            Btn.BackgroundTransparency=1; Btn.BorderSizePixel=0
-            Btn.Size=UDim2.new(1,0,1,0); Btn.ZIndex=25; Btn.Text=""; Btn.TextTransparency=1
-
-            local function UpdateBadge(k)
-                local txt=(typeof(k)=='string' and k) or k.Name
-                KeyLbl.Text=txt
-                local sz=TextServ:GetTextSize(txt,12,Enum.Font.GothamBold,Vector2.new(math.huge,math.huge))
-                T(Badge,Theme.Fast,{Size=UDim2.new(0,sz.X+12,0.55,0)})
-            end
-            UpdateBadge(cfg.Default)
-
-            local IsWIP=false
-            Btn.MouseButton1Click:Connect(function()
-                if IsWIP then return end; IsWIP=true
-                T(Badge,Theme.Fast,{BackgroundColor3=Theme.Accent,BackgroundTransparency=0.75})
-                local sig=Input.InputBegan:Connect(function(k) if k.KeyCode and k.KeyCode~=Enum.KeyCode.Unknown then BindEvent:Fire(k.KeyCode) end end)
-                UpdateBadge('...')
-                local b=BindEvent.Event:Wait(); cfg.Default=b
-                T(Badge,Theme.Fast,{BackgroundColor3=Theme.BG,BackgroundTransparency=0.4})
-                sig:Disconnect(); UpdateBadge(b); IsWIP=false; cfg.Callback(b)
-            end)
-
-            local el={
-                Name=cfg.Name,
-                Get=function()return cfg.Default.Name end,
-                Set=function(v) cfg.Default=Enum.KeyCode[v]; UpdateBadge(cfg.Default); cfg.Callback(cfg.Default) end,
-                Visible=function(b)Root.Visible=b end
-            }
-            table.insert(parentTable.Elements,el); return el
-        end
-
-        -- ── LABEL
-        function parentTable:NewLabel(text)
-            local Root=Instance.new("Frame"); Root.Name="FunctionLabel"; Root.Parent=container
-            Root.BackgroundColor3=Theme.BG3; Root.BackgroundTransparency=0.75
-            Root.BorderSizePixel=0; Root.Size=UDim2.new(0.95,0,0.5,0); Root.ZIndex=17
-            Corner(Theme.RadiusSmall,Root)
-            local LAR=Instance.new("UIAspectRatioConstraint"); LAR.Parent=Root; LAR.AspectRatio=8; LAR.AspectType=Enum.AspectType.ScaleWithParentSize
-
-            local Lbl=Instance.new("TextLabel"); Lbl.Parent=Root
-            Lbl.AnchorPoint=Vector2.new(0,0.5); Lbl.Position=UDim2.new(0.04,0,0.5,0)
-            Lbl.Size=UDim2.new(0.93,0,0.6,0); Lbl.ZIndex=18
-            Lbl.BackgroundTransparency=1; Lbl.BorderSizePixel=0
-            Lbl.Font=Enum.Font.GothamBold; Lbl.Text=text
-            Lbl.TextColor3=Theme.TextMuted; Lbl.TextScaled=true; Lbl.TextWrapped=true
-            Lbl.TextXAlignment=Enum.TextXAlignment.Left; Lbl.TextTransparency=0.1
-
-            return {Visible=function(b)Root.Visible=b end, Set=function(s)Lbl.Text=s end}
-        end
-
-        -- ── TITLE  (bold separator)
-        function parentTable:NewTitle(text)
-            local Root=Instance.new("Frame"); Root.Name="FunctionTitle"; Root.Parent=container
-            Root.BackgroundColor3=Theme.Accent; Root.BackgroundTransparency=0.88
-            Root.BorderSizePixel=0; Root.Size=UDim2.new(0.95,0,0.5,0); Root.ZIndex=17
-            Corner(Theme.RadiusSmall,Root)
-            local TAR=Instance.new("UIAspectRatioConstraint"); TAR.Parent=Root; TAR.AspectRatio=8; TAR.AspectType=Enum.AspectType.ScaleWithParentSize
-
-            -- Accent left bar
-            local Bar=Instance.new("Frame"); Bar.Parent=Root
-            Bar.Position=UDim2.new(0,0,0.15,0); Bar.Size=UDim2.new(0,2,0.7,0)
-            Bar.BackgroundColor3=Theme.Accent; Bar.BackgroundTransparency=0.3; Bar.BorderSizePixel=0
-            Corner(UDim.new(1,0),Bar)
-
-            local Lbl=Instance.new("TextLabel"); Lbl.Parent=Root
-            Lbl.AnchorPoint=Vector2.new(0,0.5); Lbl.Position=UDim2.new(0.04,0,0.5,0)
-            Lbl.Size=UDim2.new(0.93,0,0.55,0); Lbl.ZIndex=18
-            Lbl.BackgroundTransparency=1; Lbl.BorderSizePixel=0
-            Lbl.Font=Enum.Font.GothamBold; Lbl.Text=text
-            Lbl.TextColor3=Theme.Accent; Lbl.TextScaled=true; Lbl.TextWrapped=true
-            Lbl.TextXAlignment=Enum.TextXAlignment.Left; Lbl.TextTransparency=0.1
-
-            return {Visible=function(b)Root.Visible=b end, Set=function(s)Lbl.Text=s end}
-        end
-
-        -- ── IMAGE
-        function parentTable:NewImage(cfg)
-            cfg=Config(cfg,{ImageId="rbxassetid://0",Size=UDim2.new(0.98,0,0.5,0)})
-            local Root=Instance.new("Frame"); Root.Name="FunctionImage"; Root.Parent=container
-            Root.BackgroundColor3=Theme.BG3; Root.BackgroundTransparency=0.7
-            Root.BorderSizePixel=0; Root.Size=cfg.Size; Root.ZIndex=17
-            Corner(Theme.RadiusSmall,Root)
-            local IAR=Instance.new("UIAspectRatioConstraint"); IAR.Parent=Root; IAR.AspectRatio=2.5; IAR.AspectType=Enum.AspectType.ScaleWithParentSize
-
-            local Img=Instance.new("ImageLabel"); Img.Parent=Root
-            Img.AnchorPoint=Vector2.new(0.5,0.5); Img.Position=UDim2.new(0.5,0,0.5,0)
-            Img.Size=UDim2.new(1,0,1,0); Img.ZIndex=18
-            Img.BackgroundTransparency=1; Img.BorderSizePixel=0
-            Img.Image=cfg.ImageId; Img.ImageTransparency=1; Img.ScaleType=Enum.ScaleType.Fit
-            Corner(UDim.new(0,2),Root)
-            T(Img,Theme.Slow,{ImageTransparency=0})
-
-            return {Visible=function(b)Root.Visible=b end, SetImage=function(id)Img.Image=id end}
-        end
+        if W.ToggleButton then W.ToggleButton() end
+        task.delay(0.5, W.BlurFX.Update)
     end
 
-    -- ══════════════════════════════════════════
+    MinBtn.MouseButton1Click:Connect(function()
+        W.WindowToggle = not W.WindowToggle; UpdateWindow()
+    end)
+    UIS.InputBegan:Connect(function(io)
+        if io.KeyCode == W.Keybind then W.WindowToggle = not W.WindowToggle; UpdateWindow() end
+    end)
+    UpdateWindow()
+
+    -- ── drag logic
+    local dragToggle, dragStart, startPos
+    DragFrame.InputBegan:Connect(function(io)
+        if io.UserInputType == Enum.UserInputType.MouseButton1 or io.UserInputType == Enum.UserInputType.Touch then
+            dragToggle = true; dragStart = io.Position; startPos = MF.Position
+            io.Changed:Connect(function()
+                if io.UserInputState == Enum.UserInputState.End then dragToggle = false end
+            end)
+        end
+    end)
+    UIS.InputChanged:Connect(function(io)
+        if dragToggle and (io.UserInputType == Enum.UserInputType.MouseMovement or io.UserInputType == Enum.UserInputType.Touch) then
+            local d = io.Position - dragStart
+            local p = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+            tw(MF, TweenInfo.new(0.08), {Position = p})
+            if not W.WindowToggle then W.LastPosition = p end
+            W.BlurFX.Update()
+        end
+    end)
+
+    W.SetKeybind = function(k) W.Keybind = k end
+
+    -- ══════════════════════════════════════
     --  NEW TAB
-    -- ══════════════════════════════════════════
-    function W:NewTab(cfg)
-        cfg=Config(cfg,{Title="Tab",Description="",Icon="home"})
-        local TabTable={Sections={}}
+    -- ══════════════════════════════════════
+    function W:NewTab(tcfg)
+        tcfg = cfg(tcfg, {Title = "Tab", Description = "", Icon = "home"})
+        local TabTable = { Sections = {} }
 
-        -- Tab button
-        local TabBtn=Instance.new("Frame"); TabBtn.Name="TabButton"; TabBtn.Parent=TabButtons
-        TabBtn.BackgroundColor3=Theme.BG3; TabBtn.BackgroundTransparency=0.8
-        TabBtn.BorderSizePixel=0; TabBtn.ClipsDescendants=true
-        TabBtn.Size=UDim2.new(0.97,0,0.5,0); TabBtn.ZIndex=5
-        Corner(Theme.RadiusMedium,TabBtn)
-        Stroke(TabBtn,0.85,Theme.Border)
-        T(TabBtn,Theme.Slow,{BackgroundTransparency=0.78})
-        local TBAR=Instance.new("UIAspectRatioConstraint"); TBAR.Parent=TabBtn; TBAR.AspectRatio=4.25; TBAR.AspectType=Enum.AspectType.ScaleWithParentSize
+        -- tab button
+        local TBtn = Instance.new("Frame"); TBtn.Parent = TabSF
+        TBtn.BackgroundColor3 = T.B2; TBtn.BackgroundTransparency = 0.7
+        TBtn.BorderSizePixel  = 0; TBtn.ClipsDescendants = true
+        TBtn.Size = UDim2.new(0.97, 0, 0, 0); TBtn.ZIndex = 5
+        corner(T.RMd, TBtn)
+        stroke(TBtn, 0.8, T.Border)
+        local TBAR = Instance.new("UIAspectRatioConstraint"); TBAR.Parent = TBtn
+        TBAR.AspectRatio = 4.5; TBAR.AspectType = Enum.AspectType.ScaleWithParentSize
 
-        -- Icon
-        local TabIcon=MakeIconIn(TabBtn,cfg.Icon,UDim2.new(0.1,0,0.5,0),UDim2.new(0.6,0,0.6,0),6)
-        T(TabIcon,Theme.Fast,{ImageTransparency=0.4})
+        -- icon
+        local TBIcon = Icons.Image({Icon = tcfg.Icon, Color = T.T3, Size = UDim2.new(0, 18, 0, 18)})
+        TBIcon.AnchorPoint = Vector2.new(0.5, 0.5); TBIcon.Position = UDim2.new(0.1, 0, 0.5, 0)
+        TBIcon.ZIndex = 6; TBIcon.SizeConstraint = Enum.SizeConstraint.RelativeYY
+        TBIcon.Parent = TBtn
 
-        -- Active bar (left edge, accent colored)
-        local ActiveBar=Instance.new("Frame"); ActiveBar.Parent=TabBtn
-        ActiveBar.Position=UDim2.new(0,0,0.1,0); ActiveBar.Size=UDim2.new(0,2,0.8,0)
-        ActiveBar.BackgroundColor3=Theme.Accent; ActiveBar.BackgroundTransparency=1
-        ActiveBar.BorderSizePixel=0; ActiveBar.ZIndex=7
-        Corner(UDim.new(1,0),ActiveBar)
+        -- active accent bar on left edge
+        local ABar = Instance.new("Frame"); ABar.Parent = TBtn
+        ABar.Position = UDim2.new(0, 0, 0.12, 0); ABar.Size = UDim2.new(0, 2, 0.76, 0)
+        ABar.BackgroundColor3 = T.A; ABar.BackgroundTransparency = 1; ABar.BorderSizePixel = 0
+        corner(UDim.new(1, 0), ABar)
 
-        local TabTitleLbl=Instance.new("TextLabel"); TabTitleLbl.Parent=TabBtn
-        TabTitleLbl.AnchorPoint=Vector2.new(0,0.5); TabTitleLbl.Position=UDim2.new(0.22,0,0.37,0)
-        TabTitleLbl.Size=UDim2.new(0.73,0,0.38,0); TabTitleLbl.Font=Enum.Font.GothamBold; TabTitleLbl.Text=cfg.Title
-        TabTitleLbl.BackgroundTransparency=1; TabTitleLbl.BorderSizePixel=0; TabTitleLbl.ZIndex=6
-        TabTitleLbl.TextColor3=Theme.TextMuted; TabTitleLbl.TextScaled=true; TabTitleLbl.TextWrapped=true
-        TabTitleLbl.TextXAlignment=Enum.TextXAlignment.Left; TabTitleLbl.TextTransparency=0.2
+        local TBTitle = Instance.new("TextLabel"); TBTitle.Parent = TBtn
+        TBTitle.AnchorPoint = Vector2.new(0, 0.5); TBTitle.Position = UDim2.new(0.21, 0, 0.37, 0)
+        TBTitle.Size = UDim2.new(0.76, 0, 0.37, 0); TBTitle.ZIndex = 6
+        TBTitle.BackgroundTransparency = 1; TBTitle.BorderSizePixel = 0
+        TBTitle.Font = Enum.Font.GothamBold; TBTitle.Text = tcfg.Title
+        TBTitle.TextColor3 = T.T3; TBTitle.TextScaled = true; TBTitle.TextWrapped = true
+        TBTitle.TextXAlignment = Enum.TextXAlignment.Left; TBTitle.TextTransparency = 0.25
 
-        local TabDescLbl=Instance.new("TextLabel"); TabDescLbl.Parent=TabBtn
-        TabDescLbl.AnchorPoint=Vector2.new(0,0.5); TabDescLbl.Position=UDim2.new(0.22,0,0.7,0)
-        TabDescLbl.Size=UDim2.new(0.73,0,0.28,0); TabDescLbl.Font=Enum.Font.GothamBold; TabDescLbl.Text=cfg.Description
-        TabDescLbl.BackgroundTransparency=1; TabDescLbl.BorderSizePixel=0; TabDescLbl.ZIndex=6
-        TabDescLbl.TextColor3=Theme.TextMuted; TabDescLbl.TextScaled=true; TabDescLbl.TextWrapped=true
-        TabDescLbl.TextXAlignment=Enum.TextXAlignment.Left; TabDescLbl.TextTransparency=0.5
+        local TBDesc = Instance.new("TextLabel"); TBDesc.Parent = TBtn
+        TBDesc.AnchorPoint = Vector2.new(0, 0.5); TBDesc.Position = UDim2.new(0.21, 0, 0.7, 0)
+        TBDesc.Size = UDim2.new(0.76, 0, 0.28, 0); TBDesc.ZIndex = 6
+        TBDesc.BackgroundTransparency = 1; TBDesc.BorderSizePixel = 0
+        TBDesc.Font = Enum.Font.GothamBold; TBDesc.Text = tcfg.Description
+        TBDesc.TextColor3 = T.T3; TBDesc.TextScaled = true; TBDesc.TextWrapped = true
+        TBDesc.TextXAlignment = Enum.TextXAlignment.Left; TBDesc.TextTransparency = 0.5
 
-        local BtnOverlay=Instance.new("TextButton"); BtnOverlay.Parent=TabBtn
-        BtnOverlay.BackgroundTransparency=1; BtnOverlay.BorderSizePixel=0
-        BtnOverlay.Size=UDim2.new(1,0,1,0); BtnOverlay.ZIndex=15; BtnOverlay.Text=""
+        local TBOverlay = Instance.new("TextButton"); TBOverlay.Parent = TBtn
+        TBOverlay.BackgroundTransparency = 1; TBOverlay.BorderSizePixel = 0
+        TBOverlay.Size = UDim2.new(1, 0, 1, 0); TBOverlay.ZIndex = 15; TBOverlay.Text = ""
 
-        -- Init frame (content area)
-        local Init=Instance.new("Frame"); Init.Name="Init"; Init.Parent=MainTabFrame
-        Init.AnchorPoint=Vector2.new(0.5,0.5); Init.Position=UDim2.new(0.5,0,0.5,0)
-        Init.Size=UDim2.new(0.98,0,0.98,0); Init.BackgroundTransparency=1; Init.BorderSizePixel=0; Init.ZIndex=4
+        -- content init frame (two-column scrollers)
+        local Init = Instance.new("Frame"); Init.Parent = ContentFrame
+        Init.AnchorPoint = Vector2.new(0.5, 0.5); Init.Position = UDim2.new(0.5, 0, 0.5, 0)
+        Init.Size = UDim2.new(0.98, 0, 0.98, 0)
+        Init.BackgroundTransparency = 1; Init.BorderSizePixel = 0; Init.ZIndex = 4
 
-        local LeftFrame=Instance.new("ScrollingFrame"); LeftFrame.Name="LeftFrame"; LeftFrame.Parent=Init
-        LeftFrame.Active=true; LeftFrame.AnchorPoint=Vector2.new(0.5,0.5)
-        LeftFrame.Position=UDim2.new(0.25,0,0.5,0); LeftFrame.Size=UDim2.new(0.5,0,1,0)
-        LeftFrame.BackgroundTransparency=1; LeftFrame.BorderSizePixel=0
-        LeftFrame.ClipsDescendants=false; LeftFrame.ScrollBarThickness=0
-        local LFL=Instance.new("UIListLayout"); LFL.Parent=LeftFrame
-        LFL.HorizontalAlignment=Enum.HorizontalAlignment.Center; LFL.SortOrder=Enum.SortOrder.LayoutOrder; LFL.Padding=UDim.new(0,4)
-        LFL:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function() LeftFrame.CanvasSize=UDim2.fromOffset(0,LFL.AbsoluteContentSize.Y) end)
-
-        local RightFrame=Instance.new("ScrollingFrame"); RightFrame.Name="RightFrame"; RightFrame.Parent=Init
-        RightFrame.Active=true; RightFrame.AnchorPoint=Vector2.new(0.5,0.5)
-        RightFrame.Position=UDim2.new(0.75,0,0.5,0); RightFrame.Size=UDim2.new(0.5,0,1,0)
-        RightFrame.BackgroundTransparency=1; RightFrame.BorderSizePixel=0
-        RightFrame.ClipsDescendants=false; RightFrame.ScrollBarThickness=0
-        local RFL=Instance.new("UIListLayout"); RFL.Parent=RightFrame
-        RFL.HorizontalAlignment=Enum.HorizontalAlignment.Center; RFL.SortOrder=Enum.SortOrder.LayoutOrder; RFL.Padding=UDim.new(0,4)
-        RFL:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function() RightFrame.CanvasSize=UDim2.fromOffset(0,RFL.AbsoluteContentSize.Y) end)
+        local function makeColSF(xPos)
+            local sf = Instance.new("ScrollingFrame"); sf.Parent = Init
+            sf.Active = true; sf.AnchorPoint = Vector2.new(0.5, 0.5)
+            sf.Position = UDim2.new(xPos, 0, 0.5, 0); sf.Size = UDim2.new(0.5, 0, 1, 0)
+            sf.BackgroundTransparency = 1; sf.BorderSizePixel = 0
+            sf.ClipsDescendants = false; sf.ScrollBarThickness = 0
+            local l = Instance.new("UIListLayout"); l.Parent = sf
+            l.HorizontalAlignment = Enum.HorizontalAlignment.Center
+            l.SortOrder = Enum.SortOrder.LayoutOrder; l.Padding = UDim.new(0, 4)
+            l:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                sf.CanvasSize = UDim2.fromOffset(0, l.AbsoluteContentSize.Y)
+            end)
+            return sf
+        end
+        local LeftSF  = makeColSF(0.25)
+        local RightSF = makeColSF(0.75)
 
         local function setActive(v)
-            Init.Visible=v
+            Init.Visible = v
             if v then
-                T(TabBtn,Theme.Fast,{BackgroundColor3=Theme.Accent,BackgroundTransparency=0.88})
-                T(TabTitleLbl,Theme.Fast,{TextColor3=Theme.Accent,TextTransparency=0})
-                T(TabDescLbl,Theme.Fast,{TextTransparency=0.3})
-                T(TabIcon,Theme.Fast,{ImageTransparency=0,ImageColor3=Theme.Accent})
-                T(ActiveBar,Theme.Fast,{BackgroundTransparency=0})
+                tw(TBtn,    T.Fast, {BackgroundColor3 = T.A, BackgroundTransparency = 0.88})
+                tw(TBTitle, T.Fast, {TextColor3 = T.A, TextTransparency = 0})
+                tw(TBDesc,  T.Fast, {TextColor3 = T.T2, TextTransparency = 0.3})
+                tw(TBIcon,  T.Fast, {ImageColor3 = T.A, ImageTransparency = 0})
+                tw(ABar,    T.Fast, {BackgroundTransparency = 0})
             else
-                T(TabBtn,Theme.Fast,{BackgroundColor3=Theme.BG3,BackgroundTransparency=0.78})
-                T(TabTitleLbl,Theme.Fast,{TextColor3=Theme.TextMuted,TextTransparency=0.2})
-                T(TabDescLbl,Theme.Fast,{TextTransparency=0.5})
-                T(TabIcon,Theme.Fast,{ImageTransparency=0.4,ImageColor3=Theme.TextPrimary})
-                T(ActiveBar,Theme.Fast,{BackgroundTransparency=1})
+                tw(TBtn,    T.Fast, {BackgroundColor3 = T.B2, BackgroundTransparency = 0.7})
+                tw(TBTitle, T.Fast, {TextColor3 = T.T3, TextTransparency = 0.25})
+                tw(TBDesc,  T.Fast, {TextColor3 = T.T3, TextTransparency = 0.5})
+                tw(TBIcon,  T.Fast, {ImageColor3 = T.T3, ImageTransparency = 0.4})
+                tw(ABar,    T.Fast, {BackgroundTransparency = 1})
             end
         end
 
-        if #W.Tabs==0 then setActive(true) else setActive(false) end
+        if #W.Tabs == 0 then setActive(true) else setActive(false) end
+        table.insert(W.Tabs, {Id = Init, onFunction = setActive, Sections = TabTable.Sections})
 
-        table.insert(W.Tabs,{Id=Init,onFunction=setActive,Sections=TabTable.Sections})
-
-        BtnOverlay.MouseButton1Click:Connect(function()
-            for _,t in ipairs(W.Tabs) do t.onFunction(t.Id==Init) end
+        TBOverlay.MouseButton1Click:Connect(function()
+            for _, t in ipairs(W.Tabs) do t.onFunction(t.Id == Init) end
         end)
 
-        -- ── SECTION
+        -- ── SECTION ──────────────────────────────
         function TabTable:NewSection(scfg)
-            scfg=Config(scfg,{Position="Left",Title="Section",Icon="layers"})
-            local SecTable={Elements={}}
-            local parent=(scfg.Position=="Left") and LeftFrame or RightFrame
+            scfg = cfg(scfg, {Title = "Section", Icon = "layers", Position = "Left"})
+            local SecTable = {Elements = {}}
+            local parent = scfg.Position == "Left" and LeftSF or RightSF
 
-            local Sec=Instance.new("Frame"); Sec.Name="Section"; Sec.Parent=parent
-            Sec.BackgroundColor3=Theme.BG2; Sec.BackgroundTransparency=0.7
-            Sec.BorderSizePixel=0; Sec.Size=UDim2.new(0.98,0,0,200); Sec.ClipsDescendants=true
-            Corner(Theme.RadiusMedium,Sec)
-            Stroke(Sec,0.7,Theme.Border)
+            local Sec = Instance.new("Frame"); Sec.Parent = parent
+            Sec.BackgroundColor3 = T.B1; Sec.BackgroundTransparency = 0.65
+            Sec.BorderSizePixel  = 0; Sec.Size = UDim2.new(0.98, 0, 0, 200); Sec.ClipsDescendants = true
+            corner(T.RMd, Sec)
+            stroke(Sec, 0.68, T.Border)
 
-            -- Section header
-            local Hdr=Instance.new("Frame"); Hdr.Name="Header"; Hdr.Parent=Sec
-            Hdr.BackgroundColor3=Theme.Header; Hdr.BackgroundTransparency=0.6
-            Hdr.BorderSizePixel=0; Hdr.Size=UDim2.new(1,0,0.5,0)
-            Corner(UDim.new(0,3),Hdr)
-            local HAR=Instance.new("UIAspectRatioConstraint"); HAR.Parent=Hdr; HAR.AspectRatio=8; HAR.AspectType=Enum.AspectType.ScaleWithParentSize
+            -- section header
+            local Hdr = Instance.new("Frame"); Hdr.Parent = Sec
+            Hdr.BackgroundColor3 = T.B0; Hdr.BackgroundTransparency = 0.55
+            Hdr.BorderSizePixel  = 0; Hdr.Size = UDim2.new(1, 0, 0.5, 0)
+            corner(UDim.new(0, 3), Hdr)
+            local HAR = Instance.new("UIAspectRatioConstraint"); HAR.Parent = Hdr
+            HAR.AspectRatio = 8.5; HAR.AspectType = Enum.AspectType.ScaleWithParentSize
 
-            MakeIconIn(Hdr,scfg.Icon,UDim2.new(0.065,0,0.5,0),UDim2.new(0.55,0,0.55,0),6)
+            local HIcon = Icons.Image({Icon = scfg.Icon, Color = T.A, Size = UDim2.new(0, 16, 0, 16)})
+            HIcon.AnchorPoint = Vector2.new(0.5, 0.5); HIcon.Position = UDim2.new(0.063, 0, 0.5, 0)
+            HIcon.ZIndex = 6; HIcon.SizeConstraint = Enum.SizeConstraint.RelativeYY; HIcon.Parent = Hdr
 
-            local HTitleLbl=Instance.new("TextLabel"); HTitleLbl.Parent=Hdr
-            HTitleLbl.AnchorPoint=Vector2.new(0,0.5); HTitleLbl.Position=UDim2.new(0.13,0,0.45,0)
-            HTitleLbl.Size=UDim2.new(0.85,0,0.55,0); HTitleLbl.ZIndex=6
-            HTitleLbl.BackgroundTransparency=1; HTitleLbl.BorderSizePixel=0
-            HTitleLbl.Font=Enum.Font.GothamBold; HTitleLbl.Text=scfg.Title
-            HTitleLbl.TextColor3=Theme.TextPrimary; HTitleLbl.TextScaled=true; HTitleLbl.TextWrapped=true
-            HTitleLbl.TextXAlignment=Enum.TextXAlignment.Left; HTitleLbl.TextTransparency=0.05
+            local HTitle = Instance.new("TextLabel"); HTitle.Parent = Hdr
+            HTitle.AnchorPoint = Vector2.new(0, 0.5); HTitle.Position = UDim2.new(0.125, 0, 0.46, 0)
+            HTitle.Size = UDim2.new(0.86, 0, 0.56, 0); HTitle.ZIndex = 6
+            HTitle.BackgroundTransparency = 1; HTitle.BorderSizePixel = 0
+            HTitle.Font = Enum.Font.GothamBold; HTitle.Text = scfg.Title
+            HTitle.TextColor3 = T.T1; HTitle.TextScaled = true; HTitle.TextWrapped = true
+            HTitle.TextXAlignment = Enum.TextXAlignment.Left; HTitle.TextTransparency = 0.05
 
-            -- Bottom separator line on header
-            local Sep=Instance.new("Frame"); Sep.Parent=Hdr
-            Sep.AnchorPoint=Vector2.new(0.5,1); Sep.Position=UDim2.new(0.5,0,1,0)
-            Sep.Size=UDim2.new(1,0,0,1); Sep.BackgroundColor3=Theme.Border
-            Sep.BackgroundTransparency=0.5; Sep.BorderSizePixel=0; Sep.ZIndex=3
-            Corner(UDim.new(0.5,0),Sep)
+            -- separator at bottom of header
+            local Sep = Instance.new("Frame"); Sep.Parent = Hdr
+            Sep.AnchorPoint = Vector2.new(0.5, 1); Sep.Position = UDim2.new(0.5, 0, 1, 0)
+            Sep.Size = UDim2.new(1, 0, 0, 1); Sep.BackgroundColor3 = T.Border
+            Sep.BackgroundTransparency = 0.45; Sep.BorderSizePixel = 0; Sep.ZIndex = 3
+            corner(UDim.new(0.5, 0), Sep)
 
-            local SAL=Instance.new("UIListLayout"); SAL.Name="SectionAutoUI"; SAL.Parent=Sec
-            SAL.HorizontalAlignment=Enum.HorizontalAlignment.Center
-            SAL.SortOrder=Enum.SortOrder.LayoutOrder; SAL.Padding=UDim.new(0,4)
-            SAL:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-                T(Sec,TweenInfo.new(0.12),{Size=UDim2.new(0.98,0,0,math.max(SAL.AbsoluteContentSize.Y,55)+(SAL.Padding.Offset*1.1))})
+            local SecLayout = Instance.new("UIListLayout"); SecLayout.Parent = Sec
+            SecLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+            SecLayout.SortOrder = Enum.SortOrder.LayoutOrder; SecLayout.Padding = UDim.new(0, 4)
+            local SecPad = Instance.new("UIPadding"); SecPad.Parent = Sec
+            SecPad.PaddingBottom = UDim.new(0, 4)
+
+            SecLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                tw(Sec, TweenInfo.new(0.1), {
+                    Size = UDim2.new(0.98, 0, 0, math.max(SecLayout.AbsoluteContentSize.Y, 52) + 4)
+                })
             end)
 
-            table.insert(TabTable.Sections,SecTable)
-            BuildElements(Sec,SecTable)
-
+            table.insert(TabTable.Sections, SecTable)
+            buildElements(Sec, SecTable, W)
             return SecTable
         end
 
-        -- ── COLLAPSIBLE SECTION
+        -- ── COLLAPSIBLE SECTION ───────────────────
         function TabTable:NewCollapsibleSection(scfg)
-            scfg=Config(scfg,{Position="Left",Title="Section",Icon="layers",DefaultOpen=true})
-            local ColTable={Elements={}}
-            local parent=(scfg.Position=="Left") and LeftFrame or RightFrame
+            scfg = cfg(scfg, {Title = "Section", Icon = "layers", Position = "Left", DefaultOpen = true})
+            local ColTable = {Elements = {}}
+            local parent = scfg.Position == "Left" and LeftSF or RightSF
 
-            local Col=Instance.new("Frame"); Col.Name="Collapsible"; Col.Parent=parent
-            Col.BackgroundColor3=Theme.BG2; Col.BackgroundTransparency=0.7
-            Col.BorderSizePixel=0; Col.Size=UDim2.new(0.98,0,0,200); Col.ClipsDescendants=true
-            Corner(Theme.RadiusMedium,Col)
-            Stroke(Col,0.7,Theme.Border)
+            local Col = Instance.new("Frame"); Col.Parent = parent
+            Col.BackgroundColor3 = T.B1; Col.BackgroundTransparency = 0.65
+            Col.BorderSizePixel  = 0; Col.Size = UDim2.new(0.98, 0, 0, 200); Col.ClipsDescendants = true
+            corner(T.RMd, Col)
+            stroke(Col, 0.68, T.Border)
 
-            local Hdr=Instance.new("Frame"); Hdr.Name="Header"; Hdr.Parent=Col
-            Hdr.BackgroundColor3=Theme.Header; Hdr.BackgroundTransparency=0.6
-            Hdr.BorderSizePixel=0; Hdr.Size=UDim2.new(1,0,0,32)
-            Corner(UDim.new(0,3),Hdr)
+            local Hdr = Instance.new("Frame"); Hdr.Parent = Col
+            Hdr.BackgroundColor3 = T.B0; Hdr.BackgroundTransparency = 0.55
+            Hdr.BorderSizePixel  = 0; Hdr.Size = UDim2.new(1, 0, 0, 34)
+            corner(UDim.new(0, 3), Hdr)
 
-            MakeIconIn(Hdr,scfg.Icon,UDim2.new(0.065,0,0.5,0),UDim2.new(0.5,0,0.5,0),6)
+            local HIcon = Icons.Image({Icon = scfg.Icon, Color = T.A, Size = UDim2.new(0, 16, 0, 16)})
+            HIcon.AnchorPoint = Vector2.new(0.5, 0.5); HIcon.Position = UDim2.new(0.063, 0, 0.5, 0)
+            HIcon.ZIndex = 6; HIcon.SizeConstraint = Enum.SizeConstraint.RelativeYY; HIcon.Parent = Hdr
 
-            local HTitleLbl=Instance.new("TextLabel"); HTitleLbl.Parent=Hdr
-            HTitleLbl.AnchorPoint=Vector2.new(0,0.5); HTitleLbl.Position=UDim2.new(0.13,0,0.45,0)
-            HTitleLbl.Size=UDim2.new(0.72,0,0.55,0); HTitleLbl.ZIndex=6
-            HTitleLbl.BackgroundTransparency=1; HTitleLbl.BorderSizePixel=0
-            HTitleLbl.Font=Enum.Font.GothamBold; HTitleLbl.Text=scfg.Title
-            HTitleLbl.TextColor3=Theme.TextPrimary; HTitleLbl.TextScaled=true; HTitleLbl.TextWrapped=true
-            HTitleLbl.TextXAlignment=Enum.TextXAlignment.Left; HTitleLbl.TextTransparency=0.05
+            local HTitle = Instance.new("TextLabel"); HTitle.Parent = Hdr
+            HTitle.AnchorPoint = Vector2.new(0, 0.5); HTitle.Position = UDim2.new(0.125, 0, 0.46, 0)
+            HTitle.Size = UDim2.new(0.72, 0, 0.56, 0); HTitle.ZIndex = 6
+            HTitle.BackgroundTransparency = 1; HTitle.BorderSizePixel = 0
+            HTitle.Font = Enum.Font.GothamBold; HTitle.Text = scfg.Title
+            HTitle.TextColor3 = T.T1; HTitle.TextScaled = true; HTitle.TextWrapped = true
+            HTitle.TextXAlignment = Enum.TextXAlignment.Left; HTitle.TextTransparency = 0.05
 
-            local ChevronIcon=MakeIconIn(Hdr,"chevron-up",UDim2.new(0.95,0,0.5,0),UDim2.new(0.45,0,0.45,0),6)
+            -- chevron
+            local ChevImg = Icons.Image({Icon = "chevron-up", Color = T.T3, Size = UDim2.new(0, 14, 0, 14)})
+            ChevImg.AnchorPoint = Vector2.new(1, 0.5); ChevImg.Position = UDim2.new(0.95, 0, 0.5, 0)
+            ChevImg.ZIndex = 6; ChevImg.Parent = Hdr
 
-            local TogBtn=Instance.new("TextButton"); TogBtn.Parent=Hdr
-            TogBtn.BackgroundTransparency=1; TogBtn.BorderSizePixel=0
-            TogBtn.Size=UDim2.new(1,0,1,0); TogBtn.ZIndex=10; TogBtn.Text=""
+            local Sep = Instance.new("Frame"); Sep.Parent = Hdr
+            Sep.AnchorPoint = Vector2.new(0.5, 1); Sep.Position = UDim2.new(0.5, 0, 1, 0)
+            Sep.Size = UDim2.new(1, 0, 0, 1); Sep.BackgroundColor3 = T.Border
+            Sep.BackgroundTransparency = 0.45; Sep.BorderSizePixel = 0; Sep.ZIndex = 3
+            corner(UDim.new(0.5, 0), Sep)
 
-            local Content=Instance.new("Frame"); Content.Name="Content"; Content.Parent=Col
-            Content.BackgroundTransparency=1; Content.Position=UDim2.new(0,0,0,32)
-            Content.Size=UDim2.new(1,0,1,-32); Content.ClipsDescendants=true
+            local TogBtn = Instance.new("TextButton"); TogBtn.Parent = Hdr
+            TogBtn.BackgroundTransparency = 1; TogBtn.BorderSizePixel = 0
+            TogBtn.Size = UDim2.new(1, 0, 1, 0); TogBtn.ZIndex = 10; TogBtn.Text = ""
 
-            local CAL=Instance.new("UIListLayout"); CAL.Name="SectionAutoUI"; CAL.Parent=Content
-            CAL.HorizontalAlignment=Enum.HorizontalAlignment.Center
-            CAL.SortOrder=Enum.SortOrder.LayoutOrder; CAL.Padding=UDim.new(0,4)
-            CAL:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-                T(Col,TweenInfo.new(0.12),{Size=UDim2.new(0.98,0,0,32+CAL.AbsoluteContentSize.Y+CAL.Padding.Offset)})
+            local Content = Instance.new("Frame"); Content.Parent = Col
+            Content.BackgroundTransparency = 1; Content.BorderSizePixel = 0
+            Content.Position = UDim2.new(0, 0, 0, 34); Content.Size = UDim2.new(1, 0, 1, -34)
+            Content.ClipsDescendants = true
+
+            local ColLayout = Instance.new("UIListLayout"); ColLayout.Parent = Content
+            ColLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+            ColLayout.SortOrder = Enum.SortOrder.LayoutOrder; ColLayout.Padding = UDim.new(0, 4)
+            local ColPad = Instance.new("UIPadding"); ColPad.Parent = Content
+            ColPad.PaddingBottom = UDim.new(0, 4)
+
+            ColLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                if Content.Visible then
+                    tw(Col, TweenInfo.new(0.1), {
+                        Size = UDim2.new(0.98, 0, 0, 34 + ColLayout.AbsoluteContentSize.Y + 4)
+                    })
+                end
             end)
 
-            -- Sep line
-            local Sep=Instance.new("Frame"); Sep.Parent=Hdr
-            Sep.AnchorPoint=Vector2.new(0.5,1); Sep.Position=UDim2.new(0.5,0,1,0)
-            Sep.Size=UDim2.new(1,0,0,1); Sep.BackgroundColor3=Theme.Border
-            Sep.BackgroundTransparency=0.5; Sep.BorderSizePixel=0; Sep.ZIndex=3
-            Corner(UDim.new(0.5,0),Sep)
-
-            local isOpen=scfg.DefaultOpen
-            local function setChevron(open)
-                if ChevronIcon and ChevronIcon.Parent then ChevronIcon:Destroy() end
-                ChevronIcon=MakeIconIn(Hdr,open and "chevron-up" or "chevron-down",UDim2.new(0.95,0,0.5,0),UDim2.new(0.45,0,0.45,0),6)
-            end
-            local function toggleContent()
-                isOpen=not isOpen
+            local isOpen = scfg.DefaultOpen
+            local function toggle()
+                isOpen = not isOpen
                 if isOpen then
-                    Content.Visible=true
-                    T(Content,Theme.Medium,{Size=UDim2.new(1,0,1,-32)})
+                    Content.Visible = true
+                    tw(Content, T.Normal, {Size = UDim2.new(1, 0, 1, -34)})
+                    tw(ChevImg, T.Fast,   {Rotation = 0})
+                    tw(Col, TweenInfo.new(0.1), {
+                        Size = UDim2.new(0.98, 0, 0, 34 + ColLayout.AbsoluteContentSize.Y + 4)
+                    })
                 else
-                    T(Content,Theme.Medium,{Size=UDim2.new(1,0,0,0)})
-                    task.delay(0.35,function() Content.Visible=false end)
+                    tw(Content, T.Normal, {Size = UDim2.new(1, 0, 0, 0)})
+                    tw(ChevImg, T.Fast,   {Rotation = 180})
+                    tw(Col, T.Normal,     {Size = UDim2.new(0.98, 0, 0, 34)})
+                    task.delay(0.32, function() Content.Visible = false end)
                 end
-                setChevron(isOpen)
             end
-            TogBtn.MouseButton1Click:Connect(toggleContent)
-            if not scfg.DefaultOpen then Content.Visible=false; Content.Size=UDim2.new(1,0,0,0); setChevron(false) end
+            TogBtn.MouseButton1Click:Connect(toggle)
+            if not scfg.DefaultOpen then
+                Content.Visible = false; Content.Size = UDim2.new(1, 0, 0, 0)
+                ChevImg.Rotation = 180; Col.Size = UDim2.new(0.98, 0, 0, 34)
+            end
 
-            table.insert(TabTable.Sections,ColTable)
-            BuildElements(Content,ColTable)
-
+            table.insert(TabTable.Sections, ColTable)
+            buildElements(Content, ColTable, W)
             return ColTable
         end
 
@@ -1376,312 +1679,5 @@ function Library.new(config)
     return W
 end
 
--- ═════════════════════════════════════════════
---  NOTIFICATION  (revamped: fixed height, cleaner)
--- ═════════════════════════════════════════════
-Library.Notification = function()
-    local NG=Instance.new("ScreenGui")
-    NG.Parent=CoreGui; NG.ResetOnSpawn=false; NG.ZIndexBehavior=Enum.ZIndexBehavior.Global
-    NG.IgnoreGuiInset=true; NG.Name=game:GetService('HttpService'):GenerateGUID(false)
-
-    local NFrame=Instance.new("Frame"); NFrame.Parent=NG
-    NFrame.AnchorPoint=Vector2.new(1,1); NFrame.Position=UDim2.new(0.985,0,0.97,0)
-    NFrame.Size=UDim2.new(0.22,0,0.6,0)   -- narrower, cleaner
-    NFrame.BackgroundTransparency=1; NFrame.BorderSizePixel=0
-
-    local NFL=Instance.new("UIListLayout"); NFL.Parent=NFrame
-    NFL.SortOrder=Enum.SortOrder.LayoutOrder
-    NFL.VerticalAlignment=Enum.VerticalAlignment.Bottom; NFL.Padding=UDim.new(0,6)
-
-    return {
-        new=function(cfg)
-            cfg=Config(cfg,{Title="Notification",Description="Description",Duration=5,Icon="bell"})
-            local css=TweenInfo.new(0.45,Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
-
-            -- Fixed pixel height notification — not % of screen
-            local N=Instance.new("Frame"); N.Name="Notif"; N.Parent=NFrame
-            N.BackgroundColor3=Theme.BG2; N.BackgroundTransparency=1
-            N.BorderSizePixel=0; N.ClipsDescendants=true
-            N.Size=UDim2.new(1,0,0,72)   -- fixed 72px height
-            N.Position=UDim2.new(1,0,1,0)
-            Corner(Theme.RadiusMedium,N)
-            Stroke(N,0.7,Theme.Border)
-            local NSH=Shadow(N,30,Theme.Shadow,1)
-
-            -- Accent left bar
-            local AccentBar=Instance.new("Frame"); AccentBar.Parent=N
-            AccentBar.Position=UDim2.new(0,0,0.1,0); AccentBar.Size=UDim2.new(0,3,0.8,0)
-            AccentBar.BackgroundColor3=Theme.Accent; AccentBar.BackgroundTransparency=0; AccentBar.BorderSizePixel=0
-            Corner(UDim.new(1,0),AccentBar)
-
-            T(N,css,{BackgroundTransparency=0.25,Position=UDim2.new(0,0,1,0)})
-            T(NSH,css,{ImageTransparency=0.45})
-
-            -- Icon (20x20 area at left)
-            local iconContainer=Instance.new("Frame"); iconContainer.Parent=N
-            iconContainer.AnchorPoint=Vector2.new(0,0.5); iconContainer.Position=UDim2.new(0.08,0,0.5,0)
-            iconContainer.Size=UDim2.new(0,28,0,28); iconContainer.BackgroundColor3=Theme.Accent
-            iconContainer.BackgroundTransparency=0.8; iconContainer.BorderSizePixel=0
-            Corner(UDim.new(0,6),iconContainer)
-
-            local iconObj=Icons.Image({Icon=cfg.Icon,Size=UDim2.new(0.65,0,0.65,0)})
-            if iconObj and iconObj.IconFrame then
-                iconObj.IconFrame.AnchorPoint=Vector2.new(0.5,0.5)
-                iconObj.IconFrame.Position=UDim2.new(0.5,0,0.5,0)
-                iconObj.IconFrame.ZIndex=49; iconObj.IconFrame.Parent=iconContainer
-                iconObj.IconFrame.ImageColor3=Theme.Accent
-            end
-
-            local TitleLbl=Instance.new("TextLabel"); TitleLbl.Parent=N
-            TitleLbl.Position=UDim2.new(0.22,0,0.1,0); TitleLbl.Size=UDim2.new(0.74,0,0.35,0)
-            TitleLbl.BackgroundTransparency=1; TitleLbl.BorderSizePixel=0
-            TitleLbl.Font=Enum.Font.GothamBold; TitleLbl.Text=cfg.Title
-            TitleLbl.TextColor3=Theme.TextPrimary; TitleLbl.TextScaled=true
-            TitleLbl.TextXAlignment=Enum.TextXAlignment.Left; TitleLbl.TextTransparency=1
-            T(TitleLbl,css,{TextTransparency=0})
-
-            local DescLbl=Instance.new("TextLabel"); DescLbl.Parent=N
-            DescLbl.Position=UDim2.new(0.22,0,0.48,0); DescLbl.Size=UDim2.new(0.74,0,0.42,0)
-            DescLbl.BackgroundTransparency=1; DescLbl.BorderSizePixel=0
-            DescLbl.Font=Enum.Font.GothamBold; DescLbl.Text=cfg.Description
-            DescLbl.TextColor3=Theme.TextMuted; DescLbl.TextSize=11
-            DescLbl.TextWrapped=true; DescLbl.TextXAlignment=Enum.TextXAlignment.Left
-            DescLbl.TextYAlignment=Enum.TextYAlignment.Top; DescLbl.TextTransparency=1
-            T(DescLbl,css,{TextTransparency=0.1})
-
-            -- Progress bar at bottom
-            local PBTrack=Instance.new("Frame"); PBTrack.Parent=N
-            PBTrack.AnchorPoint=Vector2.new(0,1); PBTrack.Position=UDim2.new(0,0,1,0)
-            PBTrack.Size=UDim2.new(1,0,0,2); PBTrack.BackgroundColor3=Theme.Border
-            PBTrack.BackgroundTransparency=0.5; PBTrack.BorderSizePixel=0
-            local PBFill=Instance.new("Frame"); PBFill.Parent=PBTrack
-            PBFill.BackgroundColor3=Theme.Accent; PBFill.BackgroundTransparency=0.2
-            PBFill.BorderSizePixel=0; PBFill.Size=UDim2.new(1,0,1,0)
-            Corner(UDim.new(1,0),PBFill)
-            T(PBFill,TweenInfo.new(cfg.Duration,Enum.EasingStyle.Linear),{Size=UDim2.new(0,0,1,0)})
-
-            task.delay(cfg.Duration,function()
-                local out=TweenInfo.new(0.4,Enum.EasingStyle.Quint,Enum.EasingDirection.In)
-                T(N,out,{Position=UDim2.new(1.05,0,1,0),BackgroundTransparency=1})
-                T(NSH,out,{ImageTransparency=1})
-                T(TitleLbl,out,{TextTransparency=1}); T(DescLbl,out,{TextTransparency=1})
-                task.delay(0.45,function() N:Destroy() end)
-            end)
-        end
-    }
-end
-
--- ═════════════════════════════════════════════
---  AUTH  (cleaned up, same logic)
--- ═════════════════════════════════════════════
-Library.NewAuth = function(conf)
-    conf=Config(conf,{
-        Title="Carbon Key System",
-        GetKey=function()return 'https://example.com' end,
-        Auth=function(key) if key=='1 or 1' then return key end end,
-        Freeze=false,
-    })
-    if conf.Auth and debug.info(conf.Auth,'s')=='[C]' then error('huh') return end
-    if conf.GetKey and debug.info(conf.GetKey,'s')=='[C]' then error('huh') return end
-
-    local AG=Instance.new("ScreenGui"); AG.Parent=CoreGui
-    AG.IgnoreGuiInset=true; AG.ZIndexBehavior=Enum.ZIndexBehavior.Global
-    local vaid=Instance.new('BindableEvent')
-
-    local Auth=Instance.new("Frame"); Auth.Parent=AG
-    Auth.Active=true; Auth.AnchorPoint=Vector2.new(0.5,0.5)
-    Auth.BackgroundColor3=Theme.BG2; Auth.BackgroundTransparency=1
-    Auth.BorderSizePixel=0; Auth.ClipsDescendants=true
-    Auth.Position=UDim2.new(0.5,0,0.5,0); Auth.Size=UDim2.new(0,265,0,130)
-
-    local BF=ElBlurSource.new(Auth,true)
-    local gl={GradientImage(Auth,Theme.Accent)}
-
-    local MF=Instance.new("Frame"); MF.Name="MainFrame"; MF.Parent=Auth
-    MF.Active=true; MF.AnchorPoint=Vector2.new(0.5,0.5)
-    MF.BackgroundColor3=Theme.BG; MF.BackgroundTransparency=0.4
-    MF.BorderSizePixel=0; MF.Position=UDim2.new(0.5,0,-1.5,0)
-    MF.Size=UDim2.new(0.85,0,0.85,0)
-    Corner(Theme.RadiusLarge,MF)
-    Shadow(MF,47,Theme.Shadow,0.5)
-    Stroke(MF,0.7,Theme.Border)
-    T(MF,Theme.Slow,{Position=UDim2.new(0.5,0,0.5,0),Size=UDim2.new(1,0,1,0)})
-
-    -- Separator
-    local Sep=Instance.new("Frame"); Sep.Parent=MF
-    Sep.AnchorPoint=Vector2.new(0.5,0.5); Sep.Position=UDim2.new(0.5,0,0.15,0)
-    Sep.Size=UDim2.new(1,0,0,1); Sep.BackgroundColor3=Theme.Border; Sep.BackgroundTransparency=0.6; Sep.BorderSizePixel=0; Sep.ZIndex=3
-
-    local AuthTitle=Instance.new("TextLabel"); AuthTitle.Parent=MF
-    AuthTitle.Position=UDim2.new(0.04,0,0.035,0); AuthTitle.Size=UDim2.new(0.9,0,0.075,0)
-    AuthTitle.BackgroundTransparency=1; AuthTitle.BorderSizePixel=0
-    AuthTitle.Font=Enum.Font.GothamBold; AuthTitle.Text=conf.Title
-    AuthTitle.TextColor3=Theme.TextPrimary; AuthTitle.TextScaled=true; AuthTitle.TextWrapped=true
-    AuthTitle.TextXAlignment=Enum.TextXAlignment.Left
-
-    local TB=Instance.new("TextBox"); TB.Parent=MF
-    TB.AnchorPoint=Vector2.new(0.5,0.5); TB.Position=UDim2.new(0.5,0,0.3,0)
-    TB.Size=UDim2.new(0.82,0,0.12,0); TB.ZIndex=2
-    TB.BackgroundColor3=Theme.BG3; TB.BackgroundTransparency=0.5; TB.BorderSizePixel=0
-    TB.ClearTextOnFocus=false; TB.Font=Enum.Font.GothamBold
-    TB.PlaceholderText="ENTER KEY"; TB.Text=""
-    TB.TextColor3=Theme.TextPrimary; TB.TextSize=10; TB.TextWrapped=true; TB.TextTransparency=0.2
-    Corner(Theme.RadiusSmall,TB); Stroke(TB,0.75,Theme.Border)
-
-    local function mkBtn(label, pos, accent)
-        local B=Instance.new("TextButton"); B.Parent=MF
-        B.AnchorPoint=Vector2.new(0.5,0.5); B.Position=pos
-        B.Size=UDim2.new(0.43,0,0.155,0); B.ZIndex=3
-        B.BackgroundColor3=accent and Theme.Accent or Theme.BG3
-        B.BackgroundTransparency=accent and 0.75 or 0.6; B.BorderSizePixel=0
-        B.Font=Enum.Font.GothamBold; B.Text=label
-        B.TextColor3=accent and Theme.Accent or Theme.TextMuted; B.TextSize=11
-        Corner(Theme.RadiusSmall,B); Stroke(B,0.75,accent and Theme.Accent or Theme.Border)
-        B.MouseEnter:Connect(function() T(B,Theme.Fast,{BackgroundTransparency=accent and 0.6 or 0.5}) end)
-        B.MouseLeave:Connect(function() T(B,Theme.Fast,{BackgroundTransparency=accent and 0.75 or 0.6}) end)
-        return B
-    end
-
-    local GetBtn=mkBtn("GET KEY",  UDim2.new(0.27,0,0.65,0), false)
-    local ActBtn=mkBtn("ACTIVATE", UDim2.new(0.73,0,0.65,0), true)
-
-    local id=tostring(tick()):reverse()..tostring(math.random(1e6))
-    GetBtn.MouseButton1Click:Connect(function()
-        local s=conf.GetKey(); if s and typeof(s)=='string' then
-            pcall(function()(getfenv()['toclipboard'] or getfenv()['setclipboard'] or print)(s)end) end
-    end)
-    ActBtn.MouseButton1Click:Connect(function()
-        local s=conf.Auth(TB.Text)
-        if s then TB.Text="*/*/*/*/*/*/*/*"; vaid:Fire(id)
-        else TB.Text=""; T(TB,Theme.Fast,{BackgroundColor3=Color3.fromRGB(80,20,20)}); task.delay(0.5,function() T(TB,Theme.Fast,{BackgroundColor3=Theme.BG3}) end) end
-    end)
-
-    if conf.Freeze then
-        while AG do task.wait() local e=vaid.Event:Wait(); if e==id then break end end
-    end
-
-    return {
-        Close=function()
-            BF.Destroy()
-            for _,s in ipairs(gl) do RunService:UnbindFromRenderStep(s) end
-            T(MF,Theme.Slow,{Size=UDim2.new(0.85,0,0.85,0)})
-            task.delay(0.8,function()
-                T(MF,Theme.Slow,{Position=UDim2.new(0.5,0,1.5,0)})
-                task.delay(1.2,function() AG:Destroy() end)
-            end)
-        end
-    }
-end
-
--- ═════════════════════════════════════════════
---  CONSOLE  (same logic, themed)
--- ═════════════════════════════════════════════
-function Library:Console()
-    local T2=Instance.new("ScreenGui"); T2.Name="CarbonConsole"; T2.Parent=CoreGui
-    T2.ResetOnSpawn=false; T2.ZIndexBehavior=Enum.ZIndexBehavior.Global; T2.IgnoreGuiInset=true
-
-    local MF=Instance.new("Frame"); MF.Name="MFrame"; MF.Parent=T2
-    MF.AnchorPoint=Vector2.new(0.5,0.5); MF.Position=UDim2.new(0.5,0,0.5,0)
-    MF.Size=UDim2.new(0.075,450,0.075,300)
-    MF.BackgroundColor3=Color3.fromRGB(22,22,30); MF.BackgroundTransparency=0.05; MF.BorderSizePixel=0
-    Corner(Theme.RadiusMedium,MF)
-    Shadow(MF,47,Theme.Shadow,0.4)
-    Stroke(MF,0.75,Theme.Border)
-
-    local KTitle=Instance.new("TextLabel"); KTitle.Parent=MF
-    KTitle.BackgroundTransparency=1; KTitle.BorderSizePixel=0
-    KTitle.Position=UDim2.new(0,0,0.016,0); KTitle.Size=UDim2.new(1,0,0.038,0)
-    KTitle.Font=Enum.Font.SourceSansBold; KTitle.Text="~ : carbon -- Konsole"
-    KTitle.TextColor3=Theme.TextMuted; KTitle.TextScaled=true; KTitle.TextWrapped=true
-
-    local ExitBtn=Instance.new("ImageButton"); ExitBtn.Parent=MF
-    ExitBtn.AnchorPoint=Vector2.new(1,0); ExitBtn.Position=UDim2.new(0.995,0,0.01,0)
-    ExitBtn.Size=UDim2.new(0.055,0,0.055,0); ExitBtn.SizeConstraint=Enum.SizeConstraint.RelativeYY
-    ExitBtn.BackgroundTransparency=1; ExitBtn.BorderSizePixel=0; ExitBtn.Image="rbxassetid://7743878857"
-    ExitBtn.ImageColor3=Theme.TextMuted
-
-    local KFrame=Instance.new("Frame"); KFrame.Name="KFrame"; KFrame.Parent=MF
-    KFrame.AnchorPoint=Vector2.new(0.5,0.5); KFrame.Position=UDim2.new(0.5,0,0.5375,0)
-    KFrame.Size=UDim2.new(1,0,0.925,0); KFrame.ZIndex=2
-    KFrame.BackgroundColor3=Color3.fromRGB(15,15,20); KFrame.BackgroundTransparency=0.1; KFrame.BorderSizePixel=0
-
-    local cmdF=Instance.new("ScrollingFrame"); cmdF.Name="cmdFrame"; cmdF.Parent=KFrame
-    cmdF.Active=true; cmdF.BackgroundTransparency=1; cmdF.BorderSizePixel=0
-    cmdF.Size=UDim2.new(1,0,1,0); cmdF.ZIndex=4; cmdF.ScrollBarThickness=4
-
-    local CFL=Instance.new("UIListLayout"); CFL.Parent=cmdF; CFL.SortOrder=Enum.SortOrder.LayoutOrder
-    CFL:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-        cmdF.CanvasSize=UDim2.new(0,0,0,CFL.AbsoluteContentSize.Y)
-    end)
-
-    local function mkLine()
-        local line=Instance.new("Frame"); line.Parent=cmdF
-        line.BackgroundTransparency=1; line.BorderSizePixel=0; line.Size=UDim2.new(1,0,0.5,0); line.ZIndex=5
-        local AR=Instance.new("UIAspectRatioConstraint"); AR.Parent=line; AR.AspectRatio=45; AR.AspectType=Enum.AspectType.ScaleWithParentSize
-        local LL=Instance.new("UIListLayout"); LL.Parent=line; LL.FillDirection=Enum.FillDirection.Horizontal
-        LL.SortOrder=Enum.SortOrder.LayoutOrder; LL.VerticalAlignment=Enum.VerticalAlignment.Center
-
-        local Pfx=Instance.new("TextLabel"); Pfx.Parent=line
-        Pfx.BackgroundTransparency=1; Pfx.BorderSizePixel=0; Pfx.Size=UDim2.new(0.18,0,1,0); Pfx.ZIndex=6
-        Pfx.Font=Enum.Font.SourceSans; Pfx.Text="<font color='rgb(100,120,255)'>[carbon]</font>$"
-        Pfx.TextColor3=Theme.TextPrimary; Pfx.TextScaled=true; Pfx.TextWrapped=true
-        Pfx.TextXAlignment=Enum.TextXAlignment.Left; Pfx.RichText=true
-
-        local TB2=Instance.new("TextBox"); TB2.Parent=line
-        TB2.BackgroundTransparency=1; TB2.BorderSizePixel=0
-        TB2.Size=UDim2.new(1,0,1,0); TB2.Visible=false; TB2.ZIndex=6
-        TB2.ClearTextOnFocus=false; TB2.Font=Enum.Font.SourceSans; TB2.Text=""
-        TB2.TextColor3=Theme.TextPrimary; TB2.TextScaled=true; TB2.TextWrapped=true
-        TB2.TextXAlignment=Enum.TextXAlignment.Left; TB2.TextTransparency=0.2
-
-        local Out=Instance.new("TextLabel"); Out.Parent=line
-        Out.BackgroundTransparency=1; Out.BorderSizePixel=0
-        Out.Size=UDim2.new(1,0,1,0); Out.Visible=false; Out.ZIndex=6
-        Out.Font=Enum.Font.SourceSans; Out.TextColor3=Theme.TextPrimary
-        Out.TextScaled=true; Out.TextWrapped=true; Out.TextXAlignment=Enum.TextXAlignment.Left; Out.RichText=true
-
-        local ev=Instance.new('BindableEvent')
-        return {line=line,Start=Pfx,TextBox=TB2,Title=Out,event=ev}
-    end
-
-    local overview={command={},IsInType=false,LastInput=nil}
-    overview.command.clear=function() for _,v in ipairs(cmdF:GetChildren()) do if v:IsA('Frame') then v:Destroy() end end end
-    overview.command.exit=function() T2.Enabled=false end
-    overview.command.neofetch=function()
-        overview:print("<font color='rgb(100,120,255)'>carbon@roblox</font>\n<font color='rgb(100,120,255)'>--------------</font>\nScript: Carbon UI v2\nUI: Revamped by Claude")
-    end
-    overview.command.lua=function(a) return loadstring(table.concat(a,' '))() end
-    overview.command.luau=overview.command.lua
-
-    ExitBtn.MouseButton1Click:Connect(function() T2.Enabled=not T2.Enabled end)
-
-    function overview:print(txt)
-        for _,line in ipairs(txt:split("\n")) do
-            local cl=mkLine(); cl.Start.Visible=false; cl.TextBox.Visible=false; cl.Title.Visible=true; cl.Title.Text=line
-        end
-    end
-    function overview:Input()
-        local cl=mkLine(); cl.Start.Visible=true; cl.TextBox.Visible=true; cl.Title.Visible=false
-        overview.LastInput=cl
-        cl.TextBox.FocusLost:Connect(function(p) if p then local s=cl.TextBox.Text:split(' '); local n=s[1]; local a={} for i=2,#s do a[i-1]=s[i] end; cl.event:Fire(n,a) end end)
-        return cl.event.Event:Wait()
-    end
-    function overview:add(name,cb)
-        overview.command[name]=function(a) local ok,e=pcall(cb,a); if not ok then overview:print("[Error]: "..tostring(e)) end end
-    end
-
-    task.spawn(function()
-        while true do task.wait(0.1)
-            if not overview.IsInType then
-                if overview.LastInput then overview.LastInput.TextBox.TextEditable=false end
-                local n,a=overview:Input()
-                if overview.command[n] then pcall(overview.command[n],a)
-                else overview:print('[Error]: command not found: "'..tostring(n)..'"') end
-            end
-        end
-    end)
-    return overview
-end
-
-print('[ CARBON UI v2 ]: LOADED — theme-driven, revamped by Claude')
-return table.freeze(Library)
+print("[ CARBON UI v2 ]: Loaded")
+return table.freeze(Carbon)
