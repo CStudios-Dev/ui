@@ -1,5 +1,5 @@
 -- ╔══════════════════════════════════════╗
--- ║       CARBON UI  —  by melissa       ║
+-- ║        SUGAR UI  —  by melissa       ║
 -- ║     revamped visuals / same API      ║
 -- ╚══════════════════════════════════════╝
 
@@ -283,7 +283,7 @@ local function spawnGlow(parent, color)
     local spd  = Vector2.new(3, -2)
     local pos  = Vector2.new(0.5, 0.5)
     local tpl  = 0.7; local tsz = 0.75
-    local tag  = "CarbonGlow_" .. tostring(tick())
+    local tag  = "SugarGlow_" .. tostring(tick())
 
     RunService:BindToRenderStep(tag, 45, function()
         if (tick() - upd) > nextUpd then
@@ -311,7 +311,7 @@ end
 local function buildElements(container, tbl, W_ref)
 
     -- ── TOGGLE ──────────────────────────────────
-    -- Square icon button (like a checkbox but with a custom asset icon)
+    -- Dark square button: asset ID as the box art, checkmark overlay when ON
     function tbl:NewToggle(opts)
         opts = cfg(opts, {Title="Toggle", Name=opts.Title, Default=false, Callback=function()end})
 
@@ -319,7 +319,7 @@ local function buildElements(container, tbl, W_ref)
         Root.Name                 = "Toggle"
         Root.Parent               = container
         Root.BackgroundColor3     = T.B2
-        Root.BackgroundTransparency = 0       -- fully opaque black
+        Root.BackgroundTransparency = 0
         Root.BorderSizePixel      = 0
         Root.Size                 = UDim2.new(0.95, 0, 0, 0)
         Root.ZIndex               = 17
@@ -342,31 +342,49 @@ local function buildElements(container, tbl, W_ref)
         Lbl.TextXAlignment       = Enum.TextXAlignment.Left
         Lbl.TextTransparency     = 0.1
 
-        -- ── Square icon box — fixed 22x22px, curved corners, pure black ──
+        -- ── Box: fixed square, black, curved corners ──
         local Box = Instance.new("Frame")
         Box.Parent               = Root
         Box.AnchorPoint          = Vector2.new(1, 0.5)
         Box.Position             = UDim2.new(0.97, 0, 0.5, 0)
-        Box.Size                 = UDim2.new(0, 22, 0, 22)
+        Box.Size                 = UDim2.new(0, 24, 0, 24)
         Box.BackgroundColor3     = Color3.fromRGB(0, 0, 0)
         Box.BackgroundTransparency = 0
         Box.BorderSizePixel      = 0
         Box.ZIndex               = 18
-        corner(UDim.new(0, 5), Box)
-        local BoxStroke = stroke(Box, 0.45, T.Border)
+        Box.ClipsDescendants     = true
+        corner(UDim.new(0, 6), Box)
+        local BoxStroke = stroke(Box, 0.4, T.Border)
 
-        -- asset icon, shown only when ON
-        local BoxIcon = Instance.new("ImageLabel")
-        BoxIcon.Parent               = Box
-        BoxIcon.AnchorPoint          = Vector2.new(0.5, 0.5)
-        BoxIcon.Position             = UDim2.new(0.5, 0, 0.5, 0)
-        BoxIcon.Size                 = UDim2.new(0.72, 0, 0.72, 0)
-        BoxIcon.BackgroundTransparency = 1
-        BoxIcon.BorderSizePixel      = 0
-        BoxIcon.ZIndex               = 19
-        BoxIcon.Image                = "rbxassetid://136074899341393"
-        BoxIcon.ScaleType            = Enum.ScaleType.Fit
-        BoxIcon.ImageTransparency    = 1
+        -- Asset image fills the box as background art
+        local BoxBG = Instance.new("ImageLabel")
+        BoxBG.Parent               = Box
+        BoxBG.AnchorPoint          = Vector2.new(0.5, 0.5)
+        BoxBG.Position             = UDim2.new(0.5, 0, 0.5, 0)
+        BoxBG.Size                 = UDim2.new(1, 0, 1, 0)
+        BoxBG.BackgroundTransparency = 1
+        BoxBG.BorderSizePixel      = 0
+        BoxBG.ZIndex               = 18
+        BoxBG.Image                = "rbxassetid://136074899341393"
+        BoxBG.ScaleType            = Enum.ScaleType.Crop
+        BoxBG.ImageTransparency    = 0.15  -- always slightly visible as background art
+
+        -- Dark overlay that fades away when ON (so art shows through brighter)
+        local BoxDim = Instance.new("Frame")
+        BoxDim.Parent              = Box
+        BoxDim.Size                = UDim2.new(1, 0, 1, 0)
+        BoxDim.BackgroundColor3    = Color3.fromRGB(0, 0, 0)
+        BoxDim.BackgroundTransparency = 0.35  -- dims the art when OFF
+        BoxDim.BorderSizePixel     = 0
+        BoxDim.ZIndex              = 19
+
+        -- Checkmark icon (lucide) on top, shown when ON
+        local CheckIcon = Icons.Image({Icon = "check", Color = Color3.new(1,1,1), Size = UDim2.new(0, 14, 0, 14)})
+        CheckIcon.AnchorPoint      = Vector2.new(0.5, 0.5)
+        CheckIcon.Position         = UDim2.new(0.5, 0, 0.5, 0)
+        CheckIcon.ZIndex           = 20
+        CheckIcon.ImageTransparency = 1   -- hidden when OFF
+        CheckIcon.Parent           = Box
 
         -- invisible button overlay
         local Btn = Instance.new("TextButton")
@@ -375,15 +393,15 @@ local function buildElements(container, tbl, W_ref)
 
         local function apply(v)
             if v then
-                tw(Box,      T.Fast, {BackgroundColor3 = Color3.fromRGB(10, 0, 0), BackgroundTransparency = 0})
-                tw(BoxStroke,T.Fast, {Color = T.A, Transparency = 0.2})
-                tw(BoxIcon,  T.Fast, {ImageTransparency = 0, ImageColor3 = Color3.new(1,1,1)})
+                tw(BoxDim,   T.Fast, {BackgroundTransparency = 0.85})  -- art shines through
+                tw(BoxStroke,T.Fast, {Color = T.A, Transparency = 0.1})
+                tw(CheckIcon,T.Fast, {ImageTransparency = 0})
                 tw(Lbl,      T.Fast, {TextColor3 = T.T1, TextTransparency = 0})
                 tw(Root,     T.Fast, {BackgroundColor3 = Color3.fromRGB(18, 4, 4), BackgroundTransparency = 0})
             else
-                tw(Box,      T.Fast, {BackgroundColor3 = Color3.fromRGB(0, 0, 0), BackgroundTransparency = 0})
+                tw(BoxDim,   T.Fast, {BackgroundTransparency = 0.35})  -- dims art back
                 tw(BoxStroke,T.Fast, {Color = T.Border, Transparency = 0.4})
-                tw(BoxIcon,  T.Fast, {ImageTransparency = 1})
+                tw(CheckIcon,T.Fast, {ImageTransparency = 1})
                 tw(Lbl,      T.Fast, {TextColor3 = T.T2, TextTransparency = 0.1})
                 tw(Root,     T.Fast, {BackgroundColor3 = T.B2, BackgroundTransparency = 0})
             end
@@ -1133,14 +1151,14 @@ end  -- buildElements
 -- ════════════════════════════════════════════════════════
 --  CARBON LIBRARY
 -- ════════════════════════════════════════════════════════
-local Carbon = {}
-Carbon["."] = "2"
-Carbon.Theme = T
+local Sugar = {}
+Sugar["."] = "2"
+Sugar.Theme = T
 
 -- ──────────────────────────────────────────────────────
 --  NOTIFICATION
 -- ──────────────────────────────────────────────────────
-function Carbon.Notification()
+function Sugar.Notification()
     local SGui = Instance.new("ScreenGui")
     SGui.Name             = HttpService:GenerateGUID(false)
     SGui.Parent           = CoreGui
@@ -1244,14 +1262,14 @@ end
 -- ──────────────────────────────────────────────────────
 --  MAIN WINDOW
 -- ──────────────────────────────────────────────────────
-function Carbon.new(opts)
+function Sugar.new(opts)
     opts = cfg(opts, {
-        Title        = "Carbon UI",
+        Title        = "Sugar UI",
         Description  = "discord.gg/example",
         Keybind      = Enum.KeyCode.LeftControl,
         Logo         = "rbxassetid://0",
         Size         = UDim2.new(0.1, 445, 0.1, 315),
-        ConfigFolder = "CarbonConfigs",
+        ConfigFolder = "SugarConfigs",
     })
 
     -- ── state
@@ -1299,7 +1317,7 @@ function Carbon.new(opts)
 
     -- ── screen gui
     local SGui = Instance.new("ScreenGui")
-    SGui.Parent         = CoreGui; SGui.Name = "CarbonUI"
+    SGui.Parent         = CoreGui; SGui.Name = "SugarUI"
     SGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     SGui.ResetOnSpawn   = false; SGui.IgnoreGuiInset = true
 
@@ -1736,5 +1754,5 @@ function Carbon.new(opts)
     return W
 end
 
-print("[ CARBON UI v4 ]: Loaded — red × black edition")
-return table.freeze(Carbon)
+print("[ SUGAR UI v4 ]: Loaded — red × black edition")
+return table.freeze(Sugar)
