@@ -342,32 +342,31 @@ local function buildElements(container, tbl, W_ref)
         Lbl.TextXAlignment       = Enum.TextXAlignment.Left
         Lbl.TextTransparency     = 0.1
 
-        -- ── Square icon box (replaces pill track) ──
+        -- ── Square icon box — fixed 22x22px, curved corners, pure black ──
         local Box = Instance.new("Frame")
         Box.Parent               = Root
         Box.AnchorPoint          = Vector2.new(1, 0.5)
         Box.Position             = UDim2.new(0.97, 0, 0.5, 0)
-        Box.Size                 = UDim2.new(0.09, 0, 0.72, 0)
-        Box.SizeConstraint       = Enum.SizeConstraint.RelativeYY
-        Box.BackgroundColor3     = Color3.fromRGB(0, 0, 0)   -- pure black
-        Box.BackgroundTransparency = 0        -- fully opaque
+        Box.Size                 = UDim2.new(0, 22, 0, 22)
+        Box.BackgroundColor3     = Color3.fromRGB(0, 0, 0)
+        Box.BackgroundTransparency = 0
         Box.BorderSizePixel      = 0
         Box.ZIndex               = 18
-        -- rounded square (not pill — small radius)
-        corner(UDim.new(0, 4), Box)
-        local BoxStroke = stroke(Box, 0.55, T.Border)
+        corner(UDim.new(0, 5), Box)
+        local BoxStroke = stroke(Box, 0.45, T.Border)
 
-        -- custom asset icon inside the box
+        -- asset icon, shown only when ON
         local BoxIcon = Instance.new("ImageLabel")
         BoxIcon.Parent               = Box
         BoxIcon.AnchorPoint          = Vector2.new(0.5, 0.5)
         BoxIcon.Position             = UDim2.new(0.5, 0, 0.5, 0)
-        BoxIcon.Size                 = UDim2.new(0.78, 0, 0.78, 0)
+        BoxIcon.Size                 = UDim2.new(0.72, 0, 0.72, 0)
         BoxIcon.BackgroundTransparency = 1
         BoxIcon.BorderSizePixel      = 0
         BoxIcon.ZIndex               = 19
         BoxIcon.Image                = "rbxassetid://136074899341393"
-        BoxIcon.ImageTransparency    = 1   -- hidden when OFF
+        BoxIcon.ScaleType            = Enum.ScaleType.Fit
+        BoxIcon.ImageTransparency    = 1
 
         -- invisible button overlay
         local Btn = Instance.new("TextButton")
