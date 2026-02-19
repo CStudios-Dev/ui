@@ -1,5 +1,5 @@
--- Carbon UI Library — Revamped by Claude
--- Original made by melissa
+
+--  made by melissa
 
 local Twen        = game:GetService('TweenService')
 local Input       = game:GetService('UserInputService')
