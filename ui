@@ -16,24 +16,24 @@ local CoreGui       = (gethui and gethui()) or game:FindFirstChild('CoreGui') or
 --  THEME  — change these to retheme everything
 -- ══════════════════════════════════════
 local T = {
-    -- base backgrounds (darkest → lightest panel)
-    B0  = Color3.fromRGB( 9,  9, 13),   -- window base
-    B1  = Color3.fromRGB(14, 14, 20),   -- panel / section bg
-    B2  = Color3.fromRGB(20, 20, 28),   -- element bg
-    B3  = Color3.fromRGB(26, 26, 36),   -- input / track bg
+    -- base backgrounds — pure black family
+    B0  = Color3.fromRGB(  0,   0,   0),   -- window base        (pure black)
+    B1  = Color3.fromRGB(  8,   5,   5),   -- panel / section bg
+    B2  = Color3.fromRGB( 14,   8,   8),   -- element bg
+    B3  = Color3.fromRGB( 22,  12,  12),   -- input / track bg
 
-    -- accent
-    A   = Color3.fromRGB(99, 102, 241), -- indigo
-    ADim= Color3.fromRGB(67,  70, 190), -- darker accent for pressed
+    -- accent — red
+    A   = Color3.fromRGB(210,  35,  35),   -- red
+    ADim= Color3.fromRGB(140,  18,  18),   -- darker red for pressed
 
-    -- text
+    -- text — keep same as original (warm white / grey)
     T1  = Color3.fromRGB(235, 235, 245), -- primary
     T2  = Color3.fromRGB(130, 130, 155), -- muted
     T3  = Color3.fromRGB( 80,  80, 105), -- very muted
 
     -- borders / shadow
-    Border  = Color3.fromRGB(40,  40, 58),
-    Shadow  = Color3.fromRGB( 0,   0,  0),
+    Border  = Color3.fromRGB( 55,  20,  20),   -- dark red-tinted border
+    Shadow  = Color3.fromRGB(  0,   0,   0),
 
     -- radii
     RLg = UDim.new(0, 8),
@@ -319,12 +319,12 @@ local function buildElements(container, tbl, W_ref)
         Root.Name                 = "Toggle"
         Root.Parent               = container
         Root.BackgroundColor3     = T.B2
-        Root.BackgroundTransparency = 0.55
+        Root.BackgroundTransparency = 0       -- fully opaque black
         Root.BorderSizePixel      = 0
         Root.Size                 = UDim2.new(0.95, 0, 0, 0)
         Root.ZIndex               = 17
         corner(T.RSm, Root)
-        stroke(Root, 0.75, T.Border)
+        stroke(Root, 0.55, T.Border)
         local AR = Instance.new("UIAspectRatioConstraint")
         AR.Parent = Root; AR.AspectRatio = 8; AR.AspectType = Enum.AspectType.ScaleWithParentSize
 
@@ -349,8 +349,8 @@ local function buildElements(container, tbl, W_ref)
         Box.Position             = UDim2.new(0.97, 0, 0.5, 0)
         Box.Size                 = UDim2.new(0.09, 0, 0.72, 0)
         Box.SizeConstraint       = Enum.SizeConstraint.RelativeYY
-        Box.BackgroundColor3     = T.B3
-        Box.BackgroundTransparency = 0.2
+        Box.BackgroundColor3     = Color3.fromRGB(0, 0, 0)   -- pure black
+        Box.BackgroundTransparency = 0        -- fully opaque
         Box.BorderSizePixel      = 0
         Box.ZIndex               = 18
         -- rounded square (not pill — small radius)
@@ -376,17 +376,17 @@ local function buildElements(container, tbl, W_ref)
 
         local function apply(v)
             if v then
-                tw(Box,      T.Fast, {BackgroundColor3 = T.A, BackgroundTransparency = 0.55})
-                tw(BoxStroke,T.Fast, {Color = T.A, Transparency = 0.3})
+                tw(Box,      T.Fast, {BackgroundColor3 = Color3.fromRGB(10, 0, 0), BackgroundTransparency = 0})
+                tw(BoxStroke,T.Fast, {Color = T.A, Transparency = 0.2})
                 tw(BoxIcon,  T.Fast, {ImageTransparency = 0, ImageColor3 = Color3.new(1,1,1)})
                 tw(Lbl,      T.Fast, {TextColor3 = T.T1, TextTransparency = 0})
-                tw(Root,     T.Fast, {BackgroundColor3 = T.A, BackgroundTransparency = 0.9})
+                tw(Root,     T.Fast, {BackgroundColor3 = Color3.fromRGB(18, 4, 4), BackgroundTransparency = 0})
             else
-                tw(Box,      T.Fast, {BackgroundColor3 = T.B3, BackgroundTransparency = 0.2})
-                tw(BoxStroke,T.Fast, {Color = T.Border, Transparency = 0.55})
+                tw(Box,      T.Fast, {BackgroundColor3 = Color3.fromRGB(0, 0, 0), BackgroundTransparency = 0})
+                tw(BoxStroke,T.Fast, {Color = T.Border, Transparency = 0.4})
                 tw(BoxIcon,  T.Fast, {ImageTransparency = 1})
                 tw(Lbl,      T.Fast, {TextColor3 = T.T2, TextTransparency = 0.1})
-                tw(Root,     T.Fast, {BackgroundColor3 = T.B2, BackgroundTransparency = 0.55})
+                tw(Root,     T.Fast, {BackgroundColor3 = T.B2, BackgroundTransparency = 0})
             end
             task.spawn(opts.Callback, v)
         end
@@ -413,12 +413,12 @@ local function buildElements(container, tbl, W_ref)
         Root.Name               = "Button"
         Root.Parent             = container
         Root.BackgroundColor3   = T.B2
-        Root.BackgroundTransparency = 0.55
+        Root.BackgroundTransparency = 0
         Root.BorderSizePixel    = 0
         Root.Size               = UDim2.new(0.95, 0, 0, 0)
         Root.ZIndex             = 17
         corner(T.RSm, Root)
-        stroke(Root, 0.75, T.Border)
+        stroke(Root, 0.55, T.Border)
         local SH = shadow(Root, 20, 0.65)
         local AR = Instance.new("UIAspectRatioConstraint")
         AR.Parent = Root; AR.AspectRatio = 7.5; AR.AspectType = Enum.AspectType.ScaleWithParentSize
@@ -466,14 +466,14 @@ local function buildElements(container, tbl, W_ref)
         Root.Name               = "Slider"
         Root.Parent             = container
         Root.BackgroundColor3   = T.B2
-        Root.BackgroundTransparency = 0.55
+        Root.BackgroundTransparency = 0       -- fully opaque
         Root.BorderSizePixel    = 0
         Root.Size               = UDim2.new(0.95, 0, 0, 0)
         Root.ZIndex             = 17
         -- ClipsDescendants false so pip can sit outside track
         Root.ClipsDescendants   = false
         corner(T.RSm, Root)
-        stroke(Root, 0.75, T.Border)
+        stroke(Root, 0.55, T.Border)
         local AR = Instance.new("UIAspectRatioConstraint")
         AR.Parent = Root; AR.AspectRatio = 6; AR.AspectType = Enum.AspectType.ScaleWithParentSize
 
@@ -512,12 +512,12 @@ local function buildElements(container, tbl, W_ref)
         Track.Position             = UDim2.new(0.5, 0, 0.75, 0)
         Track.Size                 = UDim2.new(0.92, 0, 0.22, 0)
         Track.BackgroundColor3     = T.B3
-        Track.BackgroundTransparency = 0.1
+        Track.BackgroundTransparency = 0     -- fully opaque
         Track.BorderSizePixel      = 0
         Track.ClipsDescendants     = true
         Track.ZIndex               = 18
         corner(UDim.new(1, 0), Track)
-        stroke(Track, 0.6, T.Border)
+        stroke(Track, 0.4, T.Border)
 
         -- Fill — pink (right) → near-black (left), gradient left→right
         local Fill = Instance.new("Frame")
@@ -525,7 +525,7 @@ local function buildElements(container, tbl, W_ref)
         Fill.AnchorPoint        = Vector2.new(0, 0.5)
         Fill.Position           = UDim2.new(0, 0, 0.5, 0)
         Fill.BackgroundColor3   = Color3.fromRGB(236, 72, 153)
-        Fill.BackgroundTransparency = 0
+        Fill.BackgroundTransparency = 0     -- fully opaque
         Fill.BorderSizePixel    = 0
         Fill.Size               = UDim2.new(
             (opts.Default - opts.Min) / (opts.Max - opts.Min), 0, 1, 0
@@ -647,12 +647,12 @@ local function buildElements(container, tbl, W_ref)
         Root.Name               = "Keybind"
         Root.Parent             = container
         Root.BackgroundColor3   = T.B2
-        Root.BackgroundTransparency = 0.55
+        Root.BackgroundTransparency = 0
         Root.BorderSizePixel    = 0
         Root.Size               = UDim2.new(0.95, 0, 0, 0)
         Root.ZIndex             = 17
         corner(T.RSm, Root)
-        stroke(Root, 0.75, T.Border)
+        stroke(Root, 0.55, T.Border)
         local AR = Instance.new("UIAspectRatioConstraint")
         AR.Parent = Root; AR.AspectRatio = 8; AR.AspectType = Enum.AspectType.ScaleWithParentSize
 
@@ -675,11 +675,11 @@ local function buildElements(container, tbl, W_ref)
         Badge.AnchorPoint          = Vector2.new(1, 0.5)
         Badge.Position             = UDim2.new(0.97, 0, 0.5, 0)
         Badge.Size                 = UDim2.new(0, 44, 0.58, 0)
-        Badge.BackgroundColor3     = T.B3
-        Badge.BackgroundTransparency = 0.2
+        Badge.BackgroundColor3     = Color3.fromRGB(0, 0, 0)
+        Badge.BackgroundTransparency = 0
         Badge.BorderSizePixel      = 0; Badge.ZIndex = 18
         corner(T.RSm, Badge)
-        stroke(Badge, 0.6, T.A)
+        stroke(Badge, 0.4, T.A)
 
         local KeyLbl = Instance.new("TextLabel")
         KeyLbl.Parent               = Badge
@@ -743,12 +743,12 @@ local function buildElements(container, tbl, W_ref)
         Root.Name               = "Dropdown"
         Root.Parent             = container
         Root.BackgroundColor3   = T.B2
-        Root.BackgroundTransparency = 0.55
+        Root.BackgroundTransparency = 0
         Root.BorderSizePixel    = 0
         Root.Size               = UDim2.new(0.95, 0, 0, 0)
         Root.ZIndex             = 17
         corner(T.RSm, Root)
-        stroke(Root, 0.75, T.Border)
+        stroke(Root, 0.55, T.Border)
         local AR = Instance.new("UIAspectRatioConstraint")
         AR.Parent = Root; AR.AspectRatio = 5; AR.AspectType = Enum.AspectType.ScaleWithParentSize
 
@@ -771,8 +771,8 @@ local function buildElements(container, tbl, W_ref)
         VRow.AnchorPoint          = Vector2.new(0.5, 0.5)
         VRow.Position             = UDim2.new(0.5, 0, 0.7, 0)
         VRow.Size                 = UDim2.new(0.92, 0, 0.35, 0)
-        VRow.BackgroundColor3     = T.B3
-        VRow.BackgroundTransparency = 0.2
+        VRow.BackgroundColor3     = Color3.fromRGB(0, 0, 0)
+        VRow.BackgroundTransparency = 0
         VRow.BorderSizePixel      = 0; VRow.ClipsDescendants = false; VRow.ZIndex = 18
         corner(T.RSm, VRow)
 
@@ -946,12 +946,12 @@ local function buildElements(container, tbl, W_ref)
         Root.Name               = "Textbox"
         Root.Parent             = container
         Root.BackgroundColor3   = T.B2
-        Root.BackgroundTransparency = 0.55
+        Root.BackgroundTransparency = 0
         Root.BorderSizePixel    = 0
         Root.Size               = UDim2.new(0.95, 0, 0, 0)
         Root.ZIndex             = 17
         corner(T.RSm, Root)
-        stroke(Root, 0.75, T.Border)
+        stroke(Root, 0.55, T.Border)
         local AR = Instance.new("UIAspectRatioConstraint")
         AR.Parent = Root; AR.AspectRatio = 5; AR.AspectType = Enum.AspectType.ScaleWithParentSize
 
@@ -973,11 +973,11 @@ local function buildElements(container, tbl, W_ref)
         InputRow.AnchorPoint          = Vector2.new(0.5, 0.5)
         InputRow.Position             = UDim2.new(0.5, 0, 0.7, 0)
         InputRow.Size                 = UDim2.new(0.92, 0, 0.34, 0)
-        InputRow.BackgroundColor3     = T.B3
-        InputRow.BackgroundTransparency = 0.2
+        InputRow.BackgroundColor3     = Color3.fromRGB(0, 0, 0)
+        InputRow.BackgroundTransparency = 0
         InputRow.BorderSizePixel      = 0; InputRow.ClipsDescendants = true; InputRow.ZIndex = 18
         corner(T.RSm, InputRow)
-        local IR_stroke = stroke(InputRow, 0.75, T.Border)
+        local IR_stroke = stroke(InputRow, 0.45, T.Border)
 
         if opts.FileType ~= "" then
             local FT = Instance.new("TextLabel")
@@ -1318,7 +1318,7 @@ function Carbon.new(opts)
     tw(MF, T.Slow, {BackgroundTransparency = 0.25, Size = opts.Size})
     tw(MF_shadow, T.Slow, {ImageTransparency = 0.35})
 
-    local glowTag = spawnGlow(MF, T.A)
+    local glowTag = spawnGlow(MF, Color3.fromRGB(180, 20, 20))
     W.BlurFX = BlurSystem(MF)
 
     -- ── left header panel (logo area)
@@ -1737,5 +1737,5 @@ function Carbon.new(opts)
     return W
 end
 
-print("[ CARBON UI v2 patched ]: Loaded")
+print("[ CARBON UI v4 ]: Loaded — red × black edition")
 return table.freeze(Carbon)
