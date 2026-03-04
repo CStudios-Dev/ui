@@ -3587,281 +3587,445 @@ WindowTable.SetKeybind = function(newKey)
 end
 
 -- ═══════════════════════════════════════════════════
--- SIDE PANEL  (hover/right-click left edge to open)
+-- SIDE PANEL  v3
 -- ═══════════════════════════════════════════════════
 task.spawn(function()
-    -- slight defer so all tabs/sections are registered first
-    task.wait(0.5)
+    task.wait(0.6)
 
-    local SideGui = Instance.new("ScreenGui")
-    SideGui.Name = "SidePanelGui"
-    SideGui.Parent = CoreGui
-    SideGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-    SideGui.ResetOnSpawn = false
-    SideGui.IgnoreGuiInset = true
+    local accent     = Color3.fromRGB(150, 0, 0)
+    local accentDark = Color3.fromRGB(10, 3, 3)
+    local isMob      = Input.TouchEnabled
+    local PANEL_W    = 260
+    local PANEL_H    = 520
+    local BTN_S      = 36
 
-    local PANEL_W = 255
-    local PANEL_H = 500
-
-    -- Main panel frame
-    local Panel = Instance.new("Frame")
-    Panel.Name = "SidePanel"
-    Panel.Parent = SideGui
-    Panel.AnchorPoint = Vector2.new(0, 0.5)
-    Panel.BackgroundColor3 = Color3.fromRGB(10, 3, 3)
-    Panel.BackgroundTransparency = 0.15
-    Panel.BorderSizePixel = 0
-    Panel.Position = UDim2.new(0, -PANEL_W - 20, 0.5, 0)
-    Panel.Size = UDim2.new(0, PANEL_W, 0, PANEL_H)
-    Panel.ZIndex = 200
-    Panel.ClipsDescendants = true
-
-    Instance.new("UICorner", Panel).CornerRadius = UDim.new(0, 6)
-
-    local PanelStroke = Instance.new("UIStroke")
-    PanelStroke.Color = Color3.fromRGB(150, 0, 0)
-    PanelStroke.Transparency = 0.5
-    PanelStroke.Parent = Panel
-
-    local Shadow = Instance.new("ImageLabel")
-    Shadow.Parent = Panel
-    Shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-    Shadow.BackgroundTransparency = 1
-    Shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-    Shadow.Size = UDim2.new(1, 50, 1, 50)
-    Shadow.ZIndex = 199
-    Shadow.Image = "rbxassetid://6015897843"
-    Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-    Shadow.ImageTransparency = 0.5
-    Shadow.ScaleType = Enum.ScaleType.Slice
-    Shadow.SliceCenter = Rect.new(49, 49, 450, 450)
-
-    -- Tab row
-    local TabRow = Instance.new("Frame")
-    TabRow.Parent = Panel
-    TabRow.BackgroundTransparency = 1
-    TabRow.Position = UDim2.new(0, 0, 0, 0)
-    TabRow.Size = UDim2.new(1, 0, 0, 36)
-    TabRow.ZIndex = 201
-
-    local function mkTabBtn(label, xScale)
-        local b = Instance.new("TextButton")
-        b.Parent = TabRow
-        b.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        b.BackgroundTransparency = 0.7
-        b.BorderSizePixel = 0
-        b.Position = UDim2.new(xScale, 2, 0, 4)
-        b.Size = UDim2.new(0.5, -4, 1, -8)
-        b.ZIndex = 202
-        b.Font = Enum.Font.GothamBold
-        b.Text = label
-        b.TextColor3 = Color3.fromRGB(255, 255, 255)
-        b.TextSize = 12
-        b.TextTransparency = 0.4
-        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
-        return b
+    -- lucide icon helper
+    local function lucideIcon(name, parent, size, color)
+        size  = size  or UDim2.new(0, 16, 0, 16)
+        color = color or Color3.fromRGB(255, 255, 255)
+        local ok, obj = pcall(function() return Icons.Image({ Icon = name, Size = size }) end)
+        if ok and obj and obj.IconFrame then
+            local f = obj.IconFrame
+            f.Parent = parent
+            pcall(function() f.ImageColor3 = color end)
+            return f
+        end
+        local lbl = Instance.new("TextLabel")
+        lbl.Parent = parent
+        lbl.BackgroundTransparency = 1
+        lbl.Size = size
+        lbl.Font = Enum.Font.GothamBold
+        lbl.Text = name:sub(1,1):upper()
+        lbl.TextColor3 = color
+        lbl.TextSize = 10
+        return lbl
     end
 
-    local BtnSearch   = mkTabBtn("🔍  Search",   0)
-    local BtnSettings = mkTabBtn("⚙  Settings", 0.5)
+    -- ScreenGui
+    local SideGui = Instance.new("ScreenGui")
+    SideGui.Name = "SidePanelGui_v3"
+    SideGui.Parent = CoreGui
+    SideGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    SideGui.ResetOnSpawn   = false
+    SideGui.IgnoreGuiInset = true
 
-    local Div = Instance.new("Frame")
-    Div.Parent = Panel
-    Div.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-    Div.BackgroundTransparency = 0.6
-    Div.BorderSizePixel = 0
-    Div.Position = UDim2.new(0.05, 0, 0, 37)
-    Div.Size = UDim2.new(0.9, 0, 0, 1)
-    Div.ZIndex = 201
+    -- ── Floating toggle button ────────────────────────
+    local ToggleBtn = Instance.new("Frame")
+    ToggleBtn.Name = "SPToggle"
+    ToggleBtn.Parent = SideGui
+    ToggleBtn.AnchorPoint = Vector2.new(0, 0.5)
+    ToggleBtn.BackgroundColor3 = accent
+    ToggleBtn.BorderSizePixel  = 0
+    ToggleBtn.Position = UDim2.new(0, 6, 0.5, 0)
+    ToggleBtn.Size     = UDim2.new(0, BTN_S, 0, BTN_S)
+    ToggleBtn.ZIndex   = 210
+    Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 7)
 
-    -- ── SEARCH PAGE ──────────────────────────────
+    local ToggleShadow = Instance.new("ImageLabel")
+    ToggleShadow.Parent = ToggleBtn
+    ToggleShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    ToggleShadow.BackgroundTransparency = 1
+    ToggleShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    ToggleShadow.Size     = UDim2.new(1, 24, 1, 24)
+    ToggleShadow.ZIndex   = 209
+    ToggleShadow.Image    = "rbxassetid://6015897843"
+    ToggleShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    ToggleShadow.ImageTransparency = 0.45
+    ToggleShadow.ScaleType  = Enum.ScaleType.Slice
+    ToggleShadow.SliceCenter = Rect.new(49, 49, 450, 450)
+
+    local ToggleIconFrame = lucideIcon("panel-left", ToggleBtn, UDim2.new(0, 18, 0, 18))
+    if ToggleIconFrame then
+        ToggleIconFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+        ToggleIconFrame.Position    = UDim2.new(0.5, 0, 0.5, 0)
+        ToggleIconFrame.ZIndex      = 211
+    end
+
+    local ToggleHit = Instance.new("TextButton")
+    ToggleHit.Parent = ToggleBtn
+    ToggleHit.BackgroundTransparency = 1
+    ToggleHit.Size   = UDim2.new(1, 0, 1, 0)
+    ToggleHit.ZIndex = 212
+    ToggleHit.Text   = ""
+
+    -- ── Panel ─────────────────────────────────────────
+    local Panel = Instance.new("Frame")
+    Panel.Name   = "SidePanel"
+    Panel.Parent = SideGui
+    Panel.AnchorPoint = Vector2.new(0, 0.5)
+    Panel.BackgroundColor3 = Color3.fromRGB(12, 4, 4)
+    Panel.BackgroundTransparency = 0.08
+    Panel.BorderSizePixel = 0
+    Panel.Position = UDim2.new(0, -PANEL_W - 60, 0.5, 0)
+    Panel.Size     = UDim2.new(0, PANEL_W, 0, PANEL_H)
+    Panel.ZIndex   = 200
+    Panel.ClipsDescendants = true
+    Panel.Visible  = true
+    Instance.new("UICorner", Panel).CornerRadius = UDim.new(0, 8)
+
+    local PanelStroke = Instance.new("UIStroke")
+    PanelStroke.Color        = accent
+    PanelStroke.Transparency = 0.6
+    PanelStroke.Thickness    = 1
+    PanelStroke.Parent       = Panel
+
+    local PanelShadow = Instance.new("ImageLabel")
+    PanelShadow.Parent = Panel
+    PanelShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    PanelShadow.BackgroundTransparency = 1
+    PanelShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    PanelShadow.Size     = UDim2.new(1, 50, 1, 50)
+    PanelShadow.ZIndex   = 199
+    PanelShadow.Image    = "rbxassetid://6015897843"
+    PanelShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    PanelShadow.ImageTransparency = 0.4
+    PanelShadow.ScaleType  = Enum.ScaleType.Slice
+    PanelShadow.SliceCenter = Rect.new(49, 49, 450, 450)
+
+    -- header
+    local Header = Instance.new("Frame")
+    Header.Parent = Panel
+    Header.BackgroundColor3 = accent
+    Header.BackgroundTransparency = 0.72
+    Header.BorderSizePixel = 0
+    Header.Position = UDim2.new(0, 0, 0, 0)
+    Header.Size     = UDim2.new(1, 0, 0, 44)
+    Header.ZIndex   = 202
+    local HeaderGrad = Instance.new("UIGradient")
+    HeaderGrad.Rotation    = 90
+    HeaderGrad.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(1, 0.55),
+    }
+    HeaderGrad.Parent = Header
+
+    local HeaderIc = lucideIcon("layout-dashboard", Header, UDim2.new(0,16,0,16))
+    if HeaderIc then
+        HeaderIc.AnchorPoint = Vector2.new(0,0.5)
+        HeaderIc.Position    = UDim2.new(0, 13, 0.5, 0)
+        HeaderIc.ZIndex      = 203
+        HeaderIc.ImageColor3 = Color3.fromRGB(255,255,255)
+    end
+
+    local HeaderTitle = Instance.new("TextLabel")
+    HeaderTitle.Parent = Header
+    HeaderTitle.BackgroundTransparency = 1
+    HeaderTitle.Position = UDim2.new(0, 38, 0, 0)
+    HeaderTitle.Size     = UDim2.new(1, -70, 1, 0)
+    HeaderTitle.ZIndex   = 203
+    HeaderTitle.Font     = Enum.Font.GothamBold
+    HeaderTitle.Text     = "SEARCH"
+    HeaderTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    HeaderTitle.TextSize = 13
+    HeaderTitle.TextXAlignment = Enum.TextXAlignment.Left
+    HeaderTitle.TextTransparency = 0
+
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Parent = Header
+    CloseBtn.AnchorPoint = Vector2.new(1, 0.5)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    CloseBtn.BackgroundTransparency = 0.87
+    CloseBtn.BorderSizePixel = 0
+    CloseBtn.Position = UDim2.new(1,-8,0.5,0)
+    CloseBtn.Size     = UDim2.new(0,26,0,26)
+    CloseBtn.ZIndex   = 204
+    CloseBtn.Text     = ""
+    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,5)
+    local CloseIc = lucideIcon("x", CloseBtn, UDim2.new(0,14,0,14))
+    if CloseIc then
+        CloseIc.AnchorPoint = Vector2.new(0.5,0.5)
+        CloseIc.Position    = UDim2.new(0.5,0,0.5,0)
+        CloseIc.ZIndex      = 205
+        CloseIc.ImageColor3 = Color3.fromRGB(255,255,255)
+    end
+
+    -- tab pill row
+    local TabRow = Instance.new("Frame")
+    TabRow.Parent = Panel
+    TabRow.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    TabRow.BackgroundTransparency = 0.5
+    TabRow.BorderSizePixel = 0
+    TabRow.Position = UDim2.new(0.04,0,0,52)
+    TabRow.Size     = UDim2.new(0.92,0,0,32)
+    TabRow.ZIndex   = 202
+    Instance.new("UICorner", TabRow).CornerRadius = UDim.new(0,7)
+
+    local Pill = Instance.new("Frame")
+    Pill.Parent = TabRow
+    Pill.BackgroundColor3 = accent
+    Pill.BackgroundTransparency = 0.28
+    Pill.BorderSizePixel = 0
+    Pill.Position = UDim2.new(0.02,0,0.1,0)
+    Pill.Size     = UDim2.new(0.47,0,0.8,0)
+    Pill.ZIndex   = 202
+    Instance.new("UICorner", Pill).CornerRadius = UDim.new(0,5)
+
+    local function mkTabBtn(label, iconName, xScale)
+        local btn = Instance.new("TextButton")
+        btn.Parent = TabRow
+        btn.BackgroundTransparency = 1
+        btn.BorderSizePixel = 0
+        btn.Position = UDim2.new(xScale,0,0,0)
+        btn.Size     = UDim2.new(0.5,0,1,0)
+        btn.ZIndex   = 204
+        btn.Font     = Enum.Font.GothamBold
+        btn.Text     = "    "..label
+        btn.TextColor3 = Color3.fromRGB(255,255,255)
+        btn.TextSize = 11
+        btn.TextTransparency = xScale == 0 and 0 or 0.45
+        local ic = lucideIcon(iconName, btn, UDim2.new(0,12,0,12))
+        if ic then
+            ic.AnchorPoint = Vector2.new(0,0.5)
+            ic.Position    = UDim2.new(0.08,0,0.5,0)
+            ic.ZIndex      = 205
+            ic.ImageColor3 = Color3.fromRGB(255,255,255)
+        end
+        return btn
+    end
+
+    local BtnSearch   = mkTabBtn("Search",   "search",  0)
+    local BtnSettings = mkTabBtn("Settings", "sliders", 0.5)
+
+    local Sep = Instance.new("Frame")
+    Sep.Parent = Panel
+    Sep.BackgroundColor3 = accent
+    Sep.BackgroundTransparency = 0.65
+    Sep.BorderSizePixel = 0
+    Sep.Position = UDim2.new(0.04,0,0,91)
+    Sep.Size     = UDim2.new(0.92,0,0,1)
+    Sep.ZIndex   = 201
+
+    -- ── SEARCH PAGE ───────────────────────────────────
     local SearchPage = Instance.new("Frame")
     SearchPage.Parent = Panel
     SearchPage.BackgroundTransparency = 1
-    SearchPage.Position = UDim2.new(0, 0, 0, 42)
-    SearchPage.Size = UDim2.new(1, 0, 1, -42)
-    SearchPage.ZIndex = 201
+    SearchPage.Position = UDim2.new(0,0,0,96)
+    SearchPage.Size     = UDim2.new(1,0,1,-96)
+    SearchPage.ZIndex   = 201
     SearchPage.ClipsDescendants = true
 
-    local SBFrame = Instance.new("Frame")
-    SBFrame.Parent = SearchPage
-    SBFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    SBFrame.BackgroundTransparency = 0.5
-    SBFrame.BorderSizePixel = 0
-    SBFrame.Position = UDim2.new(0.04, 0, 0, 6)
-    SBFrame.Size = UDim2.new(0.92, 0, 0, 30)
-    SBFrame.ZIndex = 202
-    Instance.new("UICorner", SBFrame).CornerRadius = UDim.new(0, 4)
+    local SBWrap = Instance.new("Frame")
+    SBWrap.Parent = SearchPage
+    SBWrap.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    SBWrap.BackgroundTransparency = 0.44
+    SBWrap.BorderSizePixel = 0
+    SBWrap.Position = UDim2.new(0.04,0,0,6)
+    SBWrap.Size     = UDim2.new(0.92,0,0,32)
+    SBWrap.ZIndex   = 202
+    Instance.new("UICorner", SBWrap).CornerRadius = UDim.new(0,7)
     local SBStroke = Instance.new("UIStroke")
-    SBStroke.Transparency = 0.75
-    SBStroke.Color = Color3.fromRGB(255, 255, 255)
-    SBStroke.Parent = SBFrame
+    SBStroke.Color = Color3.fromRGB(255,255,255)
+    SBStroke.Transparency = 0.82
+    SBStroke.Parent = SBWrap
+
+    local SBIc = lucideIcon("search", SBWrap, UDim2.new(0,13,0,13))
+    if SBIc then
+        SBIc.AnchorPoint = Vector2.new(0,0.5)
+        SBIc.Position    = UDim2.new(0,10,0.5,0)
+        SBIc.ZIndex      = 204
+        SBIc.ImageColor3 = Color3.fromRGB(130,130,130)
+    end
 
     local SBInput = Instance.new("TextBox")
-    SBInput.Parent = SBFrame
-    SBInput.AnchorPoint = Vector2.new(0, 0.5)
+    SBInput.Parent = SBWrap
+    SBInput.AnchorPoint = Vector2.new(0,0.5)
     SBInput.BackgroundTransparency = 1
-    SBInput.Position = UDim2.new(0.05, 0, 0.5, 0)
-    SBInput.Size = UDim2.new(0.92, 0, 0.8, 0)
-    SBInput.ZIndex = 203
+    SBInput.Position = UDim2.new(0,30,0.5,0)
+    SBInput.Size     = UDim2.new(1,-36,0.75,0)
+    SBInput.ZIndex   = 203
     SBInput.ClearTextOnFocus = false
-    SBInput.Font = Enum.Font.GothamBold
-    SBInput.PlaceholderText = "Search features..."
-    SBInput.PlaceholderColor3 = Color3.fromRGB(130, 130, 130)
-    SBInput.Text = ""
-    SBInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SBInput.TextSize = 12
+    SBInput.Font     = Enum.Font.Gotham
+    SBInput.PlaceholderText   = "Search features..."
+    SBInput.PlaceholderColor3 = Color3.fromRGB(100,100,100)
+    SBInput.Text      = ""
+    SBInput.TextColor3 = Color3.fromRGB(235,235,235)
+    SBInput.TextSize  = 12
     SBInput.TextXAlignment = Enum.TextXAlignment.Left
+
+    local HintLbl = Instance.new("TextLabel")
+    HintLbl.Parent = SearchPage
+    HintLbl.BackgroundTransparency = 1
+    HintLbl.Position = UDim2.new(0.04,0,0,44)
+    HintLbl.Size     = UDim2.new(0.92,0,0,16)
+    HintLbl.ZIndex   = 202
+    HintLbl.Font     = Enum.Font.Gotham
+    HintLbl.Text     = "Type to search across all features"
+    HintLbl.TextColor3 = Color3.fromRGB(100,100,100)
+    HintLbl.TextSize  = 10
+    HintLbl.TextXAlignment = Enum.TextXAlignment.Left
 
     local ResultsScroll = Instance.new("ScrollingFrame")
     ResultsScroll.Parent = SearchPage
     ResultsScroll.BackgroundTransparency = 1
     ResultsScroll.BorderSizePixel = 0
-    ResultsScroll.Position = UDim2.new(0.04, 0, 0, 44)
-    ResultsScroll.Size = UDim2.new(0.92, 0, 1, -50)
-    ResultsScroll.ZIndex = 202
+    ResultsScroll.Position = UDim2.new(0.04,0,0,64)
+    ResultsScroll.Size     = UDim2.new(0.92,0,1,-68)
+    ResultsScroll.ZIndex   = 202
     ResultsScroll.ScrollBarThickness = 2
-    ResultsScroll.ScrollBarImageColor3 = Color3.fromRGB(150, 0, 0)
-    ResultsScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    ResultsScroll.ScrollBarImageColor3 = accent
+    ResultsScroll.CanvasSize = UDim2.new(0,0,0,0)
     local RList = Instance.new("UIListLayout")
-    RList.Parent = ResultsScroll
+    RList.Parent    = ResultsScroll
     RList.SortOrder = Enum.SortOrder.LayoutOrder
-    RList.Padding = UDim.new(0, 3)
+    RList.Padding   = UDim.new(0,4)
     RList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        ResultsScroll.CanvasSize = UDim2.fromOffset(0, RList.AbsoluteContentSize.Y)
+        ResultsScroll.CanvasSize = UDim2.fromOffset(0, RList.AbsoluteContentSize.Y+6)
     end)
 
-    local NoResults = Instance.new("TextLabel")
-    NoResults.Parent = ResultsScroll
-    NoResults.BackgroundTransparency = 1
-    NoResults.Size = UDim2.new(1, 0, 0, 28)
-    NoResults.ZIndex = 203
-    NoResults.Font = Enum.Font.GothamBold
-    NoResults.Text = "No results found"
-    NoResults.TextColor3 = Color3.fromRGB(180, 180, 180)
-    NoResults.TextTransparency = 0.4
-    NoResults.TextSize = 11
-    NoResults.Visible = false
+    local NoResultsLbl = Instance.new("TextLabel")
+    NoResultsLbl.Parent = ResultsScroll
+    NoResultsLbl.BackgroundTransparency = 1
+    NoResultsLbl.Size   = UDim2.new(1,0,0,28)
+    NoResultsLbl.ZIndex = 203
+    NoResultsLbl.Font   = Enum.Font.Gotham
+    NoResultsLbl.Text   = "No features found"
+    NoResultsLbl.TextColor3 = Color3.fromRGB(110,110,110)
+    NoResultsLbl.TextSize = 11
+    NoResultsLbl.Visible = false
 
-    -- Build one result row per element
     local rowPool = {}
-
     local function buildRows()
         if #rowPool > 0 then return end
         for _, tab in ipairs(WindowTable.Tabs) do
             for _, section in ipairs(tab.Sections or {}) do
                 for _, el in ipairs(section.Elements or {}) do
                     if el.Name and el.Get then
-                        -- row frame
                         local row = Instance.new("Frame")
-                        row.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-                        row.BackgroundTransparency = 0.65
+                        row.BackgroundColor3 = Color3.fromRGB(0,0,0)
+                        row.BackgroundTransparency = 0.58
                         row.BorderSizePixel = 0
-                        row.Size = UDim2.new(1, 0, 0, 38)
+                        row.Size   = UDim2.new(1,0,0,46)
                         row.ZIndex = 203
-                        row.ClipsDescendants = true
                         row.Visible = false
+                        row.ClipsDescendants = true
                         row.Parent = ResultsScroll
-                        Instance.new("UICorner", row).CornerRadius = UDim.new(0, 4)
+                        Instance.new("UICorner", row).CornerRadius = UDim.new(0,7)
+                        local rowStroke = Instance.new("UIStroke")
+                        rowStroke.Color = Color3.fromRGB(255,255,255)
+                        rowStroke.Transparency = 0.88
+                        rowStroke.Parent = row
 
                         local nameLbl = Instance.new("TextLabel")
                         nameLbl.Parent = row
                         nameLbl.BackgroundTransparency = 1
-                        nameLbl.Position = UDim2.new(0.04, 0, 0.08, 0)
-                        nameLbl.Size = UDim2.new(0.62, 0, 0.45, 0)
-                        nameLbl.ZIndex = 204
-                        nameLbl.Font = Enum.Font.GothamBold
-                        nameLbl.Text = el.Name
-                        nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-                        nameLbl.TextSize = 11
+                        nameLbl.Position = UDim2.new(0,12,0,6)
+                        nameLbl.Size     = UDim2.new(0.58,0,0,18)
+                        nameLbl.ZIndex   = 204
+                        nameLbl.Font     = Enum.Font.GothamBold
+                        nameLbl.Text     = el.Name
+                        nameLbl.TextColor3 = Color3.fromRGB(235,235,235)
+                        nameLbl.TextSize = 12
                         nameLbl.TextXAlignment = Enum.TextXAlignment.Left
-                        nameLbl.TextTransparency = 0.1
 
-                        local typeLbl = Instance.new("TextLabel")
-                        typeLbl.Parent = row
-                        typeLbl.BackgroundTransparency = 1
-                        typeLbl.Position = UDim2.new(0.04, 0, 0.54, 0)
-                        typeLbl.Size = UDim2.new(0.6, 0, 0.36, 0)
-                        typeLbl.ZIndex = 204
-                        typeLbl.Font = Enum.Font.Gotham
-                        typeLbl.TextColor3 = Color3.fromRGB(150, 0, 0)
-                        typeLbl.TextSize = 9
-                        typeLbl.TextXAlignment = Enum.TextXAlignment.Left
-                        typeLbl.TextTransparency = 0.2
-                        typeLbl.Text = "..."
+                        local stateLbl = Instance.new("TextLabel")
+                        stateLbl.Parent = row
+                        stateLbl.BackgroundTransparency = 1
+                        stateLbl.Position = UDim2.new(0,12,0,25)
+                        stateLbl.Size     = UDim2.new(0.58,0,0,14)
+                        stateLbl.ZIndex   = 204
+                        stateLbl.Font     = Enum.Font.Gotham
+                        stateLbl.Text     = ""
+                        stateLbl.TextColor3 = accent
+                        stateLbl.TextSize = 10
+                        stateLbl.TextXAlignment = Enum.TextXAlignment.Left
 
-                        -- mini toggle widget
-                        local sys = Instance.new("Frame")
-                        sys.Parent = row
-                        sys.AnchorPoint = Vector2.new(1, 0.5)
-                        sys.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-                        sys.BackgroundTransparency = 0.3
-                        sys.BorderSizePixel = 0
-                        sys.Position = UDim2.new(0.97, 0, 0.5, 0)
-                        sys.Size = UDim2.new(0.27, 0, 0.52, 0)
-                        sys.ZIndex = 204
-                        Instance.new("UICorner", sys).CornerRadius = UDim.new(0.5, 0)
-                        local syss = Instance.new("UIStroke")
-                        syss.Transparency = 0.7
-                        syss.Color = Color3.fromRGB(255, 255, 255)
-                        syss.Parent = sys
+                        -- toggle track
+                        local track = Instance.new("Frame")
+                        track.Parent = row
+                        track.AnchorPoint = Vector2.new(1,0.5)
+                        track.BackgroundColor3 = Color3.fromRGB(28,28,28)
+                        track.BorderSizePixel = 0
+                        track.Position = UDim2.new(1,-10,0.5,0)
+                        track.Size     = UDim2.new(0,38,0,21)
+                        track.ZIndex   = 204
+                        Instance.new("UICorner", track).CornerRadius = UDim.new(1,0)
+                        local trkStroke = Instance.new("UIStroke")
+                        trkStroke.Color = Color3.fromRGB(255,255,255)
+                        trkStroke.Transparency = 0.85
+                        trkStroke.Parent = track
 
-                        local dot = Instance.new("Frame")
-                        dot.Parent = sys
-                        dot.AnchorPoint = Vector2.new(0.5, 0.5)
-                        dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                        dot.BackgroundTransparency = 0.5
-                        dot.BorderSizePixel = 0
-                        dot.Position = UDim2.new(0.25, 0, 0.5, 0)
-                        dot.Size = UDim2.new(1, 0, 1, 0)
-                        dot.SizeConstraint = Enum.SizeConstraint.RelativeYY
-                        dot.ZIndex = 205
-                        Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
+                        local knob = Instance.new("Frame")
+                        knob.Parent = track
+                        knob.AnchorPoint = Vector2.new(0.5,0.5)
+                        knob.BackgroundColor3 = Color3.fromRGB(170,170,170)
+                        knob.BorderSizePixel = 0
+                        knob.Position = UDim2.new(0,12,0.5,0)
+                        knob.Size     = UDim2.new(0,15,0,15)
+                        knob.ZIndex   = 205
+                        Instance.new("UICorner", knob).CornerRadius = UDim.new(1,0)
 
-                        local clickBtn = Instance.new("TextButton")
-                        clickBtn.Parent = row
-                        clickBtn.BackgroundTransparency = 1
-                        clickBtn.Size = UDim2.new(1, 0, 1, 0)
-                        clickBtn.ZIndex = 206
-                        clickBtn.Text = ""
+                        local hitBtn = Instance.new("TextButton")
+                        hitBtn.Parent = row
+                        hitBtn.BackgroundTransparency = 1
+                        hitBtn.Size   = UDim2.new(1,0,1,0)
+                        hitBtn.ZIndex = 206
+                        hitBtn.Text   = ""
 
-                        local function syncState()
+                        local function syncRow()
                             local ok, val = pcall(el.Get)
                             if not ok then return end
                             if type(val) == "boolean" then
-                                typeLbl.Text = val and "toggle  ON" or "toggle  OFF"
-                                local tx = val and 0.25 or 0.5
-                                local px = val and 0.75 or 0.25
-                                Twen:Create(dot, TweenInfo.new(0.12), {
-                                    Position = UDim2.new(px, 0, 0.5, 0),
-                                    BackgroundTransparency = tx
-                                }):Play()
+                                if val then
+                                    stateLbl.Text = "ENABLED"
+                                    stateLbl.TextColor3 = accent
+                                    Twen:Create(track, TweenInfo.new(0.18,Enum.EasingStyle.Quint), {BackgroundColor3=accent}):Play()
+                                    Twen:Create(knob,  TweenInfo.new(0.18,Enum.EasingStyle.Quint), {Position=UDim2.new(1,-12,0.5,0), BackgroundColor3=Color3.fromRGB(255,255,255)}):Play()
+                                    rowStroke.Color = accent
+                                    rowStroke.Transparency = 0.45
+                                else
+                                    stateLbl.Text = "DISABLED"
+                                    stateLbl.TextColor3 = Color3.fromRGB(100,100,100)
+                                    Twen:Create(track, TweenInfo.new(0.18,Enum.EasingStyle.Quint), {BackgroundColor3=Color3.fromRGB(28,28,28)}):Play()
+                                    Twen:Create(knob,  TweenInfo.new(0.18,Enum.EasingStyle.Quint), {Position=UDim2.new(0,12,0.5,0), BackgroundColor3=Color3.fromRGB(170,170,170)}):Play()
+                                    rowStroke.Color = Color3.fromRGB(255,255,255)
+                                    rowStroke.Transparency = 0.88
+                                end
                             elseif type(val) == "number" then
-                                typeLbl.Text = "value: "..tostring(val)
+                                stateLbl.Text = "value  "..tostring(val)
+                                stateLbl.TextColor3 = Color3.fromRGB(130,130,130)
+                                track.Visible = false
                             else
-                                typeLbl.Text = tostring(val)
+                                stateLbl.Text = tostring(val)
+                                stateLbl.TextColor3 = Color3.fromRGB(130,130,130)
+                                track.Visible = false
                             end
                         end
 
-                        syncState()
-
-                        clickBtn.MouseButton1Click:Connect(function()
+                        syncRow()
+                        hitBtn.MouseButton1Click:Connect(function()
                             local ok, val = pcall(el.Get)
-                            if ok and type(val) == "boolean" then
+                            if ok and type(val)=="boolean" then
                                 pcall(el.Set, not val)
-                                syncState()
+                                syncRow()
                             end
                         end)
-
-                        -- keep in sync with main UI changes
                         task.spawn(function()
                             while row.Parent do
                                 task.wait(0.3)
-                                pcall(syncState)
+                                pcall(syncRow)
                             end
                         end)
-
-                        table.insert(rowPool, { el = el, row = row })
+                        table.insert(rowPool, {el=el, row=row})
                     end
                 end
             end
@@ -3870,146 +4034,284 @@ task.spawn(function()
 
     SBInput:GetPropertyChangedSignal("Text"):Connect(function()
         buildRows()
-        local q = SBInput.Text:lower():match("^%s*(.-)%s*$")
+        local q = SBInput.Text:lower():match("^%s*(.-)%s*$") or ""
         local found = 0
         for _, entry in ipairs(rowPool) do
             if q == "" then
                 entry.row.Visible = false
             else
-                local show = entry.el.Name:lower():find(q, 1, true) ~= nil
+                local show = entry.el.Name:lower():find(q,1,true) ~= nil
                 entry.row.Visible = show
-                if show then found = found + 1 end
+                if show then found = found+1 end
             end
         end
-        NoResults.Visible = (q ~= "" and found == 0)
+        HintLbl.Text = q=="" and "Type to search across all features"
+            or (found>0 and found.." result"..(found==1 and "" or "s").." found" or "")
+        NoResultsLbl.Visible = q~="" and found==0
     end)
 
-    -- ── SETTINGS PAGE ────────────────────────────
+    -- ── SETTINGS PAGE ─────────────────────────────────
     local SettingsPage = Instance.new("Frame")
     SettingsPage.Parent = Panel
     SettingsPage.BackgroundTransparency = 1
-    SettingsPage.Position = UDim2.new(0, 0, 0, 42)
-    SettingsPage.Size = UDim2.new(1, 0, 1, -42)
-    SettingsPage.ZIndex = 201
-    SettingsPage.Visible = false
+    SettingsPage.Position = UDim2.new(0,0,0,96)
+    SettingsPage.Size     = UDim2.new(1,0,1,-96)
+    SettingsPage.ZIndex   = 201
+    SettingsPage.Visible  = false
     SettingsPage.ClipsDescendants = true
 
     local SetScroll = Instance.new("ScrollingFrame")
     SetScroll.Parent = SettingsPage
     SetScroll.BackgroundTransparency = 1
     SetScroll.BorderSizePixel = 0
-    SetScroll.Position = UDim2.new(0.04, 0, 0, 6)
-    SetScroll.Size = UDim2.new(0.92, 0, 1, -10)
-    SetScroll.ZIndex = 202
+    SetScroll.Position = UDim2.new(0.04,0,0,6)
+    SetScroll.Size     = UDim2.new(0.92,0,1,-10)
+    SetScroll.ZIndex   = 202
     SetScroll.ScrollBarThickness = 2
-    SetScroll.ScrollBarImageColor3 = Color3.fromRGB(150, 0, 0)
-    SetScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    SetScroll.ScrollBarImageColor3 = accent
+    SetScroll.CanvasSize = UDim2.new(0,0,0,0)
     local SetList = Instance.new("UIListLayout")
-    SetList.Parent = SetScroll
+    SetList.Parent    = SetScroll
     SetList.SortOrder = Enum.SortOrder.LayoutOrder
-    SetList.Padding = UDim.new(0, 5)
+    SetList.Padding   = UDim.new(0,5)
     SetList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        SetScroll.CanvasSize = UDim2.fromOffset(0, SetList.AbsoluteContentSize.Y + 8)
+        SetScroll.CanvasSize = UDim2.fromOffset(0, SetList.AbsoluteContentSize.Y+10)
     end)
 
-    local function settingsHdr(txt)
-        local l = Instance.new("TextLabel")
-        l.Parent = SetScroll
-        l.BackgroundTransparency = 1
-        l.Size = UDim2.new(1, 0, 0, 16)
-        l.ZIndex = 203
-        l.Font = Enum.Font.GothamBold
-        l.Text = txt
-        l.TextColor3 = Color3.fromRGB(150, 0, 0)
-        l.TextSize = 10
-        l.TextXAlignment = Enum.TextXAlignment.Left
-        l.TextTransparency = 0.1
+    local function sHdr(txt, iconName)
+        local wrap = Instance.new("Frame")
+        wrap.Parent = SetScroll
+        wrap.BackgroundTransparency = 1
+        wrap.Size   = UDim2.new(1,0,0,20)
+        wrap.ZIndex = 203
+        local ic = lucideIcon(iconName or "tag", wrap, UDim2.new(0,11,0,11))
+        if ic then
+            ic.AnchorPoint = Vector2.new(0,0.5)
+            ic.Position    = UDim2.new(0,2,0.5,0)
+            ic.ZIndex      = 204
+            ic.ImageColor3 = accent
+        end
+        local lbl = Instance.new("TextLabel")
+        lbl.Parent = wrap
+        lbl.BackgroundTransparency = 1
+        lbl.Position = UDim2.new(0,18,0,0)
+        lbl.Size     = UDim2.new(1,-18,1,0)
+        lbl.ZIndex   = 204
+        lbl.Font     = Enum.Font.GothamBold
+        lbl.Text     = txt
+        lbl.TextColor3 = Color3.fromRGB(180,180,180)
+        lbl.TextSize = 10
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+        lbl.TextTransparency = 0.05
     end
 
-    local function colorPreset(label, primary, bg)
+    -- theme apply
+    local function applyTheme(primary, bg)
+        accent = primary
+        PanelStroke.Color  = primary
+        Pill.BackgroundColor3 = primary
+        Sep.BackgroundColor3  = primary
+        ToggleBtn.BackgroundColor3 = primary
+        SetScroll.ScrollBarImageColor3     = primary
+        ResultsScroll.ScrollBarImageColor3 = primary
+        Twen:Create(Header, TweenInfo.new(0.4), {BackgroundColor3=primary}):Play()
+        pcall(function()
+            Twen:Create(MainFrame,      TweenInfo.new(0.4), {BackgroundColor3=bg}):Play()
+            Twen:Create(MainDropShadow, TweenInfo.new(0.4), {ImageColor3=primary}):Play()
+            Twen:Create(Headers,        TweenInfo.new(0.4), {BackgroundColor3=bg}):Play()
+            Twen:Create(BlockFrame1,    TweenInfo.new(0.4), {BackgroundColor3=primary}):Play()
+            Twen:Create(BlockFrame2,    TweenInfo.new(0.4), {BackgroundColor3=primary}):Play()
+            Twen:Create(BlockFrame3,    TweenInfo.new(0.4), {BackgroundColor3=primary}):Play()
+        end)
+        for _, e in ipairs(rowPool) do
+            pcall(function()
+                local ok, v = pcall(e.el.Get)
+                if ok and v == true then
+                    local track = e.row:FindFirstChild("Frame")
+                    if track then
+                        Twen:Create(track, TweenInfo.new(0.2), {BackgroundColor3=primary}):Play()
+                    end
+                end
+                for _, c in ipairs(e.row:GetDescendants()) do
+                    if c:IsA("TextLabel") and c.TextColor3 == Color3.fromRGB(150,0,0) then
+                        c.TextColor3 = primary
+                    end
+                end
+            end)
+        end
+    end
+
+    local function colorPresetRow(label, iconName, primary, bg)
         local row = Instance.new("Frame")
         row.Parent = SetScroll
-        row.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        row.BackgroundTransparency = 0.65
+        row.BackgroundColor3 = Color3.fromRGB(0,0,0)
+        row.BackgroundTransparency = 0.55
         row.BorderSizePixel = 0
-        row.Size = UDim2.new(1, 0, 0, 36)
+        row.Size   = UDim2.new(1,0,0,40)
         row.ZIndex = 203
-        Instance.new("UICorner", row).CornerRadius = UDim.new(0, 4)
+        Instance.new("UICorner", row).CornerRadius = UDim.new(0,7)
+        local rs = Instance.new("UIStroke")
+        rs.Color = Color3.fromRGB(255,255,255)
+        rs.Transparency = 0.88
+        rs.Parent = row
 
         local swatch = Instance.new("Frame")
         swatch.Parent = row
-        swatch.AnchorPoint = Vector2.new(0, 0.5)
+        swatch.AnchorPoint = Vector2.new(0,0.5)
         swatch.BackgroundColor3 = primary
         swatch.BorderSizePixel = 0
-        swatch.Position = UDim2.new(0.04, 0, 0.5, 0)
-        swatch.Size = UDim2.new(0, 12, 0, 12)
+        swatch.Position = UDim2.new(0,10,0.5,0)
+        swatch.Size = UDim2.new(0,14,0,14)
         swatch.ZIndex = 204
-        Instance.new("UICorner", swatch).CornerRadius = UDim.new(0, 3)
+        Instance.new("UICorner", swatch).CornerRadius = UDim.new(0,4)
+
+        local ic = lucideIcon(iconName, row, UDim2.new(0,12,0,12))
+        if ic then
+            ic.AnchorPoint = Vector2.new(0,0.5)
+            ic.Position    = UDim2.new(0,30,0.5,0)
+            ic.ZIndex      = 204
+            ic.ImageColor3 = Color3.fromRGB(190,190,190)
+        end
 
         local lbl = Instance.new("TextLabel")
         lbl.Parent = row
         lbl.BackgroundTransparency = 1
-        lbl.Position = UDim2.new(0.17, 0, 0.15, 0)
-        lbl.Size = UDim2.new(0.55, 0, 0.7, 0)
-        lbl.ZIndex = 204
-        lbl.Font = Enum.Font.GothamBold
-        lbl.Text = label
-        lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+        lbl.Position = UDim2.new(0,48,0,0)
+        lbl.Size     = UDim2.new(0.48,0,1,0)
+        lbl.ZIndex   = 204
+        lbl.Font     = Enum.Font.GothamBold
+        lbl.Text     = label
+        lbl.TextColor3 = Color3.fromRGB(225,225,225)
         lbl.TextSize = 11
         lbl.TextXAlignment = Enum.TextXAlignment.Left
-        lbl.TextTransparency = 0.15
+        lbl.TextTransparency = 0.08
 
         local applyBtn = Instance.new("TextButton")
         applyBtn.Parent = row
-        applyBtn.AnchorPoint = Vector2.new(1, 0.5)
+        applyBtn.AnchorPoint = Vector2.new(1,0.5)
         applyBtn.BackgroundColor3 = primary
-        applyBtn.BackgroundTransparency = 0.4
+        applyBtn.BackgroundTransparency = 0.32
         applyBtn.BorderSizePixel = 0
-        applyBtn.Position = UDim2.new(0.97, 0, 0.5, 0)
-        applyBtn.Size = UDim2.new(0.22, 0, 0.6, 0)
-        applyBtn.ZIndex = 205
-        applyBtn.Font = Enum.Font.GothamBold
-        applyBtn.Text = "Apply"
-        applyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        applyBtn.Position = UDim2.new(1,-8,0.5,0)
+        applyBtn.Size     = UDim2.new(0,52,0,22)
+        applyBtn.ZIndex   = 205
+        applyBtn.Font     = Enum.Font.GothamBold
+        applyBtn.Text     = "Apply"
+        applyBtn.TextColor3 = Color3.fromRGB(255,255,255)
         applyBtn.TextSize = 10
-        Instance.new("UICorner", applyBtn).CornerRadius = UDim.new(0, 3)
+        Instance.new("UICorner", applyBtn).CornerRadius = UDim.new(0,5)
 
-        applyBtn.MouseButton1Click:Connect(function()
-            pcall(function()
-                Twen:Create(MainFrame,      TweenInfo.new(0.4), {BackgroundColor3 = bg}):Play()
-                Twen:Create(MainDropShadow, TweenInfo.new(0.4), {ImageColor3 = primary}):Play()
-                Twen:Create(Headers,        TweenInfo.new(0.4), {BackgroundColor3 = bg}):Play()
-                Twen:Create(BlockFrame1,    TweenInfo.new(0.4), {BackgroundColor3 = primary}):Play()
-                Twen:Create(BlockFrame2,    TweenInfo.new(0.4), {BackgroundColor3 = primary}):Play()
-                Twen:Create(BlockFrame3,    TweenInfo.new(0.4), {BackgroundColor3 = primary}):Play()
-            end)
-            PanelStroke.Color = primary
-            ResultsScroll.ScrollBarImageColor3 = primary
-            SetScroll.ScrollBarImageColor3     = primary
+        applyBtn.MouseButton1Click:Connect(function() applyTheme(primary, bg) end)
+        applyBtn.MouseEnter:Connect(function()
+            Twen:Create(applyBtn, TweenInfo.new(0.1), {BackgroundTransparency=0.08}):Play()
+        end)
+        applyBtn.MouseLeave:Connect(function()
+            Twen:Create(applyBtn, TweenInfo.new(0.1), {BackgroundTransparency=0.32}):Play()
         end)
     end
 
-    settingsHdr("🎨  COLOUR THEMES")
-    colorPreset("Default Red",    Color3.fromRGB(150,  0,   0),  Color3.fromRGB(20,  5,   5))
-    colorPreset("Deep Purple",    Color3.fromRGB(100,  0, 180),  Color3.fromRGB(10,  5,  20))
-    colorPreset("Ocean Blue",     Color3.fromRGB(  0, 80, 200),  Color3.fromRGB( 5, 10,  25))
-    colorPreset("Midnight Green", Color3.fromRGB(  0,130,  80),  Color3.fromRGB( 5, 15,  10))
-    colorPreset("Cyber Orange",   Color3.fromRGB(220,100,   0),  Color3.fromRGB(18,  8,   3))
-    colorPreset("Rose Gold",      Color3.fromRGB(180, 80, 100),  Color3.fromRGB(20,  8,  10))
-    colorPreset("Monochrome",     Color3.fromRGB(120,120, 120),  Color3.fromRGB(10, 10,  10))
+    sHdr("COLOUR THEMES", "palette")
+    colorPresetRow("Default Red",    "heart",    Color3.fromRGB(180,  0,   0), Color3.fromRGB(12,  3,  3))
+    colorPresetRow("Deep Purple",    "sparkles", Color3.fromRGB(110,  0, 190), Color3.fromRGB( 8,  3, 18))
+    colorPresetRow("Ocean Blue",     "waves",    Color3.fromRGB(  0, 90, 210), Color3.fromRGB( 3,  8, 22))
+    colorPresetRow("Midnight Green", "leaf",     Color3.fromRGB(  0,140,  85), Color3.fromRGB( 3, 12,  8))
+    colorPresetRow("Cyber Orange",   "zap",      Color3.fromRGB(220,100,   0), Color3.fromRGB(15,  6,  2))
+    colorPresetRow("Rose Gold",      "gem",      Color3.fromRGB(190, 85, 105), Color3.fromRGB(16,  5,  8))
+    colorPresetRow("Monochrome",     "circle",   Color3.fromRGB(130,130, 130), Color3.fromRGB( 8,  8,  8))
+    colorPresetRow("Electric Lime",  "zap",      Color3.fromRGB(120,220,  30), Color3.fromRGB( 5, 12,  2))
 
-    -- ── TAB SWITCHING ─────────────────────────────
+    sHdr("PANEL OPACITY", "layers")
+    local opacRow = Instance.new("Frame")
+    opacRow.Parent = SetScroll
+    opacRow.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    opacRow.BackgroundTransparency = 0.55
+    opacRow.BorderSizePixel = 0
+    opacRow.Size   = UDim2.new(1,0,0,44)
+    opacRow.ZIndex = 203
+    Instance.new("UICorner", opacRow).CornerRadius = UDim.new(0,7)
+
+    local oLblL = Instance.new("TextLabel")
+    oLblL.Parent = opacRow
+    oLblL.BackgroundTransparency = 1
+    oLblL.Position = UDim2.new(0,10,0,5)
+    oLblL.Size = UDim2.new(0.55,0,0,16)
+    oLblL.ZIndex = 204
+    oLblL.Font = Enum.Font.Gotham
+    oLblL.Text = "Background opacity"
+    oLblL.TextColor3 = Color3.fromRGB(180,180,180)
+    oLblL.TextSize = 10
+    oLblL.TextXAlignment = Enum.TextXAlignment.Left
+
+    local oValLbl = Instance.new("TextLabel")
+    oValLbl.Parent = opacRow
+    oValLbl.BackgroundTransparency = 1
+    oValLbl.AnchorPoint = Vector2.new(1,0)
+    oValLbl.Position = UDim2.new(1,-10,0,5)
+    oValLbl.Size = UDim2.new(0,32,0,16)
+    oValLbl.ZIndex = 204
+    oValLbl.Font = Enum.Font.GothamBold
+    oValLbl.Text = "85%"
+    oValLbl.TextColor3 = Color3.fromRGB(200,200,200)
+    oValLbl.TextSize = 10
+    oValLbl.TextXAlignment = Enum.TextXAlignment.Right
+
+    local oTrack = Instance.new("Frame")
+    oTrack.Parent = opacRow
+    oTrack.AnchorPoint = Vector2.new(0.5,1)
+    oTrack.BackgroundColor3 = Color3.fromRGB(20,20,20)
+    oTrack.BorderSizePixel = 0
+    oTrack.Position = UDim2.new(0.5,0,1,-8)
+    oTrack.Size = UDim2.new(0.88,0,0,6)
+    oTrack.ZIndex = 204
+    oTrack.ClipsDescendants = true
+    Instance.new("UICorner", oTrack).CornerRadius = UDim.new(1,0)
+
+    local oFill = Instance.new("Frame")
+    oFill.Parent = oTrack
+    oFill.BackgroundColor3 = accent
+    oFill.BorderSizePixel = 0
+    oFill.Size = UDim2.new(0.85,0,1,0)
+    oFill.ZIndex = 205
+    Instance.new("UICorner", oFill).CornerRadius = UDim.new(1,0)
+
+    local oHeld = false
+    oTrack.InputBegan:Connect(function(inp)
+        if inp.UserInputType==Enum.UserInputType.MouseButton1 or inp.UserInputType==Enum.UserInputType.Touch then
+            oHeld = true
+            local s = math.clamp((inp.Position.X-oTrack.AbsolutePosition.X)/oTrack.AbsoluteSize.X,0,1)
+            oFill.Size = UDim2.new(s,0,1,0)
+            oValLbl.Text = math.round(s*100).."%"
+            Panel.BackgroundTransparency = 1-(s*0.95)
+        end
+    end)
+    oTrack.InputEnded:Connect(function(inp)
+        if inp.UserInputType==Enum.UserInputType.MouseButton1 or inp.UserInputType==Enum.UserInputType.Touch then oHeld=false end
+    end)
+    Input.InputChanged:Connect(function(inp)
+        if oHeld and (inp.UserInputType==Enum.UserInputType.MouseMovement or inp.UserInputType==Enum.UserInputType.Touch) then
+            local s = math.clamp((inp.Position.X-oTrack.AbsolutePosition.X)/oTrack.AbsoluteSize.X,0,1)
+            oFill.Size = UDim2.new(s,0,1,0)
+            oValLbl.Text = math.round(s*100).."%"
+            Panel.BackgroundTransparency = 1-(s*0.95)
+        end
+    end)
+
+    -- ── Tab switching ──────────────────────────────────
     local function setTab(t)
-        SearchPage.Visible   = (t == "search")
-        SettingsPage.Visible = (t == "settings")
-        Twen:Create(BtnSearch,   TweenInfo.new(0.15), {BackgroundTransparency = t=="search"   and 0.3 or 0.75, TextTransparency = t=="search"   and 0 or 0.45}):Play()
-        Twen:Create(BtnSettings, TweenInfo.new(0.15), {BackgroundTransparency = t=="settings" and 0.3 or 0.75, TextTransparency = t=="settings" and 0 or 0.45}):Play()
+        SearchPage.Visible   = (t=="search")
+        SettingsPage.Visible = (t=="settings")
+        HeaderTitle.Text = t=="search" and "SEARCH" or "SETTINGS"
+        Twen:Create(Pill, TweenInfo.new(0.2,Enum.EasingStyle.Quint), {
+            Position = t=="search" and UDim2.new(0.02,0,0.1,0) or UDim2.new(0.51,0,0.1,0)
+        }):Play()
+        BtnSearch.TextTransparency   = t=="search"   and 0 or 0.45
+        BtnSettings.TextTransparency = t=="settings" and 0 or 0.45
     end
     setTab("search")
     BtnSearch.MouseButton1Click:Connect(function()   setTab("search")   end)
     BtnSettings.MouseButton1Click:Connect(function() setTab("settings") end)
 
-    -- ── OPEN / CLOSE ──────────────────────────────
+    -- ── Open / Close ───────────────────────────────────
     local panelOpen = false
 
     local function openPanel()
@@ -4017,7 +4319,10 @@ task.spawn(function()
         panelOpen = true
         buildRows()
         Panel.Visible = true
-        Twen:Create(Panel, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+        Twen:Create(ToggleBtn, TweenInfo.new(0.3,Enum.EasingStyle.Quint), {
+            Position = UDim2.new(0, PANEL_W+14, 0.5, 0)
+        }):Play()
+        Twen:Create(Panel, TweenInfo.new(0.35,Enum.EasingStyle.Quint,Enum.EasingDirection.Out), {
             Position = UDim2.new(0, 8, 0.5, 0)
         }):Play()
     end
@@ -4025,45 +4330,42 @@ task.spawn(function()
     local function closePanel()
         if not panelOpen then return end
         panelOpen = false
-        Twen:Create(Panel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-            Position = UDim2.new(0, -PANEL_W - 20, 0.5, 0)
+        Twen:Create(ToggleBtn, TweenInfo.new(0.3,Enum.EasingStyle.Quint), {
+            Position = UDim2.new(0, 6, 0.5, 0)
+        }):Play()
+        Twen:Create(Panel, TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDirection.In), {
+            Position = UDim2.new(0, -PANEL_W-60, 0.5, 0)
         }):Play()
     end
 
-    WindowTable._SidePanel = { Open = openPanel, Close = closePanel }
+    ToggleHit.MouseButton1Click:Connect(function()
+        if panelOpen then closePanel() else openPanel() end
+    end)
+    CloseBtn.MouseButton1Click:Connect(function() closePanel() end)
 
-    -- right-click toggles panel
+    -- hover toggle button highlight
+    ToggleHit.MouseEnter:Connect(function()
+        Twen:Create(ToggleBtn, TweenInfo.new(0.1), {BackgroundTransparency=0.2}):Play()
+    end)
+    ToggleHit.MouseLeave:Connect(function()
+        Twen:Create(ToggleBtn, TweenInfo.new(0.1), {BackgroundTransparency=0}):Play()
+    end)
+
+    -- click outside to close
     Input.InputBegan:Connect(function(inp)
-        if inp.UserInputType == Enum.UserInputType.MouseButton2 then
-            if panelOpen then closePanel() else openPanel() end
-        end
-        -- left-click outside closes
-        if inp.UserInputType == Enum.UserInputType.MouseButton1 then
-            if panelOpen then
-                local ap = Panel.AbsolutePosition
-                local as = Panel.AbsoluteSize
-                local mx, my = inp.Position.X, inp.Position.Y
-                if mx < ap.X or mx > ap.X + as.X or my < ap.Y or my > ap.Y + as.Y then
-                    closePanel()
-                end
-            end
-        end
-        -- mobile: tap left 40px
-        if inp.UserInputType == Enum.UserInputType.Touch then
-            if inp.Position.X < 40 then
-                if panelOpen then closePanel() else openPanel() end
-            end
+        if inp.UserInputType == Enum.UserInputType.MouseButton1 and panelOpen then
+            local ap = Panel.AbsolutePosition
+            local as = Panel.AbsoluteSize
+            local tp = ToggleBtn.AbsolutePosition
+            local ts = ToggleBtn.AbsoluteSize
+            local mx,my = inp.Position.X, inp.Position.Y
+            local inPanel  = mx>=ap.X and mx<=ap.X+as.X and my>=ap.Y and my<=ap.Y+as.Y
+            local inToggle = mx>=tp.X and mx<=tp.X+ts.X and my>=tp.Y and my<=tp.Y+ts.Y
+            if not inPanel and not inToggle then closePanel() end
         end
     end)
 
-    -- hover within 6px of left edge opens panel
-    Input.InputChanged:Connect(function(inp)
-        if inp.UserInputType == Enum.UserInputType.MouseMovement then
-            if inp.Position.X <= 6 and not panelOpen then
-                openPanel()
-            end
-        end
-    end)
+    WindowTable._SidePanel = { Open=openPanel, Close=closePanel, ApplyTheme=applyTheme }
 end)
 
 return WindowTable;
