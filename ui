@@ -1,1 +1,1420 @@
+local MergeUI = {}
+MergeUI.Options = {}
+MergeUI.ThemeGradient = ColorSequence.new{
+    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(200, 30, 30)),
+    ColorSequenceKeypoint.new(0.50, Color3.fromRGB(160, 20, 40)),
+    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(120, 10, 50))
+}
 
+-- Services
+local UserInputService = game:GetService("UserInputService")
+local TweenService    = game:GetService("TweenService")
+local HttpService     = game:GetService("HttpService")
+local RunService      = game:GetService("RunService")
+local Players         = game:GetService("Players")
+local CoreGui         = game:GetService("CoreGui")
+local Lighting        = game:GetService("Lighting")
+local LocalPlayer     = Players.LocalPlayer
+
+-- ─── Tween Helpers ───────────────────────────────────────────────────────────
+local function Tween(obj, props, t, style, dir)
+    local ti = TweenInfo.new(t or 0.35, style or Enum.EasingStyle.Quint, dir or Enum.EasingDirection.Out)
+    TweenService:Create(obj, ti, props):Play()
+end
+
+-- ─── Blur / Glass Effect ─────────────────────────────────────────────────────
+local function CreateBlur(frame)
+    local camera = workspace.CurrentCamera
+    local part = Instance.new("Part", workspace)
+    local dof  = Instance.new("DepthOfFieldEffect", Lighting)
+    local surf = Instance.new("SurfaceGui", part)
+    local mesh = Instance.new("BlockMesh", part)
+
+    part.Material   = Enum.Material.Glass
+    part.Transparency = 1
+    part.Reflectance  = 1
+    part.CastShadow   = false
+    part.Anchored     = true
+    part.CanCollide   = false
+    part.CanQuery     = false
+    part.Size         = Vector3.new(0.01, 0.01, 0.01)
+    part.Color        = Color3.fromRGB(0,0,0)
+
+    dof.Enabled        = true
+    dof.FarIntensity   = 1
+    dof.FocusDistance  = 0
+    dof.InFocusRadius  = 500
+    dof.NearIntensity  = 1
+
+    surf.AlwaysOnTop = true
+    surf.Adornee     = part
+    surf.Active      = true
+    surf.Face        = Enum.NormalId.Front
+
+    local blurObj = { Enabled = true, Part = part, DOF = dof, Mesh = mesh }
+
+    local function Hiter(pp, pn, ro, rd)
+        local v = ro - pp
+        local a = -((pn.x*v.x)+(pn.y*v.y)+(pn.z*v.z)) / ((pn.x*rd.x)+(pn.y*rd.y)+(pn.z*rd.z))
+        return ro + a * rd
+    end
+
+    local function Update()
+        if not blurObj.Enabled then
+            Tween(part, {Transparency=1}, 0.5)
+            return
+        end
+        Tween(part, {Transparency=0.8}, 0.5)
+        local c0 = frame.AbsolutePosition
+        local c1 = c0 + frame.AbsoluteSize
+        local r0 = camera:ScreenPointToRay(c0.X, c0.Y, 1)
+        local r1 = camera:ScreenPointToRay(c1.X, c1.Y, 1)
+        local orig = camera.CFrame.Position + camera.CFrame.LookVector*(0.05 - camera.NearPlaneZ)
+        local norm = camera.CFrame.LookVector
+        local p0 = camera.CFrame:PointToObjectSpace(Hiter(orig,norm,r0.Origin,r0.Direction))
+        local p1 = camera.CFrame:PointToObjectSpace(Hiter(orig,norm,r1.Origin,r1.Direction))
+        local sz = p1 - p0
+        mesh.Offset = (p0+p1)/2
+        mesh.Scale  = sz / 0.0101
+        part.CFrame = camera.CFrame
+    end
+
+    blurObj.Connection = RunService.RenderStepped:Connect(Update)
+    blurObj.Update = Update
+    blurObj.Destroy = function()
+        blurObj.Connection:Disconnect()
+        Tween(part, {Transparency=1}, 0.5)
+        dof:Destroy()
+        task.delay(0.6, function() part:Destroy() end)
+    end
+
+    return blurObj
+end
+
+-- ─── Utility ─────────────────────────────────────────────────────────────────
+local function Kwargify(defaults, passed)
+    passed = passed or {}
+    for k,v in pairs(defaults) do
+        if passed[k] == nil then passed[k] = v end
+    end
+    return passed
+end
+
+local function RemoveFromTable(t, val)
+    for i,v in pairs(t) do
+        if tostring(v) == tostring(val) then table.remove(t,i) return end
+    end
+end
+
+local function UnpackTable(arr)
+    local s, n = "", 0
+    for _,v in pairs(arr) do
+        n = n + 1
+        if n <= 3 then s = s .. v .. ", " else return "Various" end
+    end
+    return s:sub(1,-3)
+end
+
+-- ─── GUI Setup ────────────────────────────────────────────────────────────────
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name              = "MergeUI"
+ScreenGui.ZIndexBehavior    = Enum.ZIndexBehavior.Global
+ScreenGui.ResetOnSpawn      = false
+ScreenGui.IgnoreGuiInset    = true
+ScreenGui.DisplayOrder      = 999999999
+
+if gethui then
+    ScreenGui.Parent = gethui()
+elseif syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = CoreGui
+else
+    ScreenGui.Parent = CoreGui
+end
+
+-- ─── Notification Container ──────────────────────────────────────────────────
+local NotifHolder = Instance.new("Frame", ScreenGui)
+NotifHolder.Name              = "Notifications"
+NotifHolder.AnchorPoint       = Vector2.new(1,1)
+NotifHolder.Position          = UDim2.new(1,-16,1,-16)
+NotifHolder.Size              = UDim2.new(0,290,1,-32)
+NotifHolder.BackgroundTransparency = 1
+NotifHolder.BorderSizePixel   = 0
+local NotifList = Instance.new("UIListLayout", NotifHolder)
+NotifList.HorizontalAlignment = Enum.HorizontalAlignment.Right
+NotifList.VerticalAlignment   = Enum.VerticalAlignment.Bottom
+NotifList.SortOrder           = Enum.SortOrder.LayoutOrder
+NotifList.Padding             = UDim.new(0, 8)
+
+function MergeUI:Notification(data)
+    data = Kwargify({
+        Title   = "Notification",
+        Content = "...",
+        Duration = nil,
+    }, data)
+    task.spawn(function()
+        local n = Instance.new("Frame", NotifHolder)
+        n.Name              = "Notif"
+        n.BackgroundColor3  = Color3.fromRGB(18, 5, 5)
+        n.BackgroundTransparency = 1
+        n.BorderSizePixel   = 0
+        n.ClipsDescendants  = true
+        n.Size              = UDim2.new(1, 0, 0, 0)
+        n.LayoutOrder       = #NotifHolder:GetChildren()
+
+        local uc = Instance.new("UICorner", n); uc.CornerRadius = UDim.new(0,8)
+        local us = Instance.new("UIStroke", n)
+        us.Color = Color3.fromRGB(180,30,30); us.Transparency = 1; us.Thickness = 1
+
+        local shadow = Instance.new("ImageLabel", n)
+        shadow.AnchorPoint = Vector2.new(0.5,0.5); shadow.Position = UDim2.new(0.5,0,0.5,0)
+        shadow.Size = UDim2.new(1,30,1,30); shadow.BackgroundTransparency = 1
+        shadow.Image = "rbxassetid://6015897843"
+        shadow.ImageColor3 = Color3.fromRGB(80,0,0); shadow.ImageTransparency = 1
+        shadow.ScaleType = Enum.ScaleType.Slice; shadow.SliceCenter = Rect.new(49,49,450,450); shadow.ZIndex = 0
+
+        local title = Instance.new("TextLabel", n)
+        title.Position = UDim2.new(0,14,0,10); title.Size = UDim2.new(1,-28,0,18)
+        title.BackgroundTransparency = 1; title.Font = Enum.Font.GothamBold
+        title.TextSize = 13; title.TextColor3 = Color3.fromRGB(255,255,255)
+        title.TextXAlignment = Enum.TextXAlignment.Left; title.Text = data.Title
+        title.TextTransparency = 1
+
+        local desc = Instance.new("TextLabel", n)
+        desc.Position = UDim2.new(0,14,0,30); desc.Size = UDim2.new(1,-28,0,32)
+        desc.BackgroundTransparency = 1; desc.Font = Enum.Font.Gotham
+        desc.TextSize = 12; desc.TextColor3 = Color3.fromRGB(220,180,180)
+        desc.TextXAlignment = Enum.TextXAlignment.Left; desc.Text = data.Content
+        desc.TextWrapped = true; desc.TextTransparency = 1; desc.TextYAlignment = Enum.TextYAlignment.Top
+
+        local accent = Instance.new("Frame", n)
+        accent.Position = UDim2.new(0,0,0,0); accent.Size = UDim2.new(0,3,1,0)
+        accent.BackgroundColor3 = Color3.fromRGB(220,30,30); accent.BorderSizePixel = 0
+        local uac = Instance.new("UICorner", accent); uac.CornerRadius = UDim.new(0,4)
+
+        task.wait()
+        Tween(n, {Size = UDim2.new(1,0,0,74), BackgroundTransparency = 0.35}, 0.5, Enum.EasingStyle.Quint)
+        Tween(us, {Transparency = 0.7}, 0.4)
+        Tween(shadow, {ImageTransparency = 0.75}, 0.4)
+        task.wait(0.15)
+        Tween(title, {TextTransparency = 0}, 0.3)
+        Tween(desc,  {TextTransparency = 0.2}, 0.3)
+
+        local dur = data.Duration or math.min(math.max(#data.Content * 0.06 + 2.5, 3), 10)
+        task.wait(dur)
+
+        Tween(n,      {BackgroundTransparency = 1, Size = UDim2.new(1,0,0,0)}, 0.5, Enum.EasingStyle.Quint)
+        Tween(us,     {Transparency = 1}, 0.4)
+        Tween(shadow, {ImageTransparency = 1}, 0.4)
+        Tween(title,  {TextTransparency = 1}, 0.3)
+        Tween(desc,   {TextTransparency = 1}, 0.3)
+        task.wait(0.55)
+        n:Destroy()
+    end)
+end
+
+-- ─── Main Window ─────────────────────────────────────────────────────────────
+function MergeUI:CreateWindow(cfg)
+    cfg = Kwargify({
+        Name            = "MergeUI",
+        Subtitle        = "by merged",
+        LogoID          = "136074899341393",
+        LoadingEnabled  = true,
+        LoadingTitle    = "MergeUI",
+        LoadingSubtitle = "Loading...",
+        Keybind         = Enum.KeyCode.LeftControl,
+        ConfigFolder    = "MergeUIConfigs",
+        KeySystem       = false,
+        KeySettings     = {},
+        Size            = UDim2.new(0, 660, 0, 420),
+    }, cfg)
+
+    local Window = {
+        CurrentTab  = nil,
+        State       = true,
+        Bind        = cfg.Keybind,
+        Options     = MergeUI.Options,
+        LastPos     = UDim2.new(0.5, 0, 0.5, 0),
+    }
+
+    -- ── Main Frame ──
+    local MainFrame = Instance.new("Frame", ScreenGui)
+    MainFrame.Name               = "MainFrame"
+    MainFrame.AnchorPoint        = Vector2.new(0.5, 0.5)
+    MainFrame.BackgroundColor3   = Color3.fromRGB(14, 4, 4)
+    MainFrame.BackgroundTransparency = 0.38
+    MainFrame.BorderSizePixel    = 0
+    MainFrame.Position           = UDim2.new(0.5,0,0.5,0)
+    MainFrame.Size               = cfg.Size
+    MainFrame.ClipsDescendants   = true
+    MainFrame.Active             = true
+
+    local MainCorner = Instance.new("UICorner", MainFrame); MainCorner.CornerRadius = UDim.new(0,8)
+    local MainStroke = Instance.new("UIStroke", MainFrame)
+    MainStroke.Color = Color3.fromRGB(160,25,25); MainStroke.Transparency = 0.6; MainStroke.Thickness = 1.2
+
+    local MainShadow = Instance.new("ImageLabel", MainFrame)
+    MainShadow.AnchorPoint = Vector2.new(0.5,0.5); MainShadow.Position = UDim2.new(0.5,0,0.5,0)
+    MainShadow.Size = UDim2.new(1,50,1,50); MainShadow.BackgroundTransparency = 1
+    MainShadow.Image = "rbxassetid://6015897843"; MainShadow.ImageColor3 = Color3.fromRGB(60,0,0)
+    MainShadow.ImageTransparency = 0.5; MainShadow.ScaleType = Enum.ScaleType.Slice
+    MainShadow.SliceCenter = Rect.new(49,49,450,450); MainShadow.ZIndex = 0
+
+    -- ── Blur ──
+    local blurObj = CreateBlur(MainFrame)
+
+    -- ── Accent gradient bars ──
+    local function MakeBar(parent, pos, size, rot)
+        local b = Instance.new("Frame", parent)
+        b.BackgroundColor3   = Color3.fromRGB(180,20,20)
+        b.BackgroundTransparency = 0.8
+        b.BorderSizePixel    = 0
+        b.Position           = pos; b.Size = size; b.ZIndex = 2
+        local uc = Instance.new("UICorner", b); uc.CornerRadius = UDim.new(0.5,0)
+        local ug = Instance.new("UIGradient", b)
+        ug.Rotation = rot or 0
+        ug.Transparency = NumberSequence.new{
+            NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.05,0),
+            NumberSequenceKeypoint.new(0.95,0), NumberSequenceKeypoint.new(1,1)
+        }
+        return b
+    end
+    MakeBar(MainFrame, UDim2.new(0.305,0,0.5,0), UDim2.new(0,1,1,0), 90)
+    MakeBar(MainFrame, UDim2.new(0.305,0,0.115,0), UDim2.new(0.695,0,0,1), 0)
+    MakeBar(MainFrame, UDim2.new(-0.001,0,0.2,0), UDim2.new(0.308,0,0,1), 180)
+
+    -- ── Header / Logo Area ──
+    local HeaderArea = Instance.new("Frame", MainFrame)
+    HeaderArea.Name              = "HeaderArea"
+    HeaderArea.BackgroundColor3  = Color3.fromRGB(22,6,6)
+    HeaderArea.BackgroundTransparency = 0.5
+    HeaderArea.BorderSizePixel   = 0
+    HeaderArea.Position          = UDim2.new(0.01,0,0.015,0)
+    HeaderArea.Size              = UDim2.new(0.285,0,0.185,0)
+    HeaderArea.ZIndex            = 3
+    local hac = Instance.new("UICorner", HeaderArea); hac.CornerRadius = UDim.new(0,4)
+
+    local LogoImg = Instance.new("ImageLabel", HeaderArea)
+    LogoImg.AnchorPoint = Vector2.new(0.5,0.5); LogoImg.Position = UDim2.new(0.5,0,0.5,0)
+    LogoImg.Size = UDim2.new(0.9,0,0.9,0); LogoImg.BackgroundTransparency = 1
+    LogoImg.Image = "rbxassetid://"..cfg.LogoID; LogoImg.ScaleType = Enum.ScaleType.Fit
+    LogoImg.ZIndex = 4
+
+    local TitleLabel = Instance.new("TextLabel", MainFrame)
+    TitleLabel.Position = UDim2.new(0.328,0,0.013,0); TitleLabel.Size = UDim2.new(0.66,0,0.052,0)
+    TitleLabel.BackgroundTransparency = 1; TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.Text = cfg.Name; TitleLabel.TextColor3 = Color3.fromRGB(255,255,255)
+    TitleLabel.TextScaled = true; TitleLabel.TextXAlignment = Enum.TextXAlignment.Left; TitleLabel.ZIndex = 4
+
+    local SubLabel = Instance.new("TextLabel", MainFrame)
+    SubLabel.Position = UDim2.new(0.328,0,0.071,0); SubLabel.Size = UDim2.new(0.66,0,0.03,0)
+    SubLabel.BackgroundTransparency = 1; SubLabel.Font = Enum.Font.Gotham
+    SubLabel.Text = cfg.Subtitle; SubLabel.TextColor3 = Color3.fromRGB(200,120,120)
+    SubLabel.TextScaled = true; SubLabel.TextTransparency = 0.3
+    SubLabel.TextXAlignment = Enum.TextXAlignment.Left; SubLabel.ZIndex = 4
+
+    -- ── Tab Nav ──
+    local TabNav = Instance.new("Frame", MainFrame)
+    TabNav.Name = "TabNav"; TabNav.BackgroundColor3 = Color3.fromRGB(18,5,5)
+    TabNav.BackgroundTransparency = 0.5; TabNav.BorderSizePixel = 0
+    TabNav.Position = UDim2.new(0.01,0,0.215,0); TabNav.Size = UDim2.new(0.285,0,0.775,0)
+    TabNav.ClipsDescendants = true; TabNav.ZIndex = 3
+    local tnc = Instance.new("UICorner", TabNav); tnc.CornerRadius = UDim.new(0,4)
+
+    local TabScroll = Instance.new("ScrollingFrame", TabNav)
+    TabScroll.AnchorPoint = Vector2.new(0.5,0.5); TabScroll.Position = UDim2.new(0.5,0,0.5,0)
+    TabScroll.Size = UDim2.new(0.94,0,0.97,0); TabScroll.BackgroundTransparency = 1
+    TabScroll.BorderSizePixel = 0; TabScroll.ScrollBarThickness = 2
+    TabScroll.ScrollBarImageColor3 = Color3.fromRGB(180,30,30); TabScroll.Active = true
+
+    local TabList = Instance.new("UIListLayout", TabScroll)
+    TabList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    TabList.SortOrder = Enum.SortOrder.LayoutOrder; TabList.Padding = UDim.new(0,4)
+    TabList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabScroll.CanvasSize = UDim2.fromOffset(0, TabList.AbsoluteContentSize.Y + 8)
+    end)
+
+    -- ── Content Area ──
+    local ContentArea = Instance.new("Frame", MainFrame)
+    ContentArea.Name = "ContentArea"; ContentArea.BackgroundColor3 = Color3.fromRGB(18,5,5)
+    ContentArea.BackgroundTransparency = 0.5; ContentArea.BorderSizePixel = 0
+    ContentArea.Position = UDim2.new(0.315,0,0.131,0); ContentArea.Size = UDim2.new(0.675,0,0.86,0)
+    ContentArea.ClipsDescendants = true; ContentArea.ZIndex = 3
+    local cac = Instance.new("UICorner", ContentArea); cac.CornerRadius = UDim.new(0,4)
+
+    local PageLayout = Instance.new("UIPageLayout", ContentArea)
+    PageLayout.Animated = true; PageLayout.EasingStyle = Enum.EasingStyle.Quint
+    PageLayout.EasingDirection = Enum.EasingDirection.Out; PageLayout.TweenTime = 0.35
+    PageLayout.SortOrder = Enum.SortOrder.LayoutOrder; PageLayout.FillDirection = Enum.FillDirection.Horizontal
+
+    -- ── Close / Minimise Buttons ──
+    local CloseBtn = Instance.new("ImageButton", MainFrame)
+    CloseBtn.AnchorPoint = Vector2.new(1,0); CloseBtn.Position = UDim2.new(0.998,0,0.01,0)
+    CloseBtn.Size = UDim2.new(0,22,0,22); CloseBtn.BackgroundColor3 = Color3.fromRGB(180,20,20)
+    CloseBtn.BackgroundTransparency = 0.4; CloseBtn.BorderSizePixel = 0
+    CloseBtn.Image = "rbxassetid://10002398990"; CloseBtn.ZIndex = 20
+    local cc = Instance.new("UICorner", CloseBtn); cc.CornerRadius = UDim.new(0,5)
+    CloseBtn.ImageTransparency = 0.3
+
+    local MinBtn = Instance.new("ImageButton", MainFrame)
+    MinBtn.AnchorPoint = Vector2.new(1,0); MinBtn.Position = UDim2.new(0.94,0,0.01,0)
+    MinBtn.Size = UDim2.new(0,22,0,22); MinBtn.BackgroundColor3 = Color3.fromRGB(100,10,10)
+    MinBtn.BackgroundTransparency = 0.4; MinBtn.BorderSizePixel = 0
+    MinBtn.Image = "rbxassetid://11036884234"; MinBtn.ZIndex = 20
+    local mc = Instance.new("UICorner", MinBtn); mc.CornerRadius = UDim.new(0,5)
+    MinBtn.ImageTransparency = 0.3
+
+    -- ── Drag ──
+    local DragFrame = Instance.new("Frame", MainFrame)
+    DragFrame.Size = UDim2.new(1,0,0.12,0); DragFrame.BackgroundTransparency = 1
+    DragFrame.ZIndex = 15; DragFrame.BorderSizePixel = 0
+
+    do
+        local drag, mousepos, framepos
+        DragFrame.InputBegan:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                drag = true; mousepos = i.Position; framepos = MainFrame.Position
+            end
+        end)
+        DragFrame.InputChanged:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch then
+                if drag then
+                    local d = i.Position - mousepos
+                    Tween(MainFrame,{Position = UDim2.new(framepos.X.Scale, framepos.X.Offset+d.X, framepos.Y.Scale, framepos.Y.Offset+d.Y)},0.12)
+                end
+            end
+        end)
+        UserInputService.InputEnded:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = false end
+        end)
+    end
+
+    -- ── Toggle Button (square rounded, custom logo) ──
+    local ToggleBtn = Instance.new("ImageButton", ScreenGui)
+    ToggleBtn.Name           = "ToggleButton"
+    ToggleBtn.AnchorPoint    = Vector2.new(0.5, 0.5)
+    ToggleBtn.Position       = UDim2.new(0.5,0,0.5,0)
+    ToggleBtn.Size           = UDim2.new(0,54,0,54)
+    ToggleBtn.BackgroundColor3 = Color3.fromRGB(18,4,4)
+    ToggleBtn.BackgroundTransparency = 0.35
+    ToggleBtn.BorderSizePixel = 0
+    ToggleBtn.Image          = "rbxassetid://136074899341393"
+    ToggleBtn.ImageTransparency = 0
+    ToggleBtn.ScaleType      = Enum.ScaleType.Fit
+    ToggleBtn.ZIndex         = 50
+    ToggleBtn.Visible        = false  -- hidden while window is open
+    local tbc = Instance.new("UICorner", ToggleBtn); tbc.CornerRadius = UDim.new(0,12)
+    local tbs = Instance.new("UIStroke", ToggleBtn)
+    tbs.Color = Color3.fromRGB(200,30,30); tbs.Transparency = 0.5; tbs.Thickness = 1.5
+    local tbsh = Instance.new("ImageLabel", ToggleBtn)
+    tbsh.AnchorPoint = Vector2.new(0.5,0.5); tbsh.Position = UDim2.new(0.5,0,0.5,0)
+    tbsh.Size = UDim2.new(1,20,1,20); tbsh.BackgroundTransparency = 1
+    tbsh.Image = "rbxassetid://6015897843"; tbsh.ImageColor3 = Color3.fromRGB(80,0,0)
+    tbsh.ImageTransparency = 0.65; tbsh.ScaleType = Enum.ScaleType.Slice
+    tbsh.SliceCenter = Rect.new(49,49,450,450); tbsh.ZIndex = 0
+
+    local function ShowWindow()
+        Window.State = true
+        MainFrame.Visible = true
+        ToggleBtn.Visible = false
+        Tween(MainFrame, {BackgroundTransparency = 0.38}, 0.5)
+        Tween(MainShadow, {ImageTransparency = 0.5}, 0.5)
+        blurObj.Enabled = true
+        task.delay(0.1, blurObj.Update)
+    end
+    local function HideWindow()
+        Window.State = false
+        ToggleBtn.Visible = true
+        Tween(MainFrame, {BackgroundTransparency = 1}, 0.4)
+        Tween(MainShadow, {ImageTransparency = 1}, 0.4)
+        blurObj.Enabled = false
+        task.delay(0.45, function() MainFrame.Visible = false end)
+    end
+
+    CloseBtn.MouseButton1Click:Connect(HideWindow)
+    ToggleBtn.MouseButton1Click:Connect(ShowWindow)
+    UserInputService.InputBegan:Connect(function(io, gpe)
+        if gpe then return end
+        if io.KeyCode == Window.Bind then
+            if Window.State then HideWindow() else ShowWindow() end
+        end
+    end)
+
+    -- Hover effects
+    for _,btn in ipairs({CloseBtn, MinBtn}) do
+        btn.MouseEnter:Connect(function() Tween(btn, {BackgroundTransparency=0.1}, 0.15) end)
+        btn.MouseLeave:Connect(function() Tween(btn, {BackgroundTransparency=0.4}, 0.15) end)
+    end
+
+    -- ── Loading Screen ──
+    if cfg.LoadingEnabled then
+        local LoadFrame = Instance.new("Frame", MainFrame)
+        LoadFrame.Size = UDim2.new(1,0,1,0); LoadFrame.BackgroundColor3 = Color3.fromRGB(12,3,3)
+        LoadFrame.BackgroundTransparency = 0; LoadFrame.BorderSizePixel = 0; LoadFrame.ZIndex = 50
+        local lc = Instance.new("UICorner", LoadFrame); lc.CornerRadius = UDim.new(0,8)
+
+        local LoadLogo = Instance.new("ImageLabel", LoadFrame)
+        LoadLogo.AnchorPoint = Vector2.new(0.5,0.5); LoadLogo.Position = UDim2.new(0.5,0,0.42,0)
+        LoadLogo.Size = UDim2.new(0,64,0,64); LoadLogo.BackgroundTransparency = 1
+        LoadLogo.Image = "rbxassetid://"..cfg.LogoID; LoadLogo.ScaleType = Enum.ScaleType.Fit
+
+        local LoadTitle = Instance.new("TextLabel", LoadFrame)
+        LoadTitle.AnchorPoint = Vector2.new(0.5,0.5); LoadTitle.Position = UDim2.new(0.5,0,0.6,0)
+        LoadTitle.Size = UDim2.new(0.6,0,0.08,0); LoadTitle.BackgroundTransparency = 1
+        LoadTitle.Font = Enum.Font.GothamBold; LoadTitle.Text = cfg.LoadingTitle
+        LoadTitle.TextColor3 = Color3.fromRGB(255,255,255); LoadTitle.TextScaled = true
+        LoadTitle.TextTransparency = 1
+
+        local LoadSub = Instance.new("TextLabel", LoadFrame)
+        LoadSub.AnchorPoint = Vector2.new(0.5,0.5); LoadSub.Position = UDim2.new(0.5,0,0.68,0)
+        LoadSub.Size = UDim2.new(0.5,0,0.05,0); LoadSub.BackgroundTransparency = 1
+        LoadSub.Font = Enum.Font.Gotham; LoadSub.Text = cfg.LoadingSubtitle
+        LoadSub.TextColor3 = Color3.fromRGB(200,120,120); LoadSub.TextScaled = true
+        LoadSub.TextTransparency = 1
+
+        -- Spinning accent ring
+        local Ring = Instance.new("ImageLabel", LoadFrame)
+        Ring.AnchorPoint = Vector2.new(0.5,0.5); Ring.Position = UDim2.new(0.5,0,0.42,0)
+        Ring.Size = UDim2.new(0,84,0,84); Ring.BackgroundTransparency = 1
+        Ring.Image = "rbxassetid://4965945816"; Ring.ImageColor3 = Color3.fromRGB(200,30,30)
+        Ring.ImageTransparency = 0.3; Ring.ZIndex = 51
+
+        task.spawn(function()
+            task.wait(0.3)
+            Tween(LoadTitle, {TextTransparency=0}, 0.6)
+            Tween(LoadSub,   {TextTransparency=0.3}, 0.6)
+            TweenService:Create(Ring, TweenInfo.new(1.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 2, false, 0.2), {Rotation = 450}):Play()
+            task.wait(3.2)
+            Tween(LoadTitle, {TextTransparency=1}, 0.5)
+            Tween(LoadSub,   {TextTransparency=1}, 0.5)
+            Tween(Ring,      {ImageTransparency=1}, 0.4)
+            task.wait(0.5)
+            Tween(LoadFrame, {BackgroundTransparency=1}, 0.5)
+            task.wait(0.55)
+            LoadFrame:Destroy()
+        end)
+    end
+
+    -- ── Key System ──
+    if cfg.KeySystem then
+        cfg.KeySettings = Kwargify({
+            Title    = cfg.Name,
+            Subtitle = "Key System",
+            Note     = "Enter your key below",
+            SaveKey  = true,
+            Key      = {"ExampleKey"},
+        }, cfg.KeySettings)
+
+        local ks = cfg.KeySettings
+        if typeof(ks.Key) == "string" then ks.Key = {ks.Key} end
+
+        local keyFolder = cfg.ConfigFolder.."/.keys"
+        pcall(function() if not isfolder(keyFolder) then makefolder(keyFolder) end end)
+
+        local saved = false
+        pcall(function()
+            if isfile(keyFolder.."/key.lua") then
+                local k = readfile(keyFolder.."/key.lua")
+                for _,v in ipairs(ks.Key) do if k == v then saved = true break end end
+            end
+        end)
+
+        if not saved then
+            local KF = Instance.new("Frame", MainFrame)
+            KF.Size = UDim2.new(1,0,1,0); KF.BackgroundColor3 = Color3.fromRGB(12,3,3)
+            KF.BackgroundTransparency = 0; KF.ZIndex = 60; KF.BorderSizePixel = 0
+            local kfc = Instance.new("UICorner", KF); kfc.CornerRadius = UDim.new(0,8)
+
+            local KTitle = Instance.new("TextLabel", KF)
+            KTitle.AnchorPoint = Vector2.new(0.5,0.5); KTitle.Position = UDim2.new(0.5,0,0.3,0)
+            KTitle.Size = UDim2.new(0.7,0,0.1,0); KTitle.BackgroundTransparency = 1
+            KTitle.Font = Enum.Font.GothamBold; KTitle.Text = ks.Title
+            KTitle.TextColor3 = Color3.fromRGB(255,255,255); KTitle.TextScaled = true
+
+            local KSub = Instance.new("TextLabel", KF)
+            KSub.AnchorPoint = Vector2.new(0.5,0.5); KSub.Position = UDim2.new(0.5,0,0.4,0)
+            KSub.Size = UDim2.new(0.6,0,0.06,0); KSub.BackgroundTransparency = 1
+            KSub.Font = Enum.Font.Gotham; KSub.Text = ks.Note
+            KSub.TextColor3 = Color3.fromRGB(200,120,120); KSub.TextScaled = true; KSub.TextTransparency = 0.3
+
+            local KBox = Instance.new("TextBox", KF)
+            KBox.AnchorPoint = Vector2.new(0.5,0.5); KBox.Position = UDim2.new(0.5,0,0.55,0)
+            KBox.Size = UDim2.new(0.5,0,0.08,0); KBox.BackgroundColor3 = Color3.fromRGB(25,7,7)
+            KBox.BackgroundTransparency = 0.3; KBox.BorderSizePixel = 0
+            KBox.Font = Enum.Font.Gotham; KBox.Text = ""
+            KBox.PlaceholderText = "Enter key..."; KBox.TextColor3 = Color3.fromRGB(255,255,255)
+            KBox.TextScaled = true; KBox.ClearTextOnFocus = false
+            local kbc = Instance.new("UICorner", KBox); kbc.CornerRadius = UDim.new(0,6)
+            local kbs = Instance.new("UIStroke", KBox); kbs.Color = Color3.fromRGB(180,30,30); kbs.Transparency = 0.5
+
+            local KSubmit = Instance.new("TextButton", KF)
+            KSubmit.AnchorPoint = Vector2.new(0.5,0.5); KSubmit.Position = UDim2.new(0.5,0,0.68,0)
+            KSubmit.Size = UDim2.new(0.2,0,0.07,0); KSubmit.BackgroundColor3 = Color3.fromRGB(180,20,20)
+            KSubmit.BackgroundTransparency = 0.3; KSubmit.BorderSizePixel = 0
+            KSubmit.Font = Enum.Font.GothamBold; KSubmit.Text = "Submit"
+            KSubmit.TextColor3 = Color3.fromRGB(255,255,255); KSubmit.TextScaled = true
+            local ksc = Instance.new("UICorner", KSubmit); ksc.CornerRadius = UDim.new(0,6)
+
+            local passed = false
+            KSubmit.MouseButton1Click:Connect(function()
+                if #KBox.Text == 0 then return end
+                for _,k in ipairs(ks.Key) do
+                    if KBox.Text == k then
+                        passed = true
+                        if ks.SaveKey then pcall(function() writefile(keyFolder.."/key.lua", k) end) end
+                        Tween(KF, {BackgroundTransparency=1}, 0.5)
+                        task.wait(0.55); KF:Destroy()
+                        return
+                    end
+                end
+                KBox.Text = ""; KBox.PlaceholderText = "Invalid key, try again"
+                Tween(KBox, {BackgroundColor3 = Color3.fromRGB(80,10,10)}, 0.15)
+                task.wait(0.3); Tween(KBox, {BackgroundColor3 = Color3.fromRGB(25,7,7)}, 0.3)
+            end)
+
+            repeat task.wait() until passed
+        end
+    end
+
+    -- ── Config folder ──
+    pcall(function()
+        if not isfolder(cfg.ConfigFolder) then makefolder(cfg.ConfigFolder) end
+        if not isfolder(cfg.ConfigFolder.."/configs") then makefolder(cfg.ConfigFolder.."/configs") end
+    end)
+
+    local ClassParsers = {
+        Toggle = {
+            Save = function(flag,d) return {type="Toggle",flag=flag,state=d.CurrentValue or false} end,
+            Load = function(flag,d) if MergeUI.Options[flag] then MergeUI.Options[flag]:Set({CurrentValue=d.state}) end end
+        },
+        Slider = {
+            Save = function(flag,d) return {type="Slider",flag=flag,value=tostring(d.CurrentValue)} end,
+            Load = function(flag,d) if MergeUI.Options[flag] and d.value then MergeUI.Options[flag]:Set({CurrentValue=tonumber(d.value)}) end end
+        },
+        Input = {
+            Save = function(flag,d) return {type="Input",flag=flag,text=d.CurrentValue} end,
+            Load = function(flag,d) if MergeUI.Options[flag] and d.text then MergeUI.Options[flag]:Set({CurrentValue=d.text}) end end
+        },
+        Dropdown = {
+            Save = function(flag,d) return {type="Dropdown",flag=flag,value=d.CurrentOption} end,
+            Load = function(flag,d) if MergeUI.Options[flag] and d.value then MergeUI.Options[flag]:Set({CurrentOption=d.value}) end end
+        },
+        Colorpicker = {
+            Save = function(flag,d)
+                local c = typeof(d.Color)=="Color3" and d.Color or Color3.new(1,1,1)
+                return {type="Colorpicker",flag=flag,color=string.format("#%02X%02X%02X",c.R*255,c.G*255,c.B*255)}
+            end,
+            Load = function(flag,d)
+                if MergeUI.Options[flag] and d.color then
+                    local r = tonumber(d.color:sub(2,3),16)/255
+                    local g = tonumber(d.color:sub(4,5),16)/255
+                    local b = tonumber(d.color:sub(6,7),16)/255
+                    MergeUI.Options[flag]:Set({Color=Color3.new(r,g,b)})
+                end
+            end
+        },
+    }
+
+    function Window:SaveConfig(name)
+        local data = {objects={}}
+        for flag,opt in pairs(MergeUI.Options) do
+            if ClassParsers[opt.Class] and not opt.IgnoreConfig then
+                table.insert(data.objects, ClassParsers[opt.Class].Save(flag,opt))
+            end
+        end
+        local ok,enc = pcall(HttpService.JSONEncode, HttpService, data)
+        if ok then writefile(cfg.ConfigFolder.."/configs/"..name..".json", enc) end
+    end
+
+    function Window:LoadConfig(name)
+        local path = cfg.ConfigFolder.."/configs/"..name..".json"
+        if not isfile(path) then return false end
+        local ok,dec = pcall(HttpService.JSONDecode, HttpService, readfile(path))
+        if not ok then return false end
+        for _,obj in pairs(dec.objects) do
+            if ClassParsers[obj.type] then task.spawn(function() ClassParsers[obj.type].Load(obj.flag,obj) end) end
+        end
+        return true
+    end
+
+    function Window:ListConfigs()
+        local out = {}
+        pcall(function()
+            for _,f in ipairs(listfiles(cfg.ConfigFolder.."/configs")) do
+                if f:sub(-5)==".json" then
+                    local name = f:match("([^/\\]+)%.json$")
+                    if name then table.insert(out, name) end
+                end
+            end
+        end)
+        return out
+    end
+
+    -- ── Create Tab ──────────────────────────────────────────────────────────
+    local firstTab = true
+    function Window:CreateTab(tabCfg)
+        tabCfg = Kwargify({
+            Name      = "Tab",
+            Icon      = nil,
+            ShowTitle = true,
+        }, tabCfg)
+
+        local Tab = {}
+
+        -- Tab Button
+        local TBtn = Instance.new("TextButton", TabScroll)
+        TBtn.Name = tabCfg.Name; TBtn.Text = ""
+        TBtn.Size = UDim2.new(0.94,0,0,34); TBtn.BackgroundColor3 = Color3.fromRGB(30,8,8)
+        TBtn.BackgroundTransparency = 0.6; TBtn.BorderSizePixel = 0
+        TBtn.LayoutOrder = #TabScroll:GetChildren()
+        local tbc = Instance.new("UICorner", TBtn); tbc.CornerRadius = UDim.new(0,5)
+        local tbs = Instance.new("UIStroke", TBtn); tbs.Transparency = 0.85; tbs.Color = Color3.fromRGB(200,40,40)
+
+        local TBtnLabel = Instance.new("TextLabel", TBtn)
+        TBtnLabel.AnchorPoint = Vector2.new(0,0.5); TBtnLabel.Position = UDim2.new(0.08,0,0.5,0)
+        TBtnLabel.Size = UDim2.new(0.9,0,0.7,0); TBtnLabel.BackgroundTransparency = 1
+        TBtnLabel.Font = Enum.Font.Gotham; TBtnLabel.Text = tabCfg.Name
+        TBtnLabel.TextColor3 = Color3.fromRGB(200,160,160); TBtnLabel.TextScaled = true
+        TBtnLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+        -- Tab Page
+        local TabPage = Instance.new("ScrollingFrame", ContentArea)
+        TabPage.Name = tabCfg.Name; TabPage.BackgroundTransparency = 1
+        TabPage.BorderSizePixel = 0; TabPage.ScrollBarThickness = 3
+        TabPage.ScrollBarImageColor3 = Color3.fromRGB(180,30,30)
+        TabPage.CanvasSize = UDim2.new(0,0,0,0)
+        TabPage.LayoutOrder = #ContentArea:GetChildren()
+        TabPage.Active = true; TabPage.Size = UDim2.new(1,0,1,0)
+
+        local PageList = Instance.new("UIListLayout", TabPage)
+        PageList.SortOrder = Enum.SortOrder.LayoutOrder; PageList.Padding = UDim.new(0,5)
+        PageList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        PageList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            TabPage.CanvasSize = UDim2.fromOffset(0, PageList.AbsoluteContentSize.Y + 12)
+        end)
+        local PPad = Instance.new("UIPadding", TabPage)
+        PPad.PaddingTop = UDim.new(0,8); PPad.PaddingBottom = UDim.new(0,8)
+        PPad.PaddingLeft = UDim.new(0,8); PPad.PaddingRight = UDim.new(0,8)
+
+        if tabCfg.ShowTitle then
+            local TitleLbl = Instance.new("TextLabel", TabPage)
+            TitleLbl.Size = UDim2.new(1,0,0,22); TitleLbl.BackgroundTransparency = 1
+            TitleLbl.Font = Enum.Font.GothamBold; TitleLbl.Text = tabCfg.Name
+            TitleLbl.TextColor3 = Color3.fromRGB(200,100,100); TitleLbl.TextScaled = true
+            TitleLbl.TextXAlignment = Enum.TextXAlignment.Left; TitleLbl.LayoutOrder = -999
+        end
+
+        function Tab:Activate()
+            Window.CurrentTab = tabCfg.Name
+            PageLayout:JumpTo(TabPage)
+            for _,c in ipairs(TabScroll:GetChildren()) do
+                if c:IsA("TextButton") then
+                    local lbl = c:FindFirstChildOfClass("TextLabel")
+                    if c == TBtn then
+                        Tween(c, {BackgroundTransparency=0.2}, 0.25)
+                        Tween(tbs, {Transparency=0.5}, 0.25)
+                        if lbl then Tween(lbl, {TextColor3=Color3.fromRGB(255,200,200)}, 0.25) end
+                    else
+                        Tween(c, {BackgroundTransparency=0.6}, 0.25)
+                        local os = c:FindFirstChildOfClass("UIStroke")
+                        if os then Tween(os, {Transparency=0.85}, 0.25) end
+                        if lbl then Tween(lbl, {TextColor3=Color3.fromRGB(200,160,160)}, 0.25) end
+                    end
+                end
+            end
+        end
+
+        TBtn.MouseButton1Click:Connect(function() Tab:Activate() end)
+
+        if firstTab then Tab:Activate(); firstTab = false end
+
+        -- ── Element Helpers ────────────────────────────────────────────────
+
+        -- Base frame factory
+        local function BaseFrame(height)
+            local f = Instance.new("Frame", TabPage)
+            f.Size = UDim2.new(1,0,0,height or 38)
+            f.BackgroundColor3 = Color3.fromRGB(24,7,7)
+            f.BackgroundTransparency = 0.5; f.BorderSizePixel = 0
+            f.LayoutOrder = #TabPage:GetChildren()
+            local uc = Instance.new("UICorner", f); uc.CornerRadius = UDim.new(0,5)
+            local us = Instance.new("UIStroke", f); us.Color = Color3.fromRGB(160,20,20); us.Transparency = 0.75; us.Thickness = 1
+            return f, uc, us
+        end
+
+        local function TextEl(parent, text, x, y, w, h, bold, transparent, xalign)
+            local t = Instance.new("TextLabel", parent)
+            t.BackgroundTransparency = 1; t.BorderSizePixel = 0
+            t.Position = UDim2.new(x,0,y,0); t.Size = UDim2.new(w,0,h,0)
+            t.Font = bold and Enum.Font.GothamBold or Enum.Font.Gotham
+            t.Text = text; t.TextColor3 = Color3.fromRGB(255,230,230)
+            t.TextScaled = true; t.TextWrapped = true; t.TextTransparency = transparent or 0
+            t.TextXAlignment = xalign or Enum.TextXAlignment.Left
+            return t
+        end
+
+        local function InteractBtn(parent)
+            local b = Instance.new("TextButton", parent)
+            b.Size = UDim2.new(1,0,1,0); b.BackgroundTransparency = 1
+            b.BorderSizePixel = 0; b.Text = ""; b.ZIndex = parent.ZIndex + 2
+            return b
+        end
+
+        local function HoverEffect(frame, stroke)
+            frame.MouseEnter:Connect(function()  Tween(stroke,{Transparency=0.4},0.15) end)
+            frame.MouseLeave:Connect(function()  Tween(stroke,{Transparency=0.75},0.15) end)
+        end
+
+        -- ── Section ──────────────────────────────────────────────────────
+        function Tab:CreateSection(name)
+            local Section = {}
+            local lbl = Instance.new("TextLabel", TabPage)
+            lbl.Size = UDim2.new(1,0,0,18); lbl.BackgroundTransparency = 1
+            lbl.Font = Enum.Font.GothamBold; lbl.Text = name or "Section"
+            lbl.TextColor3 = Color3.fromRGB(220,80,80); lbl.TextScaled = true
+            lbl.TextXAlignment = Enum.TextXAlignment.Left; lbl.LayoutOrder = #TabPage:GetChildren()
+            local line = Instance.new("Frame", TabPage)
+            line.Size = UDim2.new(1,0,0,1); line.BackgroundColor3 = Color3.fromRGB(160,20,20)
+            line.BackgroundTransparency = 0.7; line.BorderSizePixel = 0
+            line.LayoutOrder = #TabPage:GetChildren()
+
+            function Section:Set(n) lbl.Text = n end
+            function Section:Destroy() lbl:Destroy(); line:Destroy() end
+
+            -- Proxy all Tab element creators into Section
+            for k,v in pairs(Tab) do
+                if type(v)=="function" and k ~= "CreateSection" and k ~= "Activate" then
+                    Section[k] = v
+                end
+            end
+            return Section
+        end
+
+        -- ── Divider ───────────────────────────────────────────────────────
+        function Tab:CreateDivider()
+            local d = Instance.new("Frame", TabPage)
+            d.Size = UDim2.new(1,0,0,1); d.BackgroundColor3 = Color3.fromRGB(140,20,20)
+            d.BackgroundTransparency = 0.7; d.BorderSizePixel = 0
+            d.LayoutOrder = #TabPage:GetChildren()
+        end
+
+        -- ── Label ─────────────────────────────────────────────────────────
+        function Tab:CreateLabel(s)
+            s = Kwargify({Text="Label",Style=1}, s)
+            local LV = {Settings=s}
+            local f,_,us = BaseFrame(32)
+            if s.Style == 1 then f.BackgroundTransparency = 1; us.Transparency = 1 end
+            if s.Style == 2 then f.BackgroundColor3 = Color3.fromRGB(20,20,60) end
+            if s.Style == 3 then f.BackgroundColor3 = Color3.fromRGB(60,20,20) end
+            TextEl(f, s.Text, 0.03, 0.15, 0.94, 0.7, false)
+            function LV:Set(t) s.Text=t f:FindFirstChildOfClass("TextLabel").Text=t end
+            function LV:Destroy() f:Destroy() end
+            return LV
+        end
+
+        -- ── Paragraph ─────────────────────────────────────────────────────
+        function Tab:CreateParagraph(s)
+            s = Kwargify({Title="Paragraph",Text="..."}, s)
+            local PV = {Settings=s}
+            local f,_,us = BaseFrame(60)
+            us.Transparency = 0.7
+            TextEl(f, s.Title, 0.03, 0.04, 0.94, 0.32, true)
+            local body = TextEl(f, s.Text, 0.03, 0.38, 0.94, 0.58, false, 0.2)
+            body.TextScaled = false; body.TextSize = 13; body.TextWrapped = true; body.ClipsDescendants = true
+
+            local function Upd()
+                body.Size = UDim2.new(0.94,0,0,9999)
+                local bh = body.TextBounds.Y + 10
+                body.Size = UDim2.new(0.94,0,0,bh)
+                Tween(f, {Size = UDim2.new(1,0,0, math.max(60, bh + 28))}, 0.25)
+            end
+            function PV:Set(n) n=Kwargify(s,n) s=n body.Text=n.Text f:FindFirstChildOfClass("TextLabel").Text=n.Title Upd() end
+            function PV:Destroy() f:Destroy() end
+            Upd()
+            return PV
+        end
+
+        -- ── Button ────────────────────────────────────────────────────────
+        function Tab:CreateButton(s)
+            s = Kwargify({Name="Button",Description=nil,Callback=function()end}, s)
+            local BV = {Settings=s,Hover=false}
+            local h = s.Description and 52 or 38
+            local f,_,us = BaseFrame(h)
+            TextEl(f, s.Name, 0.03, s.Description and 0.05 or 0.18, 0.7, s.Description and 0.35 or 0.65, true)
+            if s.Description then TextEl(f, s.Description, 0.03, 0.52, 0.85, 0.35, false, 0.35) end
+
+            -- Arrow indicator
+            local arr = Instance.new("TextLabel", f)
+            arr.AnchorPoint = Vector2.new(1,0.5); arr.Position = UDim2.new(0.97,0,0.5,0)
+            arr.Size = UDim2.new(0.06,0,0.5,0); arr.BackgroundTransparency = 1
+            arr.Font = Enum.Font.GothamBold; arr.Text = "›"; arr.TextScaled = true
+            arr.TextColor3 = Color3.fromRGB(200,80,80); arr.TextTransparency = 0.5
+
+            local btn = InteractBtn(f)
+            HoverEffect(f, us)
+            btn.MouseButton1Click:Connect(function()
+                Tween(us, {Color=Color3.fromRGB(255,100,100),Transparency=0.2}, 0.1)
+                task.delay(0.2, function() Tween(us, {Color=Color3.fromRGB(160,20,20),Transparency=0.75}, 0.3) end)
+                local ok,err = pcall(s.Callback)
+                if not ok then warn("MergeUI Button error: "..tostring(err)) end
+            end)
+            function BV:Set(n) n=Kwargify(s,n) s=n end
+            function BV:Destroy() f:Destroy() end
+            return BV
+        end
+
+        -- ── Toggle ────────────────────────────────────────────────────────
+        function Tab:CreateToggle(s, flag)
+            s = Kwargify({Name="Toggle",Description=nil,CurrentValue=false,Callback=function()end}, s)
+            local TV = {Class="Toggle",IgnoreConfig=false,CurrentValue=s.CurrentValue,Settings=s}
+            local h = s.Description and 52 or 38
+            local f,_,us = BaseFrame(h)
+            TextEl(f, s.Name, 0.03, s.Description and 0.05 or 0.18, 0.7, s.Description and 0.35 or 0.65, true)
+            if s.Description then TextEl(f, s.Description, 0.03, 0.52, 0.7, 0.35, false, 0.35) end
+
+            -- Toggle pill
+            local pill = Instance.new("Frame", f)
+            pill.AnchorPoint = Vector2.new(1,0.5); pill.Position = UDim2.new(0.97,0,0.5,0)
+            pill.Size = UDim2.new(0,40,0,20); pill.BackgroundColor3 = Color3.fromRGB(50,15,15)
+            pill.BackgroundTransparency = 0.3; pill.BorderSizePixel = 0
+            local pc = Instance.new("UICorner", pill); pc.CornerRadius = UDim.new(0.5,0)
+            local ps = Instance.new("UIStroke", pill); ps.Color = Color3.fromRGB(140,20,20); ps.Transparency = 0.6
+
+            local knob = Instance.new("Frame", pill)
+            knob.AnchorPoint = Vector2.new(0.5,0.5); knob.Position = UDim2.new(0.23,0,0.5,0)
+            knob.Size = UDim2.new(0,14,0,14); knob.BackgroundColor3 = Color3.fromRGB(130,40,40)
+            knob.BorderSizePixel = 0
+            local kc = Instance.new("UICorner", knob); kc.CornerRadius = UDim.new(0.5,0)
+
+            local function SetState(val)
+                TV.CurrentValue = val; s.CurrentValue = val
+                if val then
+                    Tween(pill,  {BackgroundColor3=Color3.fromRGB(180,20,20), BackgroundTransparency=0.1}, 0.25)
+                    Tween(ps,    {Color=Color3.fromRGB(255,60,60), Transparency=0.4}, 0.25)
+                    Tween(knob,  {Position=UDim2.new(0.77,0,0.5,0), BackgroundColor3=Color3.fromRGB(255,200,200)}, 0.25)
+                else
+                    Tween(pill,  {BackgroundColor3=Color3.fromRGB(50,15,15), BackgroundTransparency=0.3}, 0.25)
+                    Tween(ps,    {Color=Color3.fromRGB(140,20,20), Transparency=0.6}, 0.25)
+                    Tween(knob,  {Position=UDim2.new(0.23,0,0.5,0), BackgroundColor3=Color3.fromRGB(130,40,40)}, 0.25)
+                end
+            end
+            SetState(s.CurrentValue)
+            if s.CurrentValue then pcall(s.Callback, true) end
+
+            HoverEffect(f, us)
+            local btn = InteractBtn(f)
+            btn.MouseButton1Click:Connect(function()
+                s.CurrentValue = not s.CurrentValue
+                SetState(s.CurrentValue)
+                local ok,err = pcall(s.Callback, s.CurrentValue)
+                if not ok then warn("MergeUI Toggle error: "..tostring(err)) end
+            end)
+            function TV:UpdateState(v) SetState(v) end
+            function TV:Set(n) n=Kwargify(s,n) s=n SetState(s.CurrentValue) pcall(s.Callback,s.CurrentValue) end
+            function TV:Destroy() f:Destroy() end
+            if flag then MergeUI.Options[flag] = TV end
+            return TV
+        end
+
+        -- ── Slider ────────────────────────────────────────────────────────
+        function Tab:CreateSlider(s, flag)
+            s = Kwargify({Name="Slider",Range={0,100},Increment=1,CurrentValue=50,Callback=function()end}, s)
+            local SV = {Class="Slider",IgnoreConfig=false,CurrentValue=s.CurrentValue,Settings=s}
+            local f,_,us = BaseFrame(52)
+            TextEl(f, s.Name, 0.03, 0.05, 0.6, 0.35, true)
+
+            local valLbl = Instance.new("TextLabel", f)
+            valLbl.AnchorPoint = Vector2.new(1,0); valLbl.Position = UDim2.new(0.97,0,0.05,0)
+            valLbl.Size = UDim2.new(0.25,0,0.35,0); valLbl.BackgroundTransparency = 1
+            valLbl.Font = Enum.Font.GothamBold; valLbl.TextScaled = true
+            valLbl.Text = tostring(s.CurrentValue); valLbl.TextColor3 = Color3.fromRGB(220,100,100)
+            valLbl.TextXAlignment = Enum.TextXAlignment.Right
+
+            local track = Instance.new("Frame", f)
+            track.AnchorPoint = Vector2.new(0.5,0); track.Position = UDim2.new(0.5,0,0.58,0)
+            track.Size = UDim2.new(0.94,0,0,6); track.BackgroundColor3 = Color3.fromRGB(50,15,15)
+            track.BackgroundTransparency = 0.3; track.BorderSizePixel = 0
+            local trc = Instance.new("UICorner", track); trc.CornerRadius = UDim.new(0.5,0)
+
+            local fill = Instance.new("Frame", track)
+            fill.Size = UDim2.new(0,0,1,0); fill.BackgroundColor3 = Color3.fromRGB(200,30,30)
+            fill.BorderSizePixel = 0
+            local fc = Instance.new("UICorner", fill); fc.CornerRadius = UDim.new(0.5,0)
+            -- gradient on fill
+            local fg = Instance.new("UIGradient", fill)
+            fg.Color = ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(220,50,50)),ColorSequenceKeypoint.new(1,Color3.fromRGB(160,20,20))}
+
+            local thumb = Instance.new("Frame", track)
+            thumb.AnchorPoint = Vector2.new(0.5,0.5); thumb.Size = UDim2.new(0,14,0,14)
+            thumb.BackgroundColor3 = Color3.fromRGB(255,180,180); thumb.BorderSizePixel = 0; thumb.ZIndex = 5
+            local thc = Instance.new("UICorner", thumb); thc.CornerRadius = UDim.new(0.5,0)
+            local ths = Instance.new("UIStroke", thumb); ths.Color = Color3.fromRGB(200,50,50); ths.Transparency = 0.4
+
+            local interact = Instance.new("TextButton", track)
+            interact.Size = UDim2.new(1,0,6,0); interact.Position = UDim2.new(0,-0,0,-16)
+            interact.BackgroundTransparency = 1; interact.Text = ""; interact.ZIndex = 6
+
+            local function SetVal(v, silent)
+                v = math.floor(v / s.Increment + 0.5) * s.Increment
+                v = math.clamp(v, s.Range[1], s.Range[2])
+                local pct = (v - s.Range[1]) / (s.Range[2] - s.Range[1])
+                valLbl.Text = tostring(v)
+                SV.CurrentValue = v; s.CurrentValue = v
+                Tween(fill, {Size=UDim2.new(pct,0,1,0)}, 0.08)
+                Tween(thumb, {Position=UDim2.new(pct,0,0.5,0)}, 0.08)
+                if not silent then pcall(s.Callback, v) end
+            end
+            SetVal(s.CurrentValue, true)
+            pcall(s.Callback, s.CurrentValue)
+
+            local dragging = false
+            interact.InputBegan:Connect(function(i)
+                if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then dragging=true end
+            end)
+            interact.InputEnded:Connect(function(i)
+                if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then dragging=false end
+            end)
+            RunService.RenderStepped:Connect(function()
+                if dragging then
+                    local rel = math.clamp((UserInputService:GetMouseLocation().X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
+                    local v = s.Range[1] + rel * (s.Range[2] - s.Range[1])
+                    SetVal(v)
+                end
+            end)
+            HoverEffect(f, us)
+            function SV:UpdateValue(v) SetVal(v) end
+            function SV:Set(n) n=Kwargify(s,n) s=n SetVal(s.CurrentValue,true) end
+            function SV:Destroy() f:Destroy() end
+            if flag then MergeUI.Options[flag] = SV end
+            return SV
+        end
+
+        -- ── Input ─────────────────────────────────────────────────────────
+        function Tab:CreateInput(s, flag)
+            s = Kwargify({Name="Input",Description=nil,CurrentValue="",PlaceholderText="Type here...",Numeric=false,Enter=false,RemoveTextAfterFocusLost=false,MaxCharacters=nil,Callback=function()end}, s)
+            local IV = {Class="Input",IgnoreConfig=false,CurrentValue=s.CurrentValue,Settings=s}
+            local h = s.Description and 52 or 38
+            local f,_,us = BaseFrame(h)
+            TextEl(f, s.Name, 0.03, s.Description and 0.05 or 0.18, 0.45, s.Description and 0.35 or 0.65, true)
+            if s.Description then TextEl(f, s.Description, 0.03, 0.52, 0.45, 0.35, false, 0.35) end
+
+            local box = Instance.new("TextBox", f)
+            box.AnchorPoint = Vector2.new(1,0.5); box.Position = UDim2.new(0.97,0,0.5,0)
+            box.Size = UDim2.new(0.48,0,0.65,0); box.BackgroundColor3 = Color3.fromRGB(30,8,8)
+            box.BackgroundTransparency = 0.4; box.BorderSizePixel = 0
+            box.Font = Enum.Font.Gotham; box.Text = tostring(s.CurrentValue)
+            box.PlaceholderText = s.PlaceholderText; box.TextColor3 = Color3.fromRGB(255,220,220)
+            box.TextScaled = true; box.ClearTextOnFocus = false; box.ZIndex = f.ZIndex+3
+            local bc = Instance.new("UICorner", box); bc.CornerRadius = UDim.new(0,4)
+            local bst = Instance.new("UIStroke", box); bst.Color = Color3.fromRGB(160,20,20); bst.Transparency = 0.6
+
+            box:GetPropertyChangedSignal("Text"):Connect(function()
+                if s.Numeric and not tonumber(box.Text) and box.Text~="" and box.Text~="-" then
+                    box.Text = box.Text:match("[%-0-9%.]*") or ""
+                end
+                if s.MaxCharacters and #box.Text > s.MaxCharacters then
+                    box.Text = box.Text:sub(1, s.MaxCharacters)
+                end
+                IV.CurrentValue = box.Text
+                if not s.Enter then pcall(s.Callback, box.Text) end
+            end)
+            box.FocusLost:Connect(function(enter)
+                if s.Enter and enter then pcall(s.Callback, box.Text) end
+                if s.RemoveTextAfterFocusLost then box.Text = "" end
+            end)
+            HoverEffect(f, us)
+            function IV:Set(n) n=Kwargify(s,n) s=n box.Text=tostring(s.CurrentValue) IV.CurrentValue=s.CurrentValue end
+            function IV:Destroy() f:Destroy() end
+            if flag then MergeUI.Options[flag] = IV end
+            return IV
+        end
+
+        -- ── Dropdown ──────────────────────────────────────────────────────
+        function Tab:CreateDropdown(s, flag)
+            s = Kwargify({Name="Dropdown",Description=nil,Options={},CurrentOption={},MultipleOptions=false,SpecialType=nil,Callback=function()end}, s)
+            if type(s.CurrentOption)=="string" then s.CurrentOption={s.CurrentOption} end
+            local DV = {Class="Dropdown",IgnoreConfig=false,CurrentOption=s.CurrentOption,Settings=s}
+
+            local closedH = s.Description and 52 or 38
+            local f,_,us = BaseFrame(closedH)
+            TextEl(f, s.Name, 0.03, s.Description and 0.05 or 0.18, 0.6, s.Description and 0.35 or 0.65, true)
+            if s.Description then TextEl(f, s.Description, 0.03, 0.52, 0.6, 0.35, false, 0.35) end
+
+            local selLabel = Instance.new("TextLabel", f)
+            selLabel.AnchorPoint = Vector2.new(1,0.5); selLabel.Position = UDim2.new(0.93,0,0.5,0)
+            selLabel.Size = UDim2.new(0.32,0,0.55,0); selLabel.BackgroundTransparency = 1
+            selLabel.Font = Enum.Font.Gotham; selLabel.TextScaled = true
+            selLabel.TextColor3 = Color3.fromRGB(200,100,100); selLabel.TextTransparency = 0.3
+            selLabel.Text = s.CurrentOption[1] or "None"; selLabel.TextXAlignment = Enum.TextXAlignment.Right
+
+            local arrow = Instance.new("TextLabel", f)
+            arrow.AnchorPoint = Vector2.new(1,0.5); arrow.Position = UDim2.new(0.98,0,0.5,0)
+            arrow.Size = UDim2.new(0.05,0,0.5,0); arrow.BackgroundTransparency = 1
+            arrow.Font = Enum.Font.GothamBold; arrow.Text = "▾"; arrow.TextScaled = true
+            arrow.TextColor3 = Color3.fromRGB(200,80,80); arrow.TextTransparency = 0.4
+
+            -- List container (below frame, inside TabPage)
+            local listFrame = Instance.new("Frame", TabPage)
+            listFrame.Size = UDim2.new(1,0,0,0); listFrame.BackgroundColor3 = Color3.fromRGB(20,6,6)
+            listFrame.BackgroundTransparency = 0.35; listFrame.BorderSizePixel = 0; listFrame.ClipsDescendants = true
+            listFrame.LayoutOrder = f.LayoutOrder + 0.5
+            local lfc = Instance.new("UICorner", listFrame); lfc.CornerRadius = UDim.new(0,5)
+            local lfs = Instance.new("UIStroke", listFrame); lfs.Color = Color3.fromRGB(160,20,20); lfs.Transparency = 0.6
+
+            local listScroll = Instance.new("ScrollingFrame", listFrame)
+            listScroll.Size = UDim2.new(1,0,1,0); listScroll.BackgroundTransparency = 1
+            listScroll.BorderSizePixel = 0; listScroll.ScrollBarThickness = 3
+            listScroll.ScrollBarImageColor3 = Color3.fromRGB(180,30,30); listScroll.Active = true
+
+            local listLL = Instance.new("UIListLayout", listScroll)
+            listLL.SortOrder = Enum.SortOrder.LayoutOrder; listLL.Padding = UDim.new(0,3)
+            listLL.HorizontalAlignment = Enum.HorizontalAlignment.Center
+            listLL:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                listScroll.CanvasSize = UDim2.fromOffset(0, listLL.AbsoluteContentSize.Y+6)
+            end)
+            local lpad = Instance.new("UIPadding", listScroll)
+            lpad.PaddingTop=UDim.new(0,4);lpad.PaddingBottom=UDim.new(0,4)
+            lpad.PaddingLeft=UDim.new(0,4);lpad.PaddingRight=UDim.new(0,4)
+
+            local opened = false
+
+            local function GetSelText()
+                if #s.CurrentOption==0 then return "None"
+                elseif #s.CurrentOption==1 then return s.CurrentOption[1]
+                else return UnpackTable(s.CurrentOption) end
+            end
+
+            local function BuildList()
+                for _,c in ipairs(listScroll:GetChildren()) do
+                    if not c:IsA("UIListLayout") and not c:IsA("UIPadding") then c:Destroy() end
+                end
+                if s.SpecialType=="Player" then
+                    s.Options = {}
+                    for _,p in ipairs(Players:GetPlayers()) do table.insert(s.Options, p.Name) end
+                end
+                for _,opt in ipairs(s.Options) do
+                    local ob = Instance.new("TextButton", listScroll)
+                    ob.Size = UDim2.new(1,0,0,28); ob.BackgroundColor3 = Color3.fromRGB(30,8,8)
+                    ob.BackgroundTransparency = table.find(s.CurrentOption,opt) and 0.3 or 0.6
+                    ob.BorderSizePixel = 0; ob.Font = Enum.Font.Gotham
+                    ob.Text = opt; ob.TextColor3 = Color3.fromRGB(230,200,200)
+                    ob.TextScaled = true; ob.TextXAlignment = Enum.TextXAlignment.Left
+                    local oc = Instance.new("UICorner", ob); oc.CornerRadius = UDim.new(0,4)
+                    local op = Instance.new("UIPadding", ob); op.PaddingLeft = UDim.new(0,8)
+
+                    ob.MouseEnter:Connect(function() Tween(ob,{BackgroundTransparency=0.2},0.1) end)
+                    ob.MouseLeave:Connect(function() Tween(ob,{BackgroundTransparency=table.find(s.CurrentOption,opt) and 0.3 or 0.6},0.1) end)
+                    ob.MouseButton1Click:Connect(function()
+                        if s.MultipleOptions then
+                            local idx = table.find(s.CurrentOption, opt)
+                            if idx then table.remove(s.CurrentOption, idx)
+                            else table.insert(s.CurrentOption, opt) end
+                            pcall(s.Callback, s.CurrentOption)
+                        else
+                            s.CurrentOption = {opt}
+                            pcall(s.Callback, opt)
+                        end
+                        DV.CurrentOption = s.CurrentOption
+                        selLabel.Text = GetSelText()
+                        BuildList()
+                    end)
+                end
+            end
+
+            local function Toggle()
+                opened = not opened
+                if opened then
+                    local itemH = math.min(#s.Options, 5) * 31 + 10
+                    BuildList()
+                    Tween(listFrame, {Size=UDim2.new(1,0,0,itemH)}, 0.3, Enum.EasingStyle.Quint)
+                    Tween(arrow, {Rotation=180}, 0.2)
+                else
+                    Tween(listFrame, {Size=UDim2.new(1,0,0,0)}, 0.3, Enum.EasingStyle.Quint)
+                    Tween(arrow, {Rotation=0}, 0.2)
+                end
+            end
+
+            HoverEffect(f, us)
+            local btn = InteractBtn(f)
+            btn.MouseButton1Click:Connect(Toggle)
+
+            if s.SpecialType=="Player" then
+                Players.PlayerAdded:Connect(function() if opened then BuildList() end end)
+                Players.PlayerRemoving:Connect(function() if opened then BuildList() end end)
+            end
+
+            selLabel.Text = GetSelText()
+            pcall(s.Callback, s.MultipleOptions and s.CurrentOption or (s.CurrentOption[1] or nil))
+
+            function DV:Set(n)
+                n=Kwargify(s,n); s=n
+                if type(s.CurrentOption)=="string" then s.CurrentOption={s.CurrentOption} end
+                selLabel.Text = GetSelText()
+                BuildList()
+                pcall(s.Callback, s.MultipleOptions and s.CurrentOption or (s.CurrentOption[1] or nil))
+            end
+            function DV:Destroy() f:Destroy(); listFrame:Destroy() end
+            if flag then MergeUI.Options[flag] = DV end
+            return DV
+        end
+
+        -- ── Keybind / Bind ────────────────────────────────────────────────
+        function Tab:CreateBind(s, flag)
+            s = Kwargify({Name="Bind",Description=nil,CurrentBind="Q",HoldToInteract=false,Callback=function()end,OnChangedCallback=function()end}, s)
+            local BV = {Class="Keybind",IgnoreConfig=false,CurrentBind=s.CurrentBind,Active=false,Settings=s}
+            local h = s.Description and 52 or 38
+            local f,_,us = BaseFrame(h)
+            TextEl(f, s.Name, 0.03, s.Description and 0.05 or 0.18, 0.6, s.Description and 0.35 or 0.65, true)
+            if s.Description then TextEl(f, s.Description, 0.03, 0.52, 0.6, 0.35, false, 0.35) end
+
+            local bindBox = Instance.new("TextBox", f)
+            bindBox.AnchorPoint = Vector2.new(1,0.5); bindBox.Position = UDim2.new(0.97,0,0.5,0)
+            bindBox.Size = UDim2.new(0.18,0,0.65,0); bindBox.BackgroundColor3 = Color3.fromRGB(30,8,8)
+            bindBox.BackgroundTransparency = 0.4; bindBox.BorderSizePixel = 0
+            bindBox.Font = Enum.Font.GothamBold; bindBox.Text = s.CurrentBind
+            bindBox.TextColor3 = Color3.fromRGB(255,180,180); bindBox.TextScaled = true
+            bindBox.ClearTextOnFocus = true; bindBox.ZIndex = f.ZIndex+3
+            bindBox.TextXAlignment = Enum.TextXAlignment.Center
+            local bbc = Instance.new("UICorner", bindBox); bbc.CornerRadius = UDim.new(0,4)
+            local bbst = Instance.new("UIStroke", bindBox); bbst.Color = Color3.fromRGB(160,20,20); bbst.Transparency = 0.6
+
+            local listening = false
+            bindBox.Focused:Connect(function() listening = true; bindBox.Text = "" end)
+            bindBox.FocusLost:Connect(function()
+                listening = false
+                if bindBox.Text=="" then bindBox.Text = s.CurrentBind end
+            end)
+
+            HoverEffect(f, us)
+
+            UserInputService.InputBegan:Connect(function(inp, gpe)
+                if gpe then return end
+                if listening then
+                    if inp.KeyCode ~= Enum.KeyCode.Unknown then
+                        local kname = tostring(inp.KeyCode):split(".")[3]
+                        bindBox.Text = kname; s.CurrentBind = kname; BV.CurrentBind = kname
+                        pcall(s.OnChangedCallback, kname)
+                        bindBox:ReleaseFocus()
+                    end
+                elseif s.CurrentBind and inp.KeyCode == Enum.KeyCode[s.CurrentBind] then
+                    if not s.HoldToInteract then
+                        BV.Active = not BV.Active
+                        pcall(s.Callback, BV.Active)
+                    else
+                        local held = true
+                        local con; con = inp.Changed:Connect(function(p)
+                            if p=="UserInputState" then held=false con:Disconnect() end
+                        end)
+                        task.wait(0.1)
+                        if held then
+                            local loop; loop = RunService.Stepped:Connect(function()
+                                if not held then pcall(s.Callback, false); loop:Disconnect()
+                                else pcall(s.Callback, true) end
+                            end)
+                        end
+                    end
+                end
+            end)
+
+            function BV:Set(n) n=Kwargify(s,n) s=n bindBox.Text=s.CurrentBind BV.CurrentBind=s.CurrentBind end
+            function BV:Destroy() f:Destroy() end
+            if flag then MergeUI.Options[flag] = BV end
+            return BV
+        end
+
+        Tab.CreateKeybind = Tab.CreateBind  -- alias
+
+        -- ── Color Picker ──────────────────────────────────────────────────
+        function Tab:CreateColorPicker(s, flag)
+            s = Kwargify({Name="Color Picker",Color=Color3.fromRGB(220,30,30),Callback=function()end}, s)
+            local CPV = {Class="Colorpicker",IgnoreConfig=false,Color=s.Color,Settings=s}
+
+            local f,_,us = BaseFrame(38)
+            TextEl(f, s.Name, 0.03, 0.18, 0.65, 0.65, true)
+
+            local function ToHex(c) return string.format("#%02X%02X%02X",math.floor(c.R*255),math.floor(c.G*255),math.floor(c.B*255)) end
+            CPV.Color = s.Color
+
+            -- Preview swatch
+            local swatch = Instance.new("Frame", f)
+            swatch.AnchorPoint = Vector2.new(1,0.5); swatch.Position = UDim2.new(0.97,0,0.5,0)
+            swatch.Size = UDim2.new(0,32,0,22); swatch.BackgroundColor3 = s.Color; swatch.BorderSizePixel = 0
+            local swc = Instance.new("UICorner", swatch); swc.CornerRadius = UDim.new(0,4)
+            local sws = Instance.new("UIStroke", swatch); sws.Color = Color3.fromRGB(200,100,100); sws.Transparency = 0.5
+
+            -- Expanded picker area
+            local picker = Instance.new("Frame", TabPage)
+            picker.Size = UDim2.new(1,0,0,0); picker.BackgroundColor3 = Color3.fromRGB(18,5,5)
+            picker.BackgroundTransparency = 0.45; picker.BorderSizePixel = 0; picker.ClipsDescendants = true
+            picker.LayoutOrder = f.LayoutOrder + 0.5
+            local pic = Instance.new("UICorner", picker); pic.CornerRadius = UDim.new(0,5)
+            local pis = Instance.new("UIStroke", picker); pis.Color = Color3.fromRGB(160,20,20); pis.Transparency = 0.6
+
+            local opened = false
+            local h,sv,vv = s.Color:ToHSV()
+
+            -- Saturation/Value gradient
+            local sat = Instance.new("ImageButton", picker)
+            sat.Position = UDim2.new(0.03,0,0.06,0); sat.Size = UDim2.new(0.94,0,0.55,0)
+            sat.BackgroundColor3 = Color3.fromHSV(h,1,1)
+            sat.Image = "rbxassetid://11415645739"; sat.ImageTransparency = 0; sat.BorderSizePixel = 0; sat.ZIndex = 5
+            local sacc = Instance.new("UICorner", sat); sacc.CornerRadius = UDim.new(0,4)
+
+            local satThumb = Instance.new("Frame", sat)
+            satThumb.Size = UDim2.new(0,10,0,10); satThumb.BackgroundColor3 = Color3.fromRGB(255,255,255)
+            satThumb.BorderSizePixel = 0; satThumb.ZIndex = 7
+            local stc = Instance.new("UICorner", satThumb); stc.CornerRadius = UDim.new(0.5,0)
+            local sts = Instance.new("UIStroke", satThumb); sts.Color = Color3.fromRGB(200,100,100); sts.Transparency = 0.3
+
+            -- Hue slider
+            local hueTrack = Instance.new("ImageLabel", picker)
+            hueTrack.Position = UDim2.new(0.03,0,0.68,0); hueTrack.Size = UDim2.new(0.94,0,0.1,0)
+            hueTrack.Image = "rbxassetid://6020299385"; hueTrack.BackgroundTransparency = 1; hueTrack.BorderSizePixel = 0; hueTrack.ZIndex = 5
+            local htc = Instance.new("UICorner", hueTrack); htc.CornerRadius = UDim.new(0.5,0)
+
+            local hueThumb = Instance.new("Frame", hueTrack)
+            hueThumb.AnchorPoint = Vector2.new(0.5,0.5); hueThumb.Position = UDim2.new(h,0,0.5,0)
+            hueThumb.Size = UDim2.new(0,14,1.4,0); hueThumb.BackgroundColor3 = Color3.fromRGB(255,255,255)
+            hueThumb.BorderSizePixel = 0; hueThumb.ZIndex = 6
+            local htpc = Instance.new("UICorner", hueThumb); htpc.CornerRadius = UDim.new(0,4)
+
+            -- Hex input
+            local hexBox = Instance.new("TextBox", picker)
+            hexBox.Position = UDim2.new(0.03,0,0.82,0); hexBox.Size = UDim2.new(0.6,0,0.12,0)
+            hexBox.BackgroundColor3 = Color3.fromRGB(30,8,8); hexBox.BackgroundTransparency = 0.4; hexBox.BorderSizePixel = 0
+            hexBox.Font = Enum.Font.Gotham; hexBox.Text = ToHex(s.Color)
+            hexBox.TextColor3 = Color3.fromRGB(255,200,200); hexBox.TextScaled = true; hexBox.ZIndex = 6
+            local hxc = Instance.new("UICorner", hexBox); hxc.CornerRadius = UDim.new(0,4)
+            local hxs = Instance.new("UIStroke", hexBox); hxs.Color = Color3.fromRGB(160,20,20); hxs.Transparency = 0.6
+
+            local function UpdateDisplay()
+                local col = Color3.fromHSV(h,sv,vv)
+                swatch.BackgroundColor3 = col
+                sat.BackgroundColor3 = Color3.fromHSV(h,1,1)
+                hueThumb.Position = UDim2.new(h,0,0.5,0)
+                satThumb.Position = UDim2.new(sv,-5,1-vv,-5)
+                hexBox.Text = ToHex(col)
+                CPV.Color = col; s.Color = col
+                pcall(s.Callback, col)
+            end
+
+            local satDrag, hueDrag = false, false
+            local mouse = LocalPlayer:GetMouse()
+
+            sat.MouseButton1Down:Connect(function() satDrag=true end)
+            hueTrack.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then hueDrag=true end end)
+            UserInputService.InputEnded:Connect(function(i)
+                if i.UserInputType==Enum.UserInputType.MouseButton1 then satDrag=false; hueDrag=false end
+            end)
+
+            RunService.RenderStepped:Connect(function()
+                if satDrag then
+                    sv = math.clamp((mouse.X - sat.AbsolutePosition.X) / sat.AbsoluteSize.X, 0, 1)
+                    vv = 1 - math.clamp((mouse.Y - sat.AbsolutePosition.Y) / sat.AbsoluteSize.Y, 0, 1)
+                    UpdateDisplay()
+                end
+                if hueDrag then
+                    h = math.clamp((mouse.X - hueTrack.AbsolutePosition.X) / hueTrack.AbsoluteSize.X, 0, 1)
+                    UpdateDisplay()
+                end
+            end)
+
+            hexBox.FocusLost:Connect(function()
+                local r,g,b = hexBox.Text:match("^#?(%x%x)(%x%x)(%x%x)$")
+                if r then
+                    local col = Color3.fromRGB(tonumber(r,16),tonumber(g,16),tonumber(b,16))
+                    h,sv,vv = col:ToHSV()
+                    UpdateDisplay()
+                else hexBox.Text = ToHex(s.Color) end
+            end)
+
+            local btn = InteractBtn(f)
+            HoverEffect(f, us)
+            btn.MouseButton1Click:Connect(function()
+                opened = not opened
+                if opened then
+                    UpdateDisplay()
+                    Tween(picker, {Size=UDim2.new(1,0,0,160)}, 0.35, Enum.EasingStyle.Quint)
+                else
+                    Tween(picker, {Size=UDim2.new(1,0,0,0)}, 0.35, Enum.EasingStyle.Quint)
+                end
+            end)
+
+            function CPV:Set(n)
+                n=Kwargify(s,n); s=n
+                h,sv,vv = s.Color:ToHSV()
+                UpdateDisplay()
+            end
+            function CPV:Destroy() f:Destroy(); picker:Destroy() end
+            if flag then MergeUI.Options[flag] = CPV end
+            return CPV
+        end
+
+        -- ── Config Builder ────────────────────────────────────────────────
+        function Tab:BuildConfigSection()
+            local inputName = nil
+            local selectedCfg = nil
+
+            Tab:CreateSection("Config Manager")
+            Tab:CreateInput({
+                Name = "Config Name",
+                PlaceholderText = "Enter name...",
+                Callback = function(v) inputName = v end
+            })
+            Tab:CreateButton({
+                Name = "Save Config",
+                Callback = function()
+                    if not inputName or inputName=="" then
+                        MergeUI:Notification({Title="Config",Content="Please enter a config name."})
+                        return
+                    end
+                    Window:SaveConfig(inputName)
+                    MergeUI:Notification({Title="Config",Content='Saved "'..inputName..'"'})
+                    if cfgDrop then cfgDrop:Set({Options=Window:ListConfigs()}) end
+                end
+            })
+            local cfgDrop = Tab:CreateDropdown({
+                Name = "Select Config",
+                Options = Window:ListConfigs(),
+                CurrentOption = {},
+                Callback = function(v) selectedCfg = v end
+            })
+            Tab:CreateButton({
+                Name = "Load Config",
+                Callback = function()
+                    if not selectedCfg then MergeUI:Notification({Title="Config",Content="Select a config first."}) return end
+                    local ok = Window:LoadConfig(selectedCfg)
+                    MergeUI:Notification({Title="Config",Content=ok and 'Loaded "'..selectedCfg..'"' or "Failed to load config."})
+                end
+            })
+            Tab:CreateButton({
+                Name = "Refresh List",
+                Callback = function()
+                    cfgDrop:Set({Options=Window:ListConfigs()})
+                end
+            })
+        end
+
+        -- ── Theme Builder ─────────────────────────────────────────────────
+        function Tab:BuildThemeSection()
+            Tab:CreateSection("Theme Colors")
+            local c1 = Tab:CreateColorPicker({Name="Color 1",Color=Color3.fromRGB(200,30,30),Callback=function(v)
+                MergeUI.ThemeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0,v),ColorSequenceKeypoint.new(0.5,c2 and c2.Color or v),ColorSequenceKeypoint.new(1,c3 and c3.Color or v)}
+            end},"_ThemeC1")
+            local c2 = Tab:CreateColorPicker({Name="Color 2",Color=Color3.fromRGB(160,20,40),Callback=function(v)
+                MergeUI.ThemeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0,c1 and c1.Color or v),ColorSequenceKeypoint.new(0.5,v),ColorSequenceKeypoint.new(1,c3 and c3.Color or v)}
+            end},"_ThemeC2")
+            local c3 = Tab:CreateColorPicker({Name="Color 3",Color=Color3.fromRGB(120,10,50),Callback=function(v)
+                MergeUI.ThemeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0,c1 and c1.Color or v),ColorSequenceKeypoint.new(0.5,c2 and c2.Color or v),ColorSequenceKeypoint.new(1,v)}
+            end},"_ThemeC3")
+        end
+
+        return Tab
+    end
+
+    return Window
+end
+
+function MergeUI:Destroy()
+    ScreenGui:Destroy()
+end
