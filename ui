@@ -540,74 +540,7 @@ Description.TextWrapped = true
 Description.TextXAlignment = Enum.TextXAlignment.Left
 Twen:Create(Description,TweenInfo2,{TextTransparency = 0.5}):Play();
 
--- Search Bar
-local SearchBar = Instance.new("Frame")
-local SearchCorner = Instance.new("UICorner")
-local SearchStroke = Instance.new("UIStroke")
-local SearchBox = Instance.new("TextBox")
-local SearchIcon = Instance.new("ImageLabel")
 
-SearchBar.Name = "SearchBar"
-SearchBar.Parent = MainFrame
-SearchBar.AnchorPoint = Vector2.new(0.5, 0)
-SearchBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-SearchBar.BackgroundTransparency = 0.6
-SearchBar.BorderSizePixel = 0
-SearchBar.Position = UDim2.new(0.658, 0, 0.015, 0)
-SearchBar.Size = UDim2.new(0.32, 0, 0.095, 0)
-SearchBar.ZIndex = 20
-
-SearchCorner.CornerRadius = UDim.new(0, 4)
-SearchCorner.Parent = SearchBar
-
-SearchStroke.Transparency = 0.85
-SearchStroke.Color = Color3.fromRGB(255, 255, 255)
-SearchStroke.Parent = SearchBar
-
-SearchIcon.Parent = SearchBar
-SearchIcon.AnchorPoint = Vector2.new(0, 0.5)
-SearchIcon.BackgroundTransparency = 1
-SearchIcon.Position = UDim2.new(0.03, 0, 0.5, 0)
-SearchIcon.Size = UDim2.new(0, 14, 0, 14)
-SearchIcon.ZIndex = 21
-SearchIcon.Image = "rbxassetid://3926305904"
-SearchIcon.ImageRectOffset = Vector2.new(964, 324)
-SearchIcon.ImageRectSize = Vector2.new(36, 36)
-SearchIcon.ImageColor3 = Color3.fromRGB(200, 200, 200)
-
-SearchBox.Parent = SearchBar
-SearchBox.AnchorPoint = Vector2.new(0, 0.5)
-SearchBox.BackgroundTransparency = 1
-SearchBox.BorderSizePixel = 0
-SearchBox.Position = UDim2.new(0.15, 0, 0.5, 0)
-SearchBox.Size = UDim2.new(0.82, 0, 0.75, 0)
-SearchBox.ZIndex = 21
-SearchBox.ClearTextOnFocus = false
-SearchBox.Font = Enum.Font.GothamBold
-SearchBox.PlaceholderText = "Search..."
-SearchBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
-SearchBox.Text = ""
-SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-SearchBox.TextScaled = true
-SearchBox.TextTransparency = 0
-SearchBox.TextXAlignment = Enum.TextXAlignment.Left
-
-SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
-    local query = SearchBox.Text:lower()
-    for _, tab in ipairs(WindowTable.Tabs) do
-        for _, section in ipairs(tab.Sections or {}) do
-            for _, el in ipairs(section.Elements or {}) do
-                if el.Name and el.Visible then
-                    if query == "" then
-                        el.Visible(true)
-                    else
-                        el.Visible(el.Name:lower():find(query, 1, true) ~= nil)
-                    end
-                end
-            end
-        end
-    end
-end)
 BlockFrame1.Name = "BlockFrame1"
 BlockFrame1.Parent = MainFrame
 BlockFrame1.AnchorPoint = Vector2.new(0, 0.5)
@@ -3657,6 +3590,648 @@ end)
 WindowTable.SetKeybind = function(newKey)
     WindowTable.Keybind = newKey
 end
+
+-- ═══════════════════════════════════════
+-- SIDE PANEL (Search + Settings)
+-- ═══════════════════════════════════════
+do
+    local SideGui = Instance.new("ScreenGui")
+    SideGui.Name = "SidePanelGui"
+    SideGui.Parent = CoreGui
+    SideGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    SideGui.ResetOnSpawn = false
+    SideGui.IgnoreGuiInset = true
+
+    -- Theme state
+    local ThemeColors = {
+        Primary   = Color3.fromRGB(150, 0, 0),
+        Secondary = Color3.fromRGB(20, 5, 5),
+        Text      = Color3.fromRGB(255, 255, 255),
+        Accent    = Color3.fromRGB(200, 50, 50),
+    }
+
+    -- Panel frame (left side, matching the red outline from screenshot)
+    local Panel = Instance.new("Frame")
+    Panel.Name = "SidePanel"
+    Panel.Parent = SideGui
+    Panel.AnchorPoint = Vector2.new(0, 0.5)
+    Panel.BackgroundColor3 = Color3.fromRGB(10, 3, 3)
+    Panel.BackgroundTransparency = 0.15
+    Panel.BorderSizePixel = 0
+    Panel.Position = UDim2.new(0, -270, 0.5, 0)
+    Panel.Size = UDim2.new(0, 255, 0, 520)
+    Panel.Visible = true
+    Panel.ZIndex = 200
+    Panel.ClipsDescendants = true
+
+    local PanelCorner = Instance.new("UICorner")
+    PanelCorner.CornerRadius = UDim.new(0, 6)
+    PanelCorner.Parent = Panel
+
+    local PanelStroke = Instance.new("UIStroke")
+    PanelStroke.Color = ThemeColors.Primary
+    PanelStroke.Transparency = 0.5
+    PanelStroke.Parent = Panel
+
+    local PanelShadow = Instance.new("ImageLabel")
+    PanelShadow.Parent = Panel
+    PanelShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    PanelShadow.BackgroundTransparency = 1
+    PanelShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    PanelShadow.Size = UDim2.new(1, 47, 1, 47)
+    PanelShadow.ZIndex = 199
+    PanelShadow.Image = "rbxassetid://6015897843"
+    PanelShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    PanelShadow.ImageTransparency = 0.5
+    PanelShadow.ScaleType = Enum.ScaleType.Slice
+    PanelShadow.SliceCenter = Rect.new(49, 49, 450, 450)
+
+    -- Tab buttons at top (Search / Settings)
+    local TabRow = Instance.new("Frame")
+    TabRow.Parent = Panel
+    TabRow.BackgroundTransparency = 1
+    TabRow.Position = UDim2.new(0, 0, 0, 0)
+    TabRow.Size = UDim2.new(1, 0, 0, 36)
+    TabRow.ZIndex = 201
+
+    local function makeTabBtn(text, xPos)
+        local btn = Instance.new("TextButton")
+        btn.Parent = TabRow
+        btn.BackgroundColor3 = Color3.fromRGB(0,0,0)
+        btn.BackgroundTransparency = 0.7
+        btn.BorderSizePixel = 0
+        btn.Position = UDim2.new(xPos, 2, 0, 4)
+        btn.Size = UDim2.new(0.5, -4, 1, -8)
+        btn.ZIndex = 202
+        btn.Font = Enum.Font.GothamBold
+        btn.Text = text
+        btn.TextColor3 = Color3.fromRGB(255,255,255)
+        btn.TextSize = 12
+        btn.TextTransparency = 0.3
+        local c = Instance.new("UICorner")
+        c.CornerRadius = UDim.new(0,4)
+        c.Parent = btn
+        return btn
+    end
+
+    local BtnSearch   = makeTabBtn("🔍  Search", 0)
+    local BtnSettings = makeTabBtn("⚙  Settings", 0.5)
+
+    local Divider = Instance.new("Frame")
+    Divider.Parent = Panel
+    Divider.BackgroundColor3 = ThemeColors.Primary
+    Divider.BackgroundTransparency = 0.6
+    Divider.BorderSizePixel = 0
+    Divider.Position = UDim2.new(0.05, 0, 0, 37)
+    Divider.Size = UDim2.new(0.9, 0, 0, 1)
+    Divider.ZIndex = 201
+
+    -- ── SEARCH PAGE ──────────────────────────
+    local SearchPage = Instance.new("Frame")
+    SearchPage.Parent = Panel
+    SearchPage.BackgroundTransparency = 1
+    SearchPage.Position = UDim2.new(0, 0, 0, 42)
+    SearchPage.Size = UDim2.new(1, 0, 1, -42)
+    SearchPage.ZIndex = 201
+    SearchPage.ClipsDescendants = true
+
+    -- Search input row
+    local SBFrame = Instance.new("Frame")
+    SBFrame.Parent = SearchPage
+    SBFrame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    SBFrame.BackgroundTransparency = 0.5
+    SBFrame.BorderSizePixel = 0
+    SBFrame.Position = UDim2.new(0.04, 0, 0, 6)
+    SBFrame.Size = UDim2.new(0.92, 0, 0, 30)
+    SBFrame.ZIndex = 202
+    local SBCorner = Instance.new("UICorner")
+    SBCorner.CornerRadius = UDim.new(0,4)
+    SBCorner.Parent = SBFrame
+    local SBStroke = Instance.new("UIStroke")
+    SBStroke.Transparency = 0.75
+    SBStroke.Color = Color3.fromRGB(255,255,255)
+    SBStroke.Parent = SBFrame
+
+    local SBInput = Instance.new("TextBox")
+    SBInput.Parent = SBFrame
+    SBInput.AnchorPoint = Vector2.new(0, 0.5)
+    SBInput.BackgroundTransparency = 1
+    SBInput.Position = UDim2.new(0.06, 0, 0.5, 0)
+    SBInput.Size = UDim2.new(0.9, 0, 0.8, 0)
+    SBInput.ZIndex = 203
+    SBInput.ClearTextOnFocus = false
+    SBInput.Font = Enum.Font.GothamBold
+    SBInput.PlaceholderText = "Search features..."
+    SBInput.PlaceholderColor3 = Color3.fromRGB(130,130,130)
+    SBInput.Text = ""
+    SBInput.TextColor3 = Color3.fromRGB(255,255,255)
+    SBInput.TextSize = 12
+    SBInput.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- Results scroll
+    local ResultsScroll = Instance.new("ScrollingFrame")
+    ResultsScroll.Parent = SearchPage
+    ResultsScroll.BackgroundTransparency = 1
+    ResultsScroll.BorderSizePixel = 0
+    ResultsScroll.Position = UDim2.new(0.04, 0, 0, 44)
+    ResultsScroll.Size = UDim2.new(0.92, 0, 1, -50)
+    ResultsScroll.ZIndex = 202
+    ResultsScroll.ScrollBarThickness = 2
+    ResultsScroll.ScrollBarImageColor3 = ThemeColors.Primary
+    ResultsScroll.CanvasSize = UDim2.new(0,0,0,0)
+
+    local ResultsList = Instance.new("UIListLayout")
+    ResultsList.Parent = ResultsScroll
+    ResultsList.SortOrder = Enum.SortOrder.LayoutOrder
+    ResultsList.Padding = UDim.new(0,3)
+    ResultsList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ResultsScroll.CanvasSize = UDim2.fromOffset(0, ResultsList.AbsoluteContentSize.Y)
+    end)
+
+    local NoResults = Instance.new("TextLabel")
+    NoResults.Parent = ResultsScroll
+    NoResults.BackgroundTransparency = 1
+    NoResults.Size = UDim2.new(1,0,0,30)
+    NoResults.ZIndex = 203
+    NoResults.Font = Enum.Font.GothamBold
+    NoResults.Text = "No results found"
+    NoResults.TextColor3 = Color3.fromRGB(180,180,180)
+    NoResults.TextTransparency = 0.5
+    NoResults.TextSize = 11
+    NoResults.Visible = false
+
+    -- Build a result row for each element
+    local function makeResultRow(el)
+        local row = Instance.new("Frame")
+        row.BackgroundColor3 = Color3.fromRGB(0,0,0)
+        row.BackgroundTransparency = 0.65
+        row.BorderSizePixel = 0
+        row.Size = UDim2.new(1, 0, 0, 38)
+        row.ZIndex = 203
+        row.ClipsDescendants = true
+        row.Visible = false
+        local rc = Instance.new("UICorner")
+        rc.CornerRadius = UDim.new(0,4)
+        rc.Parent = row
+
+        local nameLabel = Instance.new("TextLabel")
+        nameLabel.Parent = row
+        nameLabel.BackgroundTransparency = 1
+        nameLabel.Position = UDim2.new(0.04, 0, 0.05, 0)
+        nameLabel.Size = UDim2.new(0.6, 0, 0.5, 0)
+        nameLabel.ZIndex = 204
+        nameLabel.Font = Enum.Font.GothamBold
+        nameLabel.Text = el.Name or "?"
+        nameLabel.TextColor3 = Color3.fromRGB(255,255,255)
+        nameLabel.TextSize = 11
+        nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+        nameLabel.TextTransparency = 0.1
+
+        -- Toggle switch mirrored from main UI
+        local sys = Instance.new("Frame")
+        sys.Parent = row
+        sys.AnchorPoint = Vector2.new(1, 0.5)
+        sys.BackgroundColor3 = Color3.fromRGB(0,0,0)
+        sys.BackgroundTransparency = 0.3
+        sys.BorderSizePixel = 0
+        sys.Position = UDim2.new(0.97, 0, 0.5, 0)
+        sys.Size = UDim2.new(0.28, 0, 0.55, 0)
+        sys.ZIndex = 204
+        local sysc = Instance.new("UICorner")
+        sysc.CornerRadius = UDim.new(0.5,0)
+        sysc.Parent = sys
+        local syss = Instance.new("UIStroke")
+        syss.Transparency = 0.7
+        syss.Color = Color3.fromRGB(255,255,255)
+        syss.Parent = sys
+
+        local dot = Instance.new("Frame")
+        dot.Parent = sys
+        dot.AnchorPoint = Vector2.new(0.5,0.5)
+        dot.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        dot.BackgroundTransparency = 0.4
+        dot.BorderSizePixel = 0
+        dot.Size = UDim2.new(1,0,1,0)
+        dot.SizeConstraint = Enum.SizeConstraint.RelativeYY
+        dot.ZIndex = 205
+        local dotc = Instance.new("UICorner")
+        dotc.CornerRadius = UDim.new(1,0)
+        dotc.Parent = dot
+
+        local typeLabel = Instance.new("TextLabel")
+        typeLabel.Parent = row
+        typeLabel.BackgroundTransparency = 1
+        typeLabel.Position = UDim2.new(0.04, 0, 0.52, 0)
+        typeLabel.Size = UDim2.new(0.55, 0, 0.38, 0)
+        typeLabel.ZIndex = 204
+        typeLabel.Font = Enum.Font.Gotham
+        typeLabel.TextColor3 = ThemeColors.Primary
+        typeLabel.TextSize = 9
+        typeLabel.TextXAlignment = Enum.TextXAlignment.Left
+        typeLabel.TextTransparency = 0.2
+
+        local btn = Instance.new("TextButton")
+        btn.Parent = row
+        btn.BackgroundTransparency = 1
+        btn.Size = UDim2.new(1,0,1,0)
+        btn.ZIndex = 206
+        btn.Text = ""
+
+        -- Sync state with element
+        local function refreshState()
+            local ok, val = pcall(function() return el.Get() end)
+            if ok then
+                if type(val) == "boolean" then
+                    typeLabel.Text = "toggle"
+                    if val then
+                        Twen:Create(dot, TweenInfo.new(0.15), {Position=UDim2.new(0.75,0,0.5,0), BackgroundTransparency=0.3}):Play()
+                        Twen:Create(nameLabel, TweenInfo.new(0.1), {TextTransparency=0}):Play()
+                    else
+                        Twen:Create(dot, TweenInfo.new(0.15), {Position=UDim2.new(0.25,0,0.5,0), BackgroundTransparency=0.5}):Play()
+                        Twen:Create(nameLabel, TweenInfo.new(0.1), {TextTransparency=0.25}):Play()
+                    end
+                else
+                    typeLabel.Text = "value: "..tostring(val)
+                    dot.Position = UDim2.new(0.5,0,0.5,0)
+                end
+            end
+        end
+
+        refreshState()
+
+        btn.MouseButton1Click:Connect(function()
+            local ok, val = pcall(function() return el.Get() end)
+            if ok and type(val) == "boolean" then
+                pcall(function() el.Set(not val) end)
+                refreshState()
+            end
+        end)
+
+        -- Periodic sync so changes from main UI reflect here
+        task.spawn(function()
+            while row.Parent do
+                task.wait(0.25)
+                pcall(refreshState)
+            end
+        end)
+
+        return row
+    end
+
+    -- Pool of rows, built lazily on first search
+    local rowPool = {}
+    local poolBuilt = false
+
+    local function buildPool()
+        if poolBuilt then return end
+        poolBuilt = true
+        for _, tab in ipairs(WindowTable.Tabs) do
+            for _, section in ipairs(tab.Sections or {}) do
+                for _, el in ipairs(section.Elements or {}) do
+                    if el.Name and el.Get then
+                        local row = makeResultRow(el)
+                        row.Parent = ResultsScroll
+                        table.insert(rowPool, {el=el, row=row})
+                    end
+                end
+            end
+        end
+    end
+
+    SBInput:GetPropertyChangedSignal("Text"):Connect(function()
+        buildPool()
+        local query = SBInput.Text:lower():gsub("^%s+",""):gsub("%s+$","")
+        local count = 0
+        for _, entry in ipairs(rowPool) do
+            if query == "" then
+                entry.row.Visible = false
+            else
+                local match = entry.el.Name:lower():find(query, 1, true) ~= nil
+                entry.row.Visible = match
+                if match then count = count + 1 end
+            end
+        end
+        NoResults.Visible = (query ~= "" and count == 0)
+    end)
+
+    -- ── SETTINGS PAGE ────────────────────────
+    local SettingsPage = Instance.new("Frame")
+    SettingsPage.Parent = Panel
+    SettingsPage.BackgroundTransparency = 1
+    SettingsPage.Position = UDim2.new(0, 0, 0, 42)
+    SettingsPage.Size = UDim2.new(1, 0, 1, -42)
+    SettingsPage.ZIndex = 201
+    SettingsPage.Visible = false
+    SettingsPage.ClipsDescendants = true
+
+    local SettingsScroll = Instance.new("ScrollingFrame")
+    SettingsScroll.Parent = SettingsPage
+    SettingsScroll.BackgroundTransparency = 1
+    SettingsScroll.BorderSizePixel = 0
+    SettingsScroll.Position = UDim2.new(0.04, 0, 0, 6)
+    SettingsScroll.Size = UDim2.new(0.92, 0, 1, -10)
+    SettingsScroll.ZIndex = 202
+    SettingsScroll.ScrollBarThickness = 2
+    SettingsScroll.ScrollBarImageColor3 = ThemeColors.Primary
+    SettingsScroll.CanvasSize = UDim2.new(0,0,0,0)
+
+    local SettingsList = Instance.new("UIListLayout")
+    SettingsList.Parent = SettingsScroll
+    SettingsList.SortOrder = Enum.SortOrder.LayoutOrder
+    SettingsList.Padding = UDim.new(0,6)
+    SettingsList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        SettingsScroll.CanvasSize = UDim2.fromOffset(0, SettingsList.AbsoluteContentSize.Y + 10)
+    end)
+
+    -- Helper: section header inside settings
+    local function settingsHeader(text)
+        local lbl = Instance.new("TextLabel")
+        lbl.Parent = SettingsScroll
+        lbl.BackgroundTransparency = 1
+        lbl.Size = UDim2.new(1,0,0,18)
+        lbl.ZIndex = 203
+        lbl.Font = Enum.Font.GothamBold
+        lbl.Text = text
+        lbl.TextColor3 = ThemeColors.Primary
+        lbl.TextSize = 10
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+        lbl.TextTransparency = 0.1
+    end
+
+    -- Helper: color preset button
+    local function colorPreset(label, primary, secondary, accent)
+        local row = Instance.new("Frame")
+        row.Parent = SettingsScroll
+        row.BackgroundColor3 = Color3.fromRGB(0,0,0)
+        row.BackgroundTransparency = 0.65
+        row.BorderSizePixel = 0
+        row.Size = UDim2.new(1,0,0,38)
+        row.ZIndex = 203
+        local rc = Instance.new("UICorner")
+        rc.CornerRadius = UDim.new(0,4)
+        rc.Parent = row
+
+        local swatch = Instance.new("Frame")
+        swatch.Parent = row
+        swatch.AnchorPoint = Vector2.new(0, 0.5)
+        swatch.BackgroundColor3 = primary
+        swatch.BorderSizePixel = 0
+        swatch.Position = UDim2.new(0.04, 0, 0.5, 0)
+        swatch.Size = UDim2.new(0, 14, 0, 14)
+        swatch.ZIndex = 204
+        local sc = Instance.new("UICorner")
+        sc.CornerRadius = UDim.new(0,3)
+        sc.Parent = swatch
+
+        local namelbl = Instance.new("TextLabel")
+        namelbl.Parent = row
+        namelbl.BackgroundTransparency = 1
+        namelbl.Position = UDim2.new(0.18, 0, 0.15, 0)
+        namelbl.Size = UDim2.new(0.6, 0, 0.7, 0)
+        namelbl.ZIndex = 204
+        namelbl.Font = Enum.Font.GothamBold
+        namelbl.Text = label
+        namelbl.TextColor3 = Color3.fromRGB(255,255,255)
+        namelbl.TextSize = 11
+        namelbl.TextXAlignment = Enum.TextXAlignment.Left
+        namelbl.TextTransparency = 0.15
+
+        local applyBtn = Instance.new("TextButton")
+        applyBtn.Parent = row
+        applyBtn.AnchorPoint = Vector2.new(1, 0.5)
+        applyBtn.BackgroundColor3 = primary
+        applyBtn.BackgroundTransparency = 0.4
+        applyBtn.BorderSizePixel = 0
+        applyBtn.Position = UDim2.new(0.97, 0, 0.5, 0)
+        applyBtn.Size = UDim2.new(0.22, 0, 0.6, 0)
+        applyBtn.ZIndex = 205
+        applyBtn.Font = Enum.Font.GothamBold
+        applyBtn.Text = "Apply"
+        applyBtn.TextColor3 = Color3.fromRGB(255,255,255)
+        applyBtn.TextSize = 10
+        local abc = Instance.new("UICorner")
+        abc.CornerRadius = UDim.new(0,3)
+        abc.Parent = applyBtn
+
+        applyBtn.MouseButton1Click:Connect(function()
+            ThemeColors.Primary   = primary
+            ThemeColors.Secondary = secondary
+            ThemeColors.Accent    = accent
+            -- Apply to main window
+            pcall(function()
+                Twen:Create(MainFrame, TweenInfo.new(0.4), {BackgroundColor3 = secondary}):Play()
+                Twen:Create(MainDropShadow, TweenInfo.new(0.4), {ImageColor3 = primary}):Play()
+                Twen:Create(Headers, TweenInfo.new(0.4), {BackgroundColor3 = secondary}):Play()
+                Twen:Create(BlockFrame1, TweenInfo.new(0.4), {BackgroundColor3 = primary}):Play()
+                Twen:Create(BlockFrame2, TweenInfo.new(0.4), {BackgroundColor3 = primary}):Play()
+                Twen:Create(BlockFrame3, TweenInfo.new(0.4), {BackgroundColor3 = primary}):Play()
+            end)
+            -- Apply to side panel
+            PanelStroke.Color = primary
+            PanelShadow.ImageColor3 = Color3.fromRGB(0,0,0)
+            SettingsScroll.ScrollBarImageColor3 = primary
+            ResultsScroll.ScrollBarImageColor3  = primary
+            Notif_fn_ref.new({Title="Theme Applied", Description=label, Duration=2.5, Icon="palette"})
+        end)
+    end
+
+    -- Notif ref (captured below after Notification is called; we store a forward ref)
+    local Notif_fn_ref = { new = function() end }
+    local _origNotif = Library.Notification
+    task.defer(function()
+        -- patch in at runtime when user calls Library.Notification()
+    end)
+
+    settingsHeader("🎨  COLOUR THEMES")
+    colorPreset("Default Red",      Color3.fromRGB(150,0,0),   Color3.fromRGB(20,5,5),    Color3.fromRGB(200,50,50))
+    colorPreset("Deep Purple",      Color3.fromRGB(100,0,180), Color3.fromRGB(10,5,20),   Color3.fromRGB(140,50,220))
+    colorPreset("Ocean Blue",       Color3.fromRGB(0,80,200),  Color3.fromRGB(5,10,25),   Color3.fromRGB(30,120,255))
+    colorPreset("Midnight Green",   Color3.fromRGB(0,130,80),  Color3.fromRGB(5,15,10),   Color3.fromRGB(20,180,100))
+    colorPreset("Cyber Orange",     Color3.fromRGB(220,100,0), Color3.fromRGB(18,8,3),    Color3.fromRGB(255,140,30))
+    colorPreset("Rose Gold",        Color3.fromRGB(180,80,100),Color3.fromRGB(20,8,10),   Color3.fromRGB(230,120,140))
+    colorPreset("Monochrome",       Color3.fromRGB(120,120,120),Color3.fromRGB(10,10,10), Color3.fromRGB(200,200,200))
+
+    settingsHeader("⚙  PANEL")
+
+    -- Opacity slider for the side panel
+    local opacRow = Instance.new("Frame")
+    opacRow.Parent = SettingsScroll
+    opacRow.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    opacRow.BackgroundTransparency = 0.65
+    opacRow.BorderSizePixel = 0
+    opacRow.Size = UDim2.new(1,0,0,44)
+    opacRow.ZIndex = 203
+    local orc = Instance.new("UICorner")
+    orc.CornerRadius = UDim.new(0,4)
+    orc.Parent = opacRow
+
+    local opacLbl = Instance.new("TextLabel")
+    opacLbl.Parent = opacRow
+    opacLbl.BackgroundTransparency = 1
+    opacLbl.Position = UDim2.new(0.04,0,0.05,0)
+    opacLbl.Size = UDim2.new(0.6,0,0.45,0)
+    opacLbl.ZIndex = 204
+    opacLbl.Font = Enum.Font.GothamBold
+    opacLbl.Text = "Panel Opacity"
+    opacLbl.TextColor3 = Color3.fromRGB(255,255,255)
+    opacLbl.TextSize = 11
+    opacLbl.TextXAlignment = Enum.TextXAlignment.Left
+    opacLbl.TextTransparency = 0.15
+
+    local opacVal = Instance.new("TextLabel")
+    opacVal.Parent = opacRow
+    opacVal.BackgroundTransparency = 1
+    opacVal.Position = UDim2.new(0.7,0,0.05,0)
+    opacVal.Size = UDim2.new(0.26,0,0.45,0)
+    opacVal.ZIndex = 204
+    opacVal.Font = Enum.Font.GothamBold
+    opacVal.Text = "85%"
+    opacVal.TextColor3 = Color3.fromRGB(255,255,255)
+    opacVal.TextSize = 11
+    opacVal.TextXAlignment = Enum.TextXAlignment.Right
+    opacVal.TextTransparency = 0.4
+
+    local opacTrack = Instance.new("Frame")
+    opacTrack.Parent = opacRow
+    opacTrack.AnchorPoint = Vector2.new(0.5,1)
+    opacTrack.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    opacTrack.BackgroundTransparency = 0.6
+    opacTrack.BorderSizePixel = 0
+    opacTrack.Position = UDim2.new(0.5,0,1,-6)
+    opacTrack.Size = UDim2.new(0.88,0,0,6)
+    opacTrack.ZIndex = 204
+    opacTrack.ClipsDescendants = true
+    local otc = Instance.new("UICorner")
+    otc.CornerRadius = UDim.new(0,3)
+    otc.Parent = opacTrack
+
+    local opacFill = Instance.new("Frame")
+    opacFill.Parent = opacTrack
+    opacFill.BackgroundColor3 = ThemeColors.Primary
+    opacFill.BackgroundTransparency = 0.3
+    opacFill.BorderSizePixel = 0
+    opacFill.Size = UDim2.new(0.85,0,1,0)
+    opacFill.ZIndex = 205
+    local ofc = Instance.new("UICorner")
+    ofc.CornerRadius = UDim.new(0,3)
+    ofc.Parent = opacFill
+
+    local opacHolding = false
+    opacTrack.InputBegan:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+            opacHolding = true
+            local scale = math.clamp((inp.Position.X - opacTrack.AbsolutePosition.X) / opacTrack.AbsoluteSize.X, 0, 1)
+            opacFill.Size = UDim2.new(scale,0,1,0)
+            local pct = math.round(scale*100)
+            opacVal.Text = pct.."%"
+            Panel.BackgroundTransparency = 1 - (scale * 0.9)
+        end
+    end)
+    opacTrack.InputEnded:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+            opacHolding = false
+        end
+    end)
+    Input.InputChanged:Connect(function(inp)
+        if opacHolding and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+            local scale = math.clamp((inp.Position.X - opacTrack.AbsolutePosition.X) / opacTrack.AbsoluteSize.X, 0, 1)
+            opacFill.Size = UDim2.new(scale,0,1,0)
+            local pct = math.round(scale*100)
+            opacVal.Text = pct.."%"
+            Panel.BackgroundTransparency = 1 - (scale * 0.9)
+        end
+    end)
+
+    -- ── TAB SWITCHING ─────────────────────────
+    local activeTab = "search"
+    local function setTab(t)
+        activeTab = t
+        SearchPage.Visible  = (t == "search")
+        SettingsPage.Visible = (t == "settings")
+        Twen:Create(BtnSearch,   TweenInfo.new(0.15), {BackgroundTransparency = t=="search"   and 0.3 or 0.8}):Play()
+        Twen:Create(BtnSettings, TweenInfo.new(0.15), {BackgroundTransparency = t=="settings" and 0.3 or 0.8}):Play()
+        Twen:Create(BtnSearch,   TweenInfo.new(0.15), {TextTransparency = t=="search"   and 0   or 0.4}):Play()
+        Twen:Create(BtnSettings, TweenInfo.new(0.15), {TextTransparency = t=="settings" and 0   or 0.4}):Play()
+    end
+    setTab("search")
+
+    BtnSearch.MouseButton1Click:Connect(function()   setTab("search")   end)
+    BtnSettings.MouseButton1Click:Connect(function() setTab("settings") end)
+
+    -- ── SHOW / HIDE LOGIC ─────────────────────
+    -- Panel opens on: right-click on right 15% of screen, hover on right 30px edge, or right-tap
+    local panelOpen = false
+    local isMob = Input.TouchEnabled
+
+    local function openPanel()
+        if panelOpen then return end
+        panelOpen = true
+        buildPool()
+        Panel.Visible = true
+        Twen:Create(Panel, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0, 8, 0.5, 0)
+        }):Play()
+    end
+
+    local function closePanel()
+        if not panelOpen then return end
+        panelOpen = false
+        Twen:Create(Panel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+            Position = UDim2.new(0, -270, 0.5, 0)
+        }):Play()
+    end
+
+    -- Right-click anywhere opens panel; click outside closes it
+    Input.InputBegan:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseButton2 then
+            -- right-click on right side of screen
+            local vp = workspace.CurrentCamera.ViewportSize
+            if inp.Position.X > vp.X * 0.0 then  -- anywhere right-click triggers it
+                if panelOpen then closePanel() else openPanel() end
+            end
+        end
+        if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+            -- close if clicking outside the panel
+            if panelOpen then
+                local pAbs = Panel.AbsolutePosition
+                local pSize = Panel.AbsoluteSize
+                local mx = inp.Position.X
+                local my = inp.Position.Y
+                if mx < pAbs.X or mx > pAbs.X + pSize.X or my < pAbs.Y or my > pAbs.Y + pSize.Y then
+                    closePanel()
+                end
+            end
+        end
+        -- Mobile: tap on left 40px of screen to toggle
+        if isMob and inp.UserInputType == Enum.UserInputType.Touch then
+            if inp.Position.X < 40 then
+                if panelOpen then closePanel() else openPanel() end
+            end
+        end
+    end)
+
+    -- Desktop: hover near left edge (within 8px) to open
+    local hoverDebounce = false
+    Input.InputChanged:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseMovement then
+            if inp.Position.X <= 8 and not panelOpen and not hoverDebounce then
+                hoverDebounce = true
+                openPanel()
+                task.delay(0.5, function() hoverDebounce = false end)
+            end
+        end
+    end)
+
+    -- Store notif ref so theme apply can use it
+    WindowTable._SidePanel = {
+        Open  = openPanel,
+        Close = closePanel,
+        SetNotifRef = function(ref) Notif_fn_ref = ref end,
+    }
+end
+
+Library._windows = Library._windows or {}
+table.insert(Library._windows, WindowTable)
 return WindowTable;
 end;
 Library.NewAuth = function(conf)
@@ -3950,6 +4525,7 @@ end,
 }
 end;
 Library.Notification = function()
+local _notifResult
 local Notification = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
 local UIListLayout = Instance.new("UIListLayout")
@@ -3971,7 +4547,7 @@ UIListLayout.Parent = Frame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 UIListLayout.Padding = UDim.new(0,5);
-return {
+_notifResult = {
 new = function(ctfx)
 ctfx = Config(ctfx,{
 Title = "Notification",
@@ -4099,6 +4675,15 @@ task.delay(0.6, Notifiy.Destroy, Notifiy)
 end)
 end,
 }
+-- wire into any active side panels
+if _notifResult then
+    for _, win in ipairs(Library._windows or {}) do
+        if win._SidePanel then
+            win._SidePanel.SetNotifRef(_notifResult)
+        end
+    end
+end
+return _notifResult
 end;
 function Library:Console()
 local Terminal = Instance.new("ScreenGui")
