@@ -331,19 +331,19 @@ local Library = {
         end
     end
 
-    local Themes = {
-        ["Preset"] = {
-            ["Background"] = Color3.fromRGB(18, 18, 20),
-            ["Inline"] = Color3.fromRGB(15, 15, 16),
-            ["Accent Start"] = Color3.fromRGB(220, 55, 75),
-            ["Accent End"] = Color3.fromRGB(255, 150, 175),
-            ["Text"] = Color3.fromRGB(220, 229, 247),
-            ["Text 2"] = Color3.fromRGB(145, 151, 163),
-            ["Element"] = Color3.fromRGB(24, 24, 27),
-            ["Hovered Element"] = Color3.fromRGB(32, 32, 36),
-            ["Topbar"] = Color3.fromRGB(28, 28, 29)
-        }
+local Themes = {
+    ["Preset"] = {
+        ["Background"] = Color3.fromRGB(45, 8, 8),
+        ["Inline"] = Color3.fromRGB(35, 5, 5),
+        ["Accent Start"] = Color3.fromRGB(220, 55, 75),
+        ["Accent End"] = Color3.fromRGB(255, 150, 175),
+        ["Text"] = Color3.fromRGB(220, 229, 247),
+        ["Text 2"] = Color3.fromRGB(145, 151, 163),
+        ["Element"] = Color3.fromRGB(60, 12, 12),
+        ["Hovered Element"] = Color3.fromRGB(75, 18, 18),
+        ["Topbar"] = Color3.fromRGB(38, 8, 8)
     }
+}
 
     Library.Theme = Themes.Preset
 
@@ -2067,7 +2067,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(0, 700, 0, 480),
                     Visible = false,
-                    BackgroundTransparency = 1,
+                    BackgroundTransparency = 0.25,
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(18, 18, 20)
                 }):AddToTheme({BackgroundColor3 = "Background"})
@@ -2087,6 +2087,7 @@ local Library = {
                     Size = UDim2.new(1, 0, 0, 35),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(28, 28, 29)
+                    BackgroundTransparency = 0.25,
                 }):AddToTheme({BackgroundColor3 = "Topbar"})
                 
                 Library:Create("UICorner", {
