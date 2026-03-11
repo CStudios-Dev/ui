@@ -1,5 +1,4 @@
--- Made by samet
--- Example at bottom
+-- made by melissa
 
 if getgenv().Library and getgenv().Library.Exit then
     getgenv().Library:Exit()
