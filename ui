@@ -2825,7 +2825,7 @@ local Library = {
                     Text = "",
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 50),
+                    Size = UDim2.new(1, 0, 0, 58),
                     BorderSizePixel = 0,
                     TextSize = 14,
                     BackgroundColor3 = Color3.fromRGB(15, 15, 16)
@@ -2843,7 +2843,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0.5, 0, 0.5, 0),
-                    Size = UDim2.new(0, 40, 0, 40),
+                    Size = UDim2.new(0, 46, 0, 46),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
@@ -2881,7 +2881,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0.5, 0, 0.5, -1),
-                    Size = UDim2.new(0, 18, 0, 18),
+                    Size = UDim2.new(0, 26, 0, 26),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
