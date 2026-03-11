@@ -1,4 +1,5 @@
--- made by melissa
+-- Made by samet
+-- Example at bottom
 
 if getgenv().Library and getgenv().Library.Exit then
     getgenv().Library:Exit()
@@ -2236,8 +2237,8 @@ local Library = {
                     Name = "\0",
                     PaddingTop = UDim.new(0, 5),
                     PaddingBottom = UDim.new(0, 5),
-                    PaddingRight = UDim.new(0, 5),
-                    PaddingLeft = UDim.new(0, 5)
+                    PaddingRight = UDim.new(0, 0),
+                    PaddingLeft = UDim.new(0, 0)
                 })
 
                 Library:Create("UIListLayout", {
