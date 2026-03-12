@@ -2127,7 +2127,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     Position = UDim2.new(0.5, 0, 0.5, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 660, 0, 430),
+                    Size = UDim2.new(0, 780, 0, 430),
                     Visible = false,
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
@@ -3052,58 +3052,7 @@ local Library = {
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
 
-                if Page.Search then 
-                    Items["Columns"].Instance.Position = UDim2.new(0, 0, 0, 115)
-                    Items["Columns"].Instance.Size = UDim2.new(1, 0, 1, -115)
-
-                    Items["Search"] = Library:Create("Frame", {
-                        Parent = Items["Page"].Instance,
-                        Name = "\0",
-                        Position = UDim2.new(0, 10, 0, 80),
-                        BorderColor3 = Color3.fromRGB(0, 0, 0),
-                        Size = UDim2.new(1, -20, 0, 35),
-                        BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-                    }):AddToTheme({BackgroundColor3 = "Background"})
-                    
-                    Library:Create("UICorner", {
-                        Parent = Items["Search"].Instance,
-                        Name = "\0"
-                    })
-                    
-                    Items["Input"] = Library:Create("TextBox", {
-                        Parent = Items["Search"].Instance,
-                        Name = "\0",
-                        FontFace = Library.Font,
-                        TextColor3 = Color3.fromRGB(220, 229, 247),
-                        BorderColor3 = Color3.fromRGB(0, 0, 0),
-                        Text = "",
-                        Size = UDim2.new(0, 0, 0, 15),
-                        Position = UDim2.new(0, 38, 0.5, -1),
-                        AnchorPoint = Vector2.new(0, 0.5),
-                        BorderSizePixel = 0,
-                        BackgroundTransparency = 1,
-                        PlaceholderColor3 = Color3.fromRGB(145, 151, 163),
-                        AutomaticSize = Enum.AutomaticSize.X,
-                        PlaceholderText = "Search..",
-                        TextSize = 14,
-                        BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                    }):AddToTheme({TextColor3 = "Text", PlaceholderColor3 = "Text 2"})
-                    
-                    Items["Icon__"] = Library:Create("ImageLabel", {
-                        Parent = Items["Search"].Instance,
-                        Name = "\0",
-                        BorderColor3 = Color3.fromRGB(0, 0, 0),
-                        AnchorPoint = Vector2.new(0, 0.5),
-                        Image = "rbxassetid://79227204687245",
-                        BackgroundTransparency = 1,
-                        Position = UDim2.new(0, 10, 0.5, 0),
-                        Size = UDim2.new(0, 18, 0, 18),
-                        BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                    }):AddToTheme({ImageColor3 = "Text"})                    
-                end
-
+                -- Search bar removed
                 Page.Items = Items
             end
 
@@ -3119,11 +3068,7 @@ local Library = {
                 Page.Active = Bool 
 
                 if Bool then 
-                    if Page.Search then
-                        Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 100)}) 
-                    else
-                        Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 60)})
-                    end
+                    Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 60)})
 
                     Items["UIStroke"].Instance.Color = Color3.fromRGB(255, 255, 255)
                     Items["Gradient"].Instance.Enabled = true 
@@ -3134,11 +3079,7 @@ local Library = {
 
                     Items["Inactive"]:Tween({BackgroundTransparency = 0})
                 else
-                    if Page.Search then
-                        Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 120)}) 
-                    else
-                        Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 80)})
-                    end
+                    Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 80)})
                     Items["Gradient"].Instance.Enabled = false 
                     Items["UIStroke"].Instance.Color = Color3.fromRGB(22, 22, 22)
 
@@ -3173,25 +3114,6 @@ local Library = {
                     Value:Turn(Value == Page)
                 end
             end)
-
-            if Page.Search then
-                Library:Connect(Items["Input"].Instance:GetPropertyChangedSignal("Text"), function()
-                    for Index, Value in Page.SearchItems do
-                        local Name = Value.Name
-                        local Element = Value.Item
-
-                        if string.find(string.lower(Name), string.lower(Items["Input"].Instance.Text)) then
-                            if Items["Input"].Instance.Text ~= "" then 
-                                Element.Instance.Visible  = true 
-                            else
-                                Element.Instance.Visible  = true 
-                            end
-                        else
-                            Element.Instance.Visible = false
-                        end 
-                    end
-                end)
-            end
 
             if #Page.Window.Pages == 0 then 
                 Page:Turn(true)
@@ -3236,14 +3158,57 @@ local Library = {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 22, 0, 22),
-                    AnchorPoint = Vector2.new(0.5, 0),
+                    Size = UDim2.new(0, 28, 0, 28),
+                    AnchorPoint = Vector2.new(0.5, 0.5),
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0.5, 0, 0, 0),
+                    Position = UDim2.new(0.5, 0, 0.5, -4),
                     ZIndex = 2,
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
+                
+                -- Hover tooltip
+                Items["Tooltip"] = Library:Create("Frame", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2.new(0.5, 0),
+                    Position = UDim2.new(0.5, 0, 1, 4),
+                    Size = UDim2.new(0, 0, 0, 20),
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    BackgroundColor3 = Color3.fromRGB(20, 20, 22),
+                    BorderSizePixel = 0,
+                    ZIndex = 999,
+                    Visible = false,
+                })
+                
+                Library:Create("UICorner", {
+                    Parent = Items["Tooltip"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDim.new(0, 4)
+                })
+                
+                Library:Create("UIPadding", {
+                    Parent = Items["Tooltip"].Instance,
+                    Name = "\0",
+                    PaddingLeft = UDim.new(0, 7),
+                    PaddingRight = UDim.new(0, 7),
+                })
+                
+                Library:Create("TextLabel", {
+                    Parent = Items["Tooltip"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    Text = Page.Name ~= "" and Page.Name or "Tab",
+                    TextColor3 = Color3.fromRGB(210, 210, 215),
+                    TextSize = 11,
+                    Size = UDim2.new(0, 0, 1, 0),
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    ZIndex = 999,
+                    AnchorPoint = Vector2.new(0, 0.5),
+                    Position = UDim2.new(0, 0, 0.5, 0),
+                }):AddToTheme({TextColor3 = "Text"})
                 
                 -- Track the actual ImageLabel for gradient parenting
                 local gradientTarget = nil
@@ -3531,6 +3496,14 @@ local Library = {
 
                     Value:Turn(Value == Page)
                 end
+            end)
+            
+            Items["Inactive"]:Connect("MouseEnter", function()
+                Items["Tooltip"].Instance.Visible = true
+            end)
+            
+            Items["Inactive"]:Connect("MouseLeave", function()
+                Items["Tooltip"].Instance.Visible = false
             end)
 
             if #Page.Page.SubPages == 0 then 
