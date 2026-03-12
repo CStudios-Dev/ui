@@ -1,4 +1,4 @@
--- made by big mommy melissa
+-- made by melissa
 
 if getgenv().Library and getgenv().Library.Exit then
     getgenv().Library:Exit()
@@ -331,65 +331,20 @@ local Library = {
     end
 
     local Themes = {
-        ["Crimson"] = {
-            ["Background"] = Color3.fromRGB(22, 2, 5),
-            ["Inline"] = Color3.fromRGB(16, 2, 4),
+        ["Preset"] = {
+            ["Background"] = Color3.fromRGB(0, 0, 0),
+            ["Inline"] = Color3.fromRGB(8, 8, 8),
             ["Accent Start"] = Color3.fromRGB(175, 102, 126),
             ["Accent End"] = Color3.fromRGB(114, 75, 135),
             ["Text"] = Color3.fromRGB(220, 229, 247),
             ["Text 2"] = Color3.fromRGB(145, 151, 163),
-            ["Element"] = Color3.fromRGB(42, 6, 11),
-            ["Hovered Element"] = Color3.fromRGB(58, 9, 16),
-            ["Topbar"] = Color3.fromRGB(32, 4, 8)
-        },
-        ["Void"] = {
-            ["Background"] = Color3.fromRGB(8, 8, 12),
-            ["Inline"] = Color3.fromRGB(6, 6, 9),
-            ["Accent Start"] = Color3.fromRGB(138, 90, 200),
-            ["Accent End"] = Color3.fromRGB(80, 50, 160),
-            ["Text"] = Color3.fromRGB(220, 215, 240),
-            ["Text 2"] = Color3.fromRGB(140, 135, 160),
-            ["Element"] = Color3.fromRGB(20, 18, 30),
-            ["Hovered Element"] = Color3.fromRGB(30, 26, 45),
-            ["Topbar"] = Color3.fromRGB(14, 12, 22)
-        },
-        ["Ocean"] = {
-            ["Background"] = Color3.fromRGB(4, 14, 24),
-            ["Inline"] = Color3.fromRGB(3, 10, 18),
-            ["Accent Start"] = Color3.fromRGB(60, 140, 210),
-            ["Accent End"] = Color3.fromRGB(30, 90, 170),
-            ["Text"] = Color3.fromRGB(210, 228, 248),
-            ["Text 2"] = Color3.fromRGB(130, 155, 180),
-            ["Element"] = Color3.fromRGB(8, 25, 42),
-            ["Hovered Element"] = Color3.fromRGB(12, 36, 58),
-            ["Topbar"] = Color3.fromRGB(6, 18, 32)
-        },
-        ["Forest"] = {
-            ["Background"] = Color3.fromRGB(4, 16, 8),
-            ["Inline"] = Color3.fromRGB(3, 12, 6),
-            ["Accent Start"] = Color3.fromRGB(70, 170, 100),
-            ["Accent End"] = Color3.fromRGB(40, 120, 65),
-            ["Text"] = Color3.fromRGB(210, 240, 220),
-            ["Text 2"] = Color3.fromRGB(130, 165, 140),
-            ["Element"] = Color3.fromRGB(8, 30, 14),
-            ["Hovered Element"] = Color3.fromRGB(12, 42, 20),
-            ["Topbar"] = Color3.fromRGB(6, 22, 10)
-        },
-        ["Ash"] = {
-            ["Background"] = Color3.fromRGB(10, 10, 11),
-            ["Inline"] = Color3.fromRGB(7, 7, 8),
-            ["Accent Start"] = Color3.fromRGB(190, 190, 200),
-            ["Accent End"] = Color3.fromRGB(130, 130, 145),
-            ["Text"] = Color3.fromRGB(225, 225, 235),
-            ["Text 2"] = Color3.fromRGB(145, 145, 155),
-            ["Element"] = Color3.fromRGB(20, 20, 22),
-            ["Hovered Element"] = Color3.fromRGB(30, 30, 34),
-            ["Topbar"] = Color3.fromRGB(15, 15, 17)
-        },
+            ["Element"] = Color3.fromRGB(14, 14, 14),
+            ["Hovered Element"] = Color3.fromRGB(24, 24, 24),
+            ["Topbar"] = Color3.fromRGB(4, 4, 4)
+        }
     }
-    Library.ThemePresets = Themes
 
-    Library.Theme = Themes.Crimson
+    Library.Theme = Themes.Preset
 
     -- Custom Font
     local CustomFont = { } do
@@ -1138,7 +1093,7 @@ local Library = {
                     Size = UDim2.new(0, 215, 0, 215),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 }):AddToTheme({BackgroundColor3 = "Background"})
                 
                 Library:Create("UICorner", {
@@ -1714,7 +1669,7 @@ local Library = {
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.X,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 }):AddToTheme({TextColor3 = "Text", BackgroundColor3 = "Element"})
 
                 Items["KeyButton"]:OnHover(function()
@@ -1750,7 +1705,7 @@ local Library = {
                     Size = UDim2.new(0, 241, 0, 71),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 })
                 
                 Library:Create("UICorner", {
@@ -2100,7 +2055,7 @@ local Library = {
                 })
             end
 
-            local OriginalSize = UDim2.new(0, 700, 0, 500)
+            local OriginalSize = UDim2.new(0, 480, 0, 704)
 
             local Items = { } do 
                 Items["MainFrame"] = Library:Create("Frame", {
@@ -2109,11 +2064,11 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     Position = UDim2.new(0.5, 0, 0.5, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 700, 0, 500),
+                    Size = UDim2.new(0, 850, 0, 600),
                     Visible = false,
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 }):AddToTheme({BackgroundColor3 = "Background"})
 
                 Items["MainFrame"]:MakeDraggable()
@@ -2130,7 +2085,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(1, 0, 0, 35),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(28, 28, 29)
+                    BackgroundColor3 = Color3.fromRGB(4, 4, 4)
                 }):AddToTheme({BackgroundColor3 = "Topbar"})
                 
                 Library:Create("UICorner", {
@@ -2146,7 +2101,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(1, 0, 0, 6),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(28, 28, 29)
+                    BackgroundColor3 = Color3.fromRGB(4, 4, 4)
                 }):AddToTheme({BackgroundColor3 = "Topbar"})
                 
                 Items["Logo"] = Library:Create("ImageLabel", {
@@ -2265,17 +2220,15 @@ local Library = {
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0, 15, 0, 46),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 190, 1, -61),
+                    Size = UDim2.new(0, 160, 1, -61),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     ScrollingDirection = Enum.ScrollingDirection.Y,
                     AutomaticCanvasSize = Enum.AutomaticSize.Y,
                     CanvasSize = UDim2.new(0, 0, 0, 0),
                     ScrollBarThickness = 2,
-                    ScrollBarImageColor3 = Color3.fromRGB(60, 60, 65),
-                    ScrollBarImageTransparency = 0.5,
-                    ClipsDescendants = true,
-                    ZIndex = 1
+                    ScrollBarImageColor3 = Color3.fromRGB(20, 20, 20),
+                    ScrollBarImageTransparency = 0.5
                 })
                 
                 Library:Create("UIPadding", {
@@ -2297,11 +2250,11 @@ local Library = {
                 Items["Content"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    Position = UDim2.new(0, 190, 0, 51),
+                    Position = UDim2.new(0, 175, 0, 51),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, -205, 1, -66),
+                    Size = UDim2.new(1, -190, 1, -66),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(15, 15, 16)
+                    BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
                 
                 Library:Create("UICorner", {
@@ -2323,138 +2276,16 @@ local Library = {
                     Size = UDim2.new(1, 0, 1, 0),
                     ZIndex = 99,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 })
 
                 Library:Create("UICorner", {
                     Parent = Items["DialogBackground"].Instance,
                     Name = "\0"
                 })
-
-                -- Sidebar collapse/expand toggle button
-                Items["SidebarToggle"] = Library:Create("TextButton", {
-                    Parent = Items["MainFrame"].Instance,
-                    Name = "\0",
-                    Text = "",
-                    AutoButtonColor = false,
-                    AnchorPoint = Vector2.new(0, 0.5),
-                    Position = UDim2.new(0, 193, 0.5, 0),
-                    Size = UDim2.new(0, 18, 0, 36),
-                    BorderSizePixel = 0,
-                    ZIndex = 10,
-                    BackgroundColor3 = Color3.fromRGB(55, 8, 13)
-                }):AddToTheme({BackgroundColor3 = "Topbar"})
-
-                Library:Create("UICorner", {
-                    Parent = Items["SidebarToggle"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDim.new(0, 6)
-                })
-
-                Items["SidebarToggleArrow"] = Library:Create("TextLabel", {
-                    Parent = Items["SidebarToggle"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    Text = "‹",
-                    TextColor3 = Color3.fromRGB(220, 229, 247),
-                    TextSize = 18,
-                    AnchorPoint = Vector2.new(0.5, 0.5),
-                    Position = UDim2.new(0.5, 0, 0.5, 0),
-                    Size = UDim2.new(1, 0, 1, 0),
-                    BackgroundTransparency = 1,
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                }):AddToTheme({TextColor3 = "Text"})
                 
                 Window.Items = Items
             end
-
-            -- Sidebar state
-            local SidebarExpanded = true
-            local SidebarHovered = false
-            local SidebarCollapsedWidth = 55
-            local SidebarExpandedWidth = 190
-
-            local SidebarTweenStyle = TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-
-            local function SetPageLabelsVisible(Visible)
-                for _, PageObj in Window.Pages do
-                    if PageObj and PageObj.Items then
-                        if PageObj.Items["Text"] then
-                            PageObj.Items["Text"].Instance.Visible = Visible
-                        end
-                        if PageObj.Items["Description"] then
-                            PageObj.Items["Description"].Instance.Visible = Visible
-                        end
-                    end
-                end
-            end
-
-            local function CollapseToIcons()
-                -- Snap sidebar narrow
-                Items["Pages"]:Tween({Size = UDim2.new(0, SidebarCollapsedWidth, 1, -61)}, SidebarTweenStyle)
-                Items["SidebarToggle"]:Tween({Position = UDim2.new(0, SidebarCollapsedWidth + 3, 0.5, 0)}, SidebarTweenStyle)
-                Items["SidebarToggleArrow"].Instance.Text = "›"
-                -- Content expands to fill freed space
-                Items["Content"]:Tween({
-                    Position = UDim2.new(0, SidebarCollapsedWidth + 10, 0, 51),
-                    Size = UDim2.new(1, -(SidebarCollapsedWidth + 20), 1, -66)
-                }, SidebarTweenStyle)
-                -- Hide labels after a tiny delay so tween looks clean
-                task.delay(0.05, function()
-                    SetPageLabelsVisible(false)
-                end)
-                Items["Pages"].Instance.ZIndex = 1
-            end
-
-            local function ExpandFull(IsHover)
-                SetPageLabelsVisible(true)
-                Items["Pages"]:Tween({Size = UDim2.new(0, SidebarExpandedWidth, 1, -61)}, SidebarTweenStyle)
-                Items["SidebarToggle"]:Tween({Position = UDim2.new(0, SidebarExpandedWidth + 3, 0.5, 0)}, SidebarTweenStyle)
-                Items["SidebarToggleArrow"].Instance.Text = "‹"
-                if not IsHover then
-                    -- Permanent expand: content shrinks back
-                    Items["Content"]:Tween({
-                        Position = UDim2.new(0, SidebarExpandedWidth + 10, 0, 51),
-                        Size = UDim2.new(1, -(SidebarExpandedWidth + 20), 1, -66)
-                    }, SidebarTweenStyle)
-                end
-                -- Float over content when just hovering
-                if IsHover then
-                    Items["Pages"].Instance.ZIndex = 5
-                end
-            end
-
-            -- Toggle button: permanently expand or collapse
-            Items["SidebarToggle"]:Connect("MouseButton1Down", function()
-                SidebarExpanded = not SidebarExpanded
-                SidebarHovered = false
-                if SidebarExpanded then
-                    ExpandFull(false)
-                else
-                    CollapseToIcons()
-                end
-            end)
-
-            -- Hover over sidebar when collapsed: float open
-            Items["Pages"]:Connect("MouseEnter", function()
-                if not SidebarExpanded and not SidebarHovered then
-                    SidebarHovered = true
-                    ExpandFull(true)
-                end
-            end)
-
-            -- Mouse leaves sidebar: snap closed again
-            Items["Pages"]:Connect("MouseLeave", function()
-                if not SidebarExpanded and SidebarHovered then
-                    SidebarHovered = false
-                    Items["Pages"].Instance.ZIndex = 1
-                    SetPageLabelsVisible(false)
-                    Items["Pages"]:Tween({Size = UDim2.new(0, SidebarCollapsedWidth, 1, -61)}, SidebarTweenStyle)
-                    Items["SidebarToggle"]:Tween({Position = UDim2.new(0, SidebarCollapsedWidth + 3, 0.5, 0)}, SidebarTweenStyle)
-                    Items["SidebarToggleArrow"].Instance.Text = "›"
-                end
-            end)
 
             local Debounce = false
 
@@ -2488,7 +2319,7 @@ local Library = {
                 AnchorPoint = toggleAnchor,
                 Position = togglePos,
                 Size = toggleSize,
-                BackgroundColor3 = Color3.fromRGB(24, 24, 27),
+                BackgroundColor3 = Color3.fromRGB(14, 14, 14),
                 BorderSizePixel = 0,
                 Text = "",
                 AutoButtonColor = false
@@ -2525,9 +2356,9 @@ local Library = {
             Items["Pages"]:FadeDescendants(false, Debounce)
             Items["Content"]:FadeDescendants(false, Debounce)
             Items["MainFrame"].Instance.Visible = true
-            Items["MainFrame"]:Tween({BackgroundTransparency = 0.28})
+            Items["MainFrame"]:Tween({BackgroundTransparency = 0})
             task.wait(Library.Animation.Time - 0.05)
-            Items["MainFrame"]:Tween({Size = UDim2.new(0, 700, 0, 500)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
+            Items["MainFrame"]:Tween({Size = UDim2.new(0, 480, 0, 704)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
             task.wait(1)
             Items["Top"]:FadeDescendants(true, Debounce)
             Items["Pages"]:FadeDescendants(true, Debounce)
@@ -2556,7 +2387,7 @@ local Library = {
                         Size = UDim2.new(0, 350, 0, 155),
                         ZIndex = 99,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(15, 15, 16)
+                        BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                     }):AddToTheme({BackgroundColor3 = "Inline"})
                     
                     Library:Create("UICorner", {
@@ -2677,7 +2508,7 @@ local Library = {
                             Size = UDim2.new(1, -2, 1, 0),
                             ZIndex = 99,
                             TextSize = 14,
-                            BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                            BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                         }):AddToTheme({BackgroundColor3 = "Element"})
                         
                         Library:Create("UICorner", {
@@ -2792,7 +2623,7 @@ local Library = {
                 -- Main notification frame
                 local NotifFrame = Instance.new("Frame")
                 NotifFrame.Name = "Notification"
-                NotifFrame.BackgroundColor3 = Library.Theme and Library.Theme.Background or Color3.fromRGB(18, 18, 20)
+                NotifFrame.BackgroundColor3 = Library.Theme and Library.Theme.Background or Color3.fromRGB(0, 0, 0)
                 NotifFrame.Size = UDim2.new(1, 0, 0, 0)
                 NotifFrame.AutomaticSize = Enum.AutomaticSize.Y
                 NotifFrame.ClipsDescendants = true
@@ -2845,7 +2676,7 @@ local Library = {
                 -- Progress bar at bottom
                 local ProgressBg = Instance.new("Frame")
                 ProgressBg.Name = "ProgressBg"
-                ProgressBg.BackgroundColor3 = Library.Theme and Library.Theme.Inline or Color3.fromRGB(30, 30, 32)
+                ProgressBg.BackgroundColor3 = Library.Theme and Library.Theme.Inline or Color3.fromRGB(8, 8, 8)
                 ProgressBg.Size = UDim2.new(1, 24, 0, 3)
                 ProgressBg.Position = UDim2.new(0, -12, 1, 7)
                 ProgressBg.BorderSizePixel = 0
@@ -2996,7 +2827,7 @@ local Library = {
                     Size = UDim2.new(1, 0, 0, 60),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(15, 15, 16)
+                    BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
                 
                 Library:Create("UICorner", {
@@ -3147,7 +2978,7 @@ local Library = {
                     AutomaticCanvasSize = Enum.AutomaticSize.X,
                     CanvasSize = UDim2.new(0, 0, 0, 0),
                     ScrollBarThickness = 2,
-                    ScrollBarImageColor3 = Color3.fromRGB(60, 60, 65),
+                    ScrollBarImageColor3 = Color3.fromRGB(20, 20, 20),
                     ScrollBarImageTransparency = 0.5
                 })                
 
@@ -3187,7 +3018,7 @@ local Library = {
                         BorderColor3 = Color3.fromRGB(0, 0, 0),
                         Size = UDim2.new(1, -20, 0, 35),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):AddToTheme({BackgroundColor3 = "Background"})
                     
                     Library:Create("UICorner", {
@@ -3717,7 +3548,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(1, 0, 1, -25),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 }):AddToTheme({BackgroundColor3 = "Background"})
                 
                 Items["Content"] = Library:Create("Frame", {
@@ -3782,7 +3613,7 @@ local Library = {
                     Size = UDim2.new(1, 40, 1, 0),
                     Selectable = false,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 }):AddToTheme({BackgroundColor3 = "Background"})
 
                 Library:Create("UICorner", {
@@ -3867,7 +3698,7 @@ local Library = {
                         Size = UDim2.new(1, 40, 1, 0),
                         Selectable = false,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):AddToTheme({BackgroundColor3 = "Background"})
                     
                     Library:Create("UICorner", {
@@ -3885,7 +3716,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(0, 20, 0, 20),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27),
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14),
                     Text = "",
                     AutoButtonColor = false
                 }):AddToTheme({BackgroundColor3 = "Element"})
@@ -4254,7 +4085,7 @@ local Library = {
                         Size = UDim2.new(1, 40, 1, 0),
                         Selectable = false,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):AddToTheme({BackgroundColor3 = "Background"})
                     
                     Library:Create("UICorner", {
@@ -4312,7 +4143,7 @@ local Library = {
                     Size = UDim2.new(1, -2, 1, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 }):AddToTheme({BackgroundColor3 = "Element"})
                 
                 Library:Create("UICorner", {
@@ -4422,7 +4253,7 @@ local Library = {
                         Size = UDim2.new(1, 40, 1, 0),
                         Selectable = false,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):AddToTheme({BackgroundColor3 = "Background"})
                     
                     Library:Create("UICorner", {
@@ -4461,7 +4292,7 @@ local Library = {
                     Size = UDim2.new(1, 0, 0, 10),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 }):AddToTheme({BackgroundColor3 = "Element"})
                 
                 Library:Create("UICorner", {
@@ -4739,7 +4570,7 @@ local Library = {
                         Size = UDim2.new(1, 40, 1, 0),
                         Selectable = false,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):AddToTheme({BackgroundColor3 = "Background"})
                     
                     Library:Create("UICorner", {
@@ -4809,7 +4640,7 @@ local Library = {
                     Size = UDim2.new(1, -2, 1, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 }):AddToTheme({BackgroundColor3 = "Element"})
                 
                 Library:Create("UICorner", {
@@ -4872,7 +4703,7 @@ local Library = {
                     Size = UDim2.new(0, 263, 0, 146),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 }):AddToTheme({BackgroundColor3 = "Background"})
                 
                 Library:Create("UICorner", {
@@ -5066,7 +4897,7 @@ local Library = {
                     Size = UDim2.new(1, -2, 1, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 })
                 
                 Library:Create("UICorner", {
@@ -5378,7 +5209,7 @@ local Library = {
                         Size = UDim2.new(1, 40, 1, 0),
                         Selectable = false,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):AddToTheme({BackgroundColor3 = "Background"})
                     
                     Library:Create("UICorner", {
@@ -5561,7 +5392,7 @@ local Library = {
                         Size = UDim2.new(1, 40, 1, 0),
                         Selectable = false,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):AddToTheme({BackgroundColor3 = "Background"})
                     
                     Library:Create("UICorner", {
@@ -5628,7 +5459,7 @@ local Library = {
                     Size = UDim2.new(1, -2, 1, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 }):AddToTheme({BackgroundColor3 = "Element"})
                 
                 Library:Create("UICorner", {
@@ -5878,7 +5709,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(1, 0, 0, 250),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 })
                 
                 Items["Holder"] = Library:Create("ScrollingFrame", {
@@ -5908,7 +5739,7 @@ local Library = {
                 Library:Create("UIStroke", {
                     Parent = Items["Holder"].Instance,
                     Name = "\0",
-                    Color = Color3.fromRGB(15, 15, 16)
+                    Color = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({Color = 'Inline'})
                 
                 Library:Create("UICorner", {
@@ -5953,7 +5784,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(1, 0, 0, 35),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(15, 15, 16)
+                    BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
                 
                 Library:Create("UICorner", {
@@ -5996,7 +5827,7 @@ local Library = {
                 Library:Create("UIStroke", {
                     Parent = Items["Search"].Instance,
                     Name = "\0",
-                    Color = Color3.fromRGB(15, 15, 16)
+                    Color = Color3.fromRGB(8, 8, 8)
                 })
             end
 
@@ -6012,7 +5843,7 @@ local Library = {
                     LayoutOrder = #List.Items,
                     Size = UDim2.new(1, 0, 0, 30),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(15, 15, 16)
+                    BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 })
 
                 local ColorSelected
@@ -6306,40 +6137,16 @@ local Library = {
             end
         end
 
-        Library.ApplyThemePreset = function(Self, PresetName)
-            local Preset = Library.ThemePresets and Library.ThemePresets[PresetName]
-            if not Preset then return end
-            for Key, Color in Preset do
-                Library.Theme[Key] = Color
-                Library:ChangeTheme(Key, Color)
-            end
-        end
-
         Library.CreateThemingSection = function(Self)
             local ThemeSection = Self:Section({Name = "Theme", Side = 1})
 
-            do
-                -- Preset theme buttons
-                local PresetNames = {"Crimson", "Void", "Ocean", "Forest", "Ash"}
-                for _, Name in PresetNames do
-                    ThemeSection:Button({
-                        Name = Name,
-                        Callback = function()
-                            Library:ApplyThemePreset(Name)
-                        end
-                    })
-                end
-
-                -- Divider label
-                ThemeSection:Label({Name = "Custom Colors"})
-
-                -- Individual color pickers for fine tuning
+            do 
                 for Index, Value in Library.Theme do 
                     ThemeSection:Label({Name = Index}):Colorpicker({
-                        Flag = "Theme_" .. Index,
+                        Flag = Index,
                         Default = Value,
                         Callback = function(Value)
-                            Library.Theme[Index] = Value
+                            Library.Theme[Index] = Value,
                             Library:ChangeTheme(Index, Value)
                         end
                     })
