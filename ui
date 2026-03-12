@@ -2097,7 +2097,7 @@ local Library = {
             end
 
             local Window = {
-                Name = Params.Name or Params.name or 'carbon studios',
+                Name = Params.Name or Params.name or '<font color="rgb(160, 80, 255)">carbon studios</font>',
                 Logo = Params.Logo or Params.logo or "rbxassetid://133218922939038",
 
                 IsOpen = true,
@@ -4164,9 +4164,9 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
-                    AnchorPoint = Vector2.new(1, 0),
-                    Position = UDim2.new(1, 1, 0, 0),
-                    Size = UDim2.new(1, -2, 1, 0),
+                    AnchorPoint = Vector2.new(0, 0),
+                    Position = UDim2.new(0, 0, 0, 0),
+                    Size = UDim2.new(1, 0, 1, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
                     BackgroundColor3 = Color3.fromRGB(14, 14, 14)
@@ -4313,7 +4313,7 @@ local Library = {
                     Text = "",
                     AutoButtonColor = false,
                     AnchorPoint = Vector2.new(0, 1),
-                    ClipsDescendants = true,
+                    ClipsDescendants = false,
                     Position = UDim2.new(0, 0, 1, 0),
                     Size = UDim2.new(1, 0, 0, 10),
                     BorderSizePixel = 0,
@@ -4353,28 +4353,23 @@ local Library = {
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
                 end})
                 
+                -- Value label parented to RealSlider so it's never clipped by Accent shrinking
                 Items["Value"] = Library:Create("TextLabel", {
-                    Parent = Items["Accent"].Instance,
+                    Parent = Items["Slider"].Instance,
                     Name = "\0",
                     FontFace = Library.Font,
                     TextColor3 = Color3.fromRGB(220, 229, 247),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Text = "50%",
-                    AnchorPoint = Vector2.new(0, 0.5),
+                    AnchorPoint = Vector2.new(1, 0),
                     Size = UDim2.new(0, 0, 0, 15),
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(1, 5, 0.5, 0),
+                    Position = UDim2.new(1, 0, 0, 0),
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.X,
                     TextSize = 12,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 }):AddToTheme({TextColor3 = "Text"})
-                
-                Library:Create("UIStroke", {
-                    Parent = Items["Value"].Instance,
-                    Name = "\0",
-                    Transparency = 0.6000000238418579
-                })
                 
 
                 
@@ -4426,8 +4421,7 @@ local Library = {
 
             Items["RealSlider"].Instance.MouseButton1Down:Connect(function(x, y)
                 Slider.Sliding = true
-                local fakeInput = {Position = Vector3.new(x, y, 0)}
-                Slider:Set(Slider:GetSize(fakeInput))
+                Slider:Set(Slider:GetSize({Position = Vector3.new(x, y, 0)}))
             end)
 
             Items["RealSlider"]:Connect("InputBegan", function(Input)
@@ -6096,31 +6090,22 @@ local Library = {
 
         Library.CreateThemingSection = function(Self)
             local ThemeSection = Self:Section({Name = "Theme", Side = 1})
-
             do
                 ThemeSection:Dropdown({
-                    Name = "Preset Theme",
-                    Flag = "_ThemePreset",
+                    Name = "Preset Theme", Flag = "_ThemePreset",
                     Items = {"Preset", "Pink", "Purple", "Cyan", "Green", "Blue"},
                     Default = "Preset",
-                    Callback = function(Value)
-                        Library:SetTheme(Value)
-                    end
+                    Callback = function(Value) Library:SetTheme(Value) end
                 })
-
                 ThemeSection:Button({
                     Name = "Reset to Default",
-                    Callback = function()
-                        Library:SetTheme("Preset")
-                    end
+                    Callback = function() Library:SetTheme("Preset") end
                 })
-
-                for Index, Value in Library.Theme do 
+                for Index, Value in Library.Theme do
                     ThemeSection:Label({Name = Index}):Colorpicker({
-                        Flag = Index,
-                        Default = Value,
+                        Flag = Index, Default = Value,
                         Callback = function(Value)
-                            Library.Theme[Index] = Value,
+                            Library.Theme[Index] = Value
                             Library:ChangeTheme(Index, Value)
                         end
                     })
