@@ -1,4 +1,5 @@
--- made by melissa
+-- Made by samet
+-- Example at bottom
 
 if getgenv().Library and getgenv().Library.Exit then
     getgenv().Library:Exit()
@@ -2055,7 +2056,7 @@ local Library = {
                 })
             end
 
-            local OriginalSize = UDim2.new(0, 480, 0, 704)
+            local OriginalSize = UDim2.new(0, 704, 0, 480)
 
             local Items = { } do 
                 Items["MainFrame"] = Library:Create("Frame", {
@@ -2064,7 +2065,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     Position = UDim2.new(0.5, 0, 0.5, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 850, 0, 600),
+                    Size = UDim2.new(0, 704, 0, 480),
                     Visible = false,
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
@@ -2250,9 +2251,9 @@ local Library = {
                 Items["Content"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    Position = UDim2.new(0, 175, 0, 51),
+                    Position = UDim2.new(0, 225, 0, 51),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, -190, 1, -66),
+                    Size = UDim2.new(1, -240, 1, -66),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
@@ -2335,7 +2336,7 @@ local Library = {
                 Parent = Items["ToggleButton"].Instance,
                 Name = "\0",
                 ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-                Color = Color3.fromRGB(37, 37, 37),
+                Color = Color3.fromRGB(22, 22, 22),
                 Thickness = 1.5
             })
 
@@ -2358,7 +2359,7 @@ local Library = {
             Items["MainFrame"].Instance.Visible = true
             Items["MainFrame"]:Tween({BackgroundTransparency = 0})
             task.wait(Library.Animation.Time - 0.05)
-            Items["MainFrame"]:Tween({Size = UDim2.new(0, 480, 0, 704)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
+            Items["MainFrame"]:Tween({Size = UDim2.new(0, 704, 0, 480)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
             task.wait(1)
             Items["Top"]:FadeDescendants(true, Debounce)
             Items["Pages"]:FadeDescendants(true, Debounce)
@@ -2634,7 +2635,7 @@ local Library = {
                 NotifCorner.Parent = NotifFrame
 
                 local NotifStroke = Instance.new("UIStroke")
-                NotifStroke.Color = Library.Theme and Library.Theme.Outline or Color3.fromRGB(37, 37, 37)
+                NotifStroke.Color = Library.Theme and Library.Theme.Outline or Color3.fromRGB(22, 22, 22)
                 NotifStroke.Thickness = 1
                 NotifStroke.Parent = NotifFrame
 
@@ -2856,7 +2857,7 @@ local Library = {
                     Parent = Items["IconBackground"].Instance,
                     Name = "\0",
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-                    Color = Color3.fromRGB(37, 37, 37),
+                    Color = Color3.fromRGB(22, 22, 22),
                     Thickness = 1.399999976158142
                 })
                 
@@ -3095,7 +3096,7 @@ local Library = {
                         Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 80)})
                     end
                     Items["Gradient"].Instance.Enabled = false 
-                    Items["UIStroke"].Instance.Color = Color3.fromRGB(37, 37, 37)
+                    Items["UIStroke"].Instance.Color = Color3.fromRGB(22, 22, 22)
 
                     Items["Text"]:Tween({TextTransparency = 0.5})
                     Items["Description"]:ChangeItemTheme({TextColor3 = "Text"})
