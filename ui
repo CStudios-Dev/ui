@@ -1,4 +1,5 @@
--- beta ui 
+-- Made by samet
+-- Example at bottom
 
 if getgenv().Library and getgenv().Library.Exit then
     getgenv().Library:Exit()
@@ -341,8 +342,61 @@ local Library = {
             ["Element"] = Color3.fromRGB(14, 14, 14),
             ["Hovered Element"] = Color3.fromRGB(24, 24, 24),
             ["Topbar"] = Color3.fromRGB(4, 4, 4)
-        }
+        },
+        ["Purple"] = {
+            ["Background"] = Color3.fromRGB(8, 5, 15),
+            ["Inline"] = Color3.fromRGB(14, 10, 24),
+            ["Accent Start"] = Color3.fromRGB(160, 80, 255),
+            ["Accent End"] = Color3.fromRGB(100, 60, 235),
+            ["Text"] = Color3.fromRGB(220, 215, 250),
+            ["Text 2"] = Color3.fromRGB(140, 130, 175),
+            ["Element"] = Color3.fromRGB(20, 14, 35),
+            ["Hovered Element"] = Color3.fromRGB(32, 22, 52),
+            ["Topbar"] = Color3.fromRGB(10, 7, 20)
+        },
+        ["Cyan"] = {
+            ["Background"] = Color3.fromRGB(3, 10, 14),
+            ["Inline"] = Color3.fromRGB(6, 18, 24),
+            ["Accent Start"] = Color3.fromRGB(0, 210, 255),
+            ["Accent End"] = Color3.fromRGB(0, 160, 220),
+            ["Text"] = Color3.fromRGB(210, 240, 255),
+            ["Text 2"] = Color3.fromRGB(130, 165, 185),
+            ["Element"] = Color3.fromRGB(8, 24, 34),
+            ["Hovered Element"] = Color3.fromRGB(12, 36, 50),
+            ["Topbar"] = Color3.fromRGB(4, 12, 18)
+        },
+        ["Green"] = {
+            ["Background"] = Color3.fromRGB(3, 12, 5),
+            ["Inline"] = Color3.fromRGB(6, 20, 9),
+            ["Accent Start"] = Color3.fromRGB(50, 230, 100),
+            ["Accent End"] = Color3.fromRGB(30, 200, 80),
+            ["Text"] = Color3.fromRGB(210, 250, 220),
+            ["Text 2"] = Color3.fromRGB(130, 175, 140),
+            ["Element"] = Color3.fromRGB(8, 28, 12),
+            ["Hovered Element"] = Color3.fromRGB(12, 42, 18),
+            ["Topbar"] = Color3.fromRGB(4, 14, 6)
+        },
+        ["Blue"] = {
+            ["Background"] = Color3.fromRGB(3, 5, 15),
+            ["Inline"] = Color3.fromRGB(6, 10, 25),
+            ["Accent Start"] = Color3.fromRGB(60, 120, 255),
+            ["Accent End"] = Color3.fromRGB(40, 80, 235),
+            ["Text"] = Color3.fromRGB(210, 220, 255),
+            ["Text 2"] = Color3.fromRGB(130, 145, 190),
+            ["Element"] = Color3.fromRGB(8, 15, 38),
+            ["Hovered Element"] = Color3.fromRGB(12, 22, 56),
+            ["Topbar"] = Color3.fromRGB(4, 7, 20)
+        },
     }
+
+    -- Helper function to switch preset themes
+    Library.SetTheme = function(Self, ThemeName)
+        local NewTheme = Themes[ThemeName]
+        if not NewTheme then return end
+        for Key, Value in NewTheme do
+            Library:ChangeTheme(Key, Value)
+        end
+    end
 
     Library.Theme = Themes.Preset
 
@@ -2034,7 +2088,7 @@ local Library = {
             end
 
             local Window = {
-                Name = Params.Name or Params.name or '<font color="rgb(175, 102, 126)">ather.</font>hub',
+                Name = Params.Name or Params.name or '<font color="rgb(255, 110, 130)">carbon</font>.hub',
                 Logo = Params.Logo or Params.logo or "rbxassetid://133218922939038",
 
                 IsOpen = true,
@@ -2153,21 +2207,11 @@ local Library = {
                     AnchorPoint = Vector2.new(0, 1),
                     Position = UDim2.new(0, 0, 1, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, 0, 0, 1),
+                    Size = UDim2.new(1, 0, 0, 0),
                     BorderSizePixel = 0,
+                    BackgroundTransparency = 1,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
-                
-                Library:Create("UIGradient", {
-                    Parent = Items["_"].Instance,
-                    Name = "\0",
-                    Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 110, 130)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(235, 90, 175))
-                    }
-                }):AddToTheme({Color = function()
-                    return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
-                end})
                 
                 Items["CloseButton"] = Library:Create("ImageButton", {
                     Parent = Items["Top"].Instance,
@@ -2291,6 +2335,11 @@ local Library = {
                 for Index, Value in Library.OpenFrames do 
                     Value:SetOpen(false)
                 end
+            end
+
+            function Window:SetTitle(Text)
+                Window.Name = Text
+                Items["Title"].Instance.Text = Text
             end
 
             -- Toggle Button with Logo (supports both asset ids and lucide icons)
@@ -4117,9 +4166,9 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
-                    AnchorPoint = Vector2.new(1, 0),
-                    Position = UDim2.new(1, 1, 0, 0),
-                    Size = UDim2.new(1, -2, 1, 0),
+                    AnchorPoint = Vector2.new(0, 0),
+                    Position = UDim2.new(0, 0, 0, 0),
+                    Size = UDim2.new(1, 0, 1, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
                     BackgroundColor3 = Color3.fromRGB(14, 14, 14)
@@ -4414,6 +4463,19 @@ local Library = {
 
                 Library:Connect(UserInputService.InputEnded, function(Input)
                     if (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1) then
+                        if Slider.Sliding then
+                            Slider.Sliding = false
+                            if InputChanged then
+                                InputChanged:Disconnect()
+                                InputChanged = nil
+                            end
+                        end
+                    end
+                end)
+            else
+                -- PC fallback: always stop sliding on MouseButton1 release
+                Library:Connect(UserInputService.InputEnded, function(Input)
+                    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                         if Slider.Sliding then
                             Slider.Sliding = false
                             if InputChanged then
@@ -6084,6 +6146,17 @@ local Library = {
             local ThemeSection = Self:Section({Name = "Theme", Side = 1})
 
             do 
+                -- Preset theme switcher dropdown
+                ThemeSection:Dropdown({
+                    Name = "Preset Theme",
+                    Flag = "_ThemePreset",
+                    Items = {"Preset", "Purple", "Cyan", "Green", "Blue"},
+                    Default = "Preset",
+                    Callback = function(Value)
+                        Library:SetTheme(Value)
+                    end
+                })
+
                 for Index, Value in Library.Theme do 
                     ThemeSection:Label({Name = Index}):Colorpicker({
                         Flag = Index,
