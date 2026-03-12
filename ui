@@ -333,6 +333,17 @@ local Library = {
 
     local Themes = {
         ["Preset"] = {
+            ["Background"] = Color3.fromRGB(5, 3, 10),
+            ["Inline"] = Color3.fromRGB(10, 6, 18),
+            ["Accent Start"] = Color3.fromRGB(160, 80, 255),
+            ["Accent End"] = Color3.fromRGB(80, 20, 180),
+            ["Text"] = Color3.fromRGB(220, 215, 250),
+            ["Text 2"] = Color3.fromRGB(140, 130, 175),
+            ["Element"] = Color3.fromRGB(18, 10, 32),
+            ["Hovered Element"] = Color3.fromRGB(28, 16, 48),
+            ["Topbar"] = Color3.fromRGB(7, 4, 14)
+        },
+        ["Pink"] = {
             ["Background"] = Color3.fromRGB(0, 0, 0),
             ["Inline"] = Color3.fromRGB(8, 8, 8),
             ["Accent Start"] = Color3.fromRGB(255, 110, 130),
@@ -344,15 +355,15 @@ local Library = {
             ["Topbar"] = Color3.fromRGB(4, 4, 4)
         },
         ["Purple"] = {
-            ["Background"] = Color3.fromRGB(8, 5, 15),
-            ["Inline"] = Color3.fromRGB(14, 10, 24),
+            ["Background"] = Color3.fromRGB(5, 3, 10),
+            ["Inline"] = Color3.fromRGB(10, 6, 18),
             ["Accent Start"] = Color3.fromRGB(160, 80, 255),
-            ["Accent End"] = Color3.fromRGB(100, 60, 235),
+            ["Accent End"] = Color3.fromRGB(80, 20, 180),
             ["Text"] = Color3.fromRGB(220, 215, 250),
             ["Text 2"] = Color3.fromRGB(140, 130, 175),
-            ["Element"] = Color3.fromRGB(20, 14, 35),
-            ["Hovered Element"] = Color3.fromRGB(32, 22, 52),
-            ["Topbar"] = Color3.fromRGB(10, 7, 20)
+            ["Element"] = Color3.fromRGB(18, 10, 32),
+            ["Hovered Element"] = Color3.fromRGB(28, 16, 48),
+            ["Topbar"] = Color3.fromRGB(7, 4, 14)
         },
         ["Cyan"] = {
             ["Background"] = Color3.fromRGB(3, 10, 14),
@@ -751,15 +762,14 @@ local Library = {
                 Name = "\0",
                 Size = Size,
                 Position = Position,
-                BackgroundColor3 = Color3.fromRGB(166, 147, 243),
+                BackgroundColor3 = Color3.fromRGB(0, 0, 0),
                 BackgroundTransparency = 1,
                 Text = "",
                 BorderSizePixel = 0,
                 AutoButtonColor = false,
                 Parent = Gui,
                 ZIndex = 99999,
-            })  Button:AddToTheme({BackgroundColor3 = "Accent End"})
-
+            })
             return Button
         end
 
@@ -804,6 +814,10 @@ local Library = {
 
             StartPosition = Vector2.new(Gui.Position.X.Offset, Gui.Position.Y.Offset)
             StartSize = Vector2.new(Gui.Size.X.Offset, Gui.Size.Y.Offset)
+            
+            for Index, Value in Edges do 
+                Value.Button.Instance.BackgroundTransparency = (Value.Side == Side) and 0 or 1
+            end
         end
 
         local EndResizing = function()
@@ -2083,7 +2097,7 @@ local Library = {
             end
 
             local Window = {
-                Name = Params.Name or Params.name or '<font color="rgb(255, 110, 130)">carbon</font>.hub',
+                Name = Params.Name or Params.name or 'carbon studios',
                 Logo = Params.Logo or Params.logo or "rbxassetid://133218922939038",
 
                 IsOpen = true,
@@ -4421,74 +4435,33 @@ local Library = {
                 Items["Text"].Instance.Text = tostring(Text)
             end
 
-            local InputChanged 
-            
+            -- Direct MouseButton1Down on the slider (works on all executors)
+            Items["RealSlider"].Instance.MouseButton1Down:Connect(function(x, y)
+                Slider.Sliding = true
+                local fakeInput = {Position = Vector3.new(x, y, 0)}
+                Slider:Set(Slider:GetSize(fakeInput))
+            end)
+
+            -- Also hook InputBegan for Touch support
             Items["RealSlider"]:Connect("InputBegan", function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                if Input.UserInputType == Enum.UserInputType.Touch then
                     Slider.Sliding = true
-
-                    local Value = Slider:GetSize(Input)
-
-                    Slider:Set(Value)
-
-                    if InputChanged then
-                        return
-                    end
-
-                    InputChanged = Input.Changed:Connect(function()
-                        if Input.UserInputState == Enum.UserInputState.End then
-                            Slider.Sliding = false
-
-                            InputChanged:Disconnect()
-                            InputChanged = nil
-                        end
-                    end)
+                    Slider:Set(Slider:GetSize(Input))
                 end
             end)
 
-            -- Mobile fallback: for executors where GuiObject.InputBegan doesn't fire for touch
-            if IsMobile then
-                Items["RealSlider"].Instance.MouseButton1Down:Connect(function(x, y)
-                    if Slider.Sliding then return end
-                    Slider.Sliding = true
-                    local fakeInput = {Position = Vector3.new(x, y, 0)}
-                    local Value = Slider:GetSize(fakeInput)
-                    Slider:Set(Value)
-                end)
+            -- Stop sliding on release (global, works regardless of where mouse is released)
+            Library:Connect(UserInputService.InputEnded, function(Input)
+                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                    Slider.Sliding = false
+                end
+            end)
 
-                Library:Connect(UserInputService.InputEnded, function(Input)
-                    if (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1) then
-                        if Slider.Sliding then
-                            Slider.Sliding = false
-                            if InputChanged then
-                                InputChanged:Disconnect()
-                                InputChanged = nil
-                            end
-                        end
-                    end
-                end)
-            else
-                Library:Connect(UserInputService.InputEnded, function(Input)
-                    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        if Slider.Sliding then
-                            Slider.Sliding = false
-                            if InputChanged then
-                                InputChanged:Disconnect()
-                                InputChanged = nil
-                            end
-                        end
-                    end
-                end)
-            end
-
-
-
+            -- Track drag movement globally
             Library:Connect(UserInputService.InputChanged, function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
                     if Slider.Sliding then
-                        local Value = Slider:GetSize(Input)
-
-                        Slider:Set(Value)
+                        Slider:Set(Slider:GetSize(Input))
                     end
                 end
             end)
@@ -6139,14 +6112,21 @@ local Library = {
         Library.CreateThemingSection = function(Self)
             local ThemeSection = Self:Section({Name = "Theme", Side = 1})
 
-            do 
+            do
                 ThemeSection:Dropdown({
                     Name = "Preset Theme",
                     Flag = "_ThemePreset",
-                    Items = {"Preset", "Purple", "Cyan", "Green", "Blue"},
+                    Items = {"Preset", "Pink", "Purple", "Cyan", "Green", "Blue"},
                     Default = "Preset",
                     Callback = function(Value)
                         Library:SetTheme(Value)
+                    end
+                })
+
+                ThemeSection:Button({
+                    Name = "Reset to Default",
+                    Callback = function()
+                        Library:SetTheme("Preset")
                     end
                 })
 
