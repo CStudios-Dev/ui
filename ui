@@ -2056,7 +2056,7 @@ local Library = {
                 })
             end
 
-            local OriginalSize = UDim2.new(0, 660, 0, 430)
+            local OriginalSize = UDim2.new(0, 615, 0, 420)
 
             local Items = { } do 
                 Items["MainFrame"] = Library:Create("Frame", {
@@ -2065,7 +2065,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     Position = UDim2.new(0.5, 0, 0.5, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 660, 0, 430),
+                    Size = UDim2.new(0, 615, 0, 420),
                     Visible = false,
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
@@ -2156,19 +2156,11 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(1, 0, 0, 1),
                     BorderSizePixel = 0,
+                    BackgroundTransparency = 1,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
                 
-                Library:Create("UIGradient", {
-                    Parent = Items["_"].Instance,
-                    Name = "\0",
-                    Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(175, 102, 126)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(114, 75, 130))
-                    }
-                }):AddToTheme({Color = function()
-                    return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
-                end})
+                
                 
                 Items["CloseButton"] = Library:Create("ImageButton", {
                     Parent = Items["Top"].Instance,
@@ -2359,7 +2351,7 @@ local Library = {
             Items["MainFrame"].Instance.Visible = true
             Items["MainFrame"]:Tween({BackgroundTransparency = 0})
             task.wait(Library.Animation.Time - 0.05)
-            Items["MainFrame"]:Tween({Size = UDim2.new(0, 850, 0, 600)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
+            Items["MainFrame"]:Tween({Size = UDim2.new(0, 615, 0, 420)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
             task.wait(1)
             Items["Top"]:FadeDescendants(true, Debounce)
             Items["Pages"]:FadeDescendants(true, Debounce)
@@ -3755,6 +3747,21 @@ local Library = {
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
                 end})
                 
+                Items["Checkmark"] = Library:Create("ImageLabel", {
+                    Parent = Items["Inline"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2.new(0.5, 0.5),
+                    Position = UDim2.new(0.5, 0, 0.5, 0),
+                    Size = UDim2.new(0, 9, 0, 9),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    ImageTransparency = 1,
+                    Image = "rbxassetid://10709791437",
+                    ImageColor3 = Color3.fromRGB(255, 255, 255),
+                    ScaleType = Enum.ScaleType.Fit,
+                    ZIndex = 3
+                })
+                
                 Items["Text"] = Library:Create("TextLabel", {
                     Parent = Items["Toggle"].Instance,
                     Name = "\0",
@@ -3898,9 +3905,11 @@ local Library = {
                 if Bool then 
                     Items["Inline"]:Tween({BackgroundTransparency = 0, Size = UDim2.new(0, 14, 0, 14)})
                     Items["Text"]:Tween({TextTransparency = 0})
+                    Items["Checkmark"].Instance.ImageTransparency = 0
                 else
                     Items["Inline"]:Tween({BackgroundTransparency = 1, Size = UDim2.new(0, 0, 0, 0)})
                     Items["Text"]:Tween({TextTransparency = 0.7})
+                    Items["Checkmark"].Instance.ImageTransparency = 1
                 end
 
                 Flags[Toggle.Flag] = Bool
@@ -4350,6 +4359,7 @@ local Library = {
                     TextColor3 = Color3.fromRGB(220, 229, 247),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Text = "-",
+                    TextTransparency = 1,
                     AutoButtonColor = false,
                     AnchorPoint = Vector2.new(0, 1),
                     BackgroundTransparency = 1,
@@ -4367,6 +4377,7 @@ local Library = {
                     TextColor3 = Color3.fromRGB(220, 229, 247),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Text = "+",
+                    TextTransparency = 1,
                     AutoButtonColor = false,
                     AnchorPoint = Vector2.new(1, 1),
                     BackgroundTransparency = 1,
