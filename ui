@@ -389,7 +389,6 @@ local Library = {
         },
     }
 
-    -- Helper function to switch preset themes
     Library.SetTheme = function(Self, ThemeName)
         local NewTheme = Themes[ThemeName]
         if not NewTheme then return end
@@ -805,10 +804,6 @@ local Library = {
 
             StartPosition = Vector2.new(Gui.Position.X.Offset, Gui.Position.Y.Offset)
             StartSize = Vector2.new(Gui.Size.X.Offset, Gui.Size.Y.Offset)
-            
-            for Index, Value in Edges do 
-                Value.Button.Instance.BackgroundTransparency = (Value.Side == Side) and 0 or 1
-            end
         end
 
         local EndResizing = function()
@@ -4473,7 +4468,6 @@ local Library = {
                     end
                 end)
             else
-                -- PC fallback: always stop sliding on MouseButton1 release
                 Library:Connect(UserInputService.InputEnded, function(Input)
                     if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                         if Slider.Sliding then
@@ -6146,7 +6140,6 @@ local Library = {
             local ThemeSection = Self:Section({Name = "Theme", Side = 1})
 
             do 
-                -- Preset theme switcher dropdown
                 ThemeSection:Dropdown({
                     Name = "Preset Theme",
                     Flag = "_ThemePreset",
