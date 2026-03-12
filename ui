@@ -333,15 +333,15 @@ local Library = {
 
     local Themes = {
         ["Preset"] = {
-            ["Background"] = Color3.fromRGB(5, 3, 10),
-            ["Inline"] = Color3.fromRGB(10, 6, 18),
+            ["Background"] = Color3.fromRGB(0, 0, 0),
+            ["Inline"] = Color3.fromRGB(6, 6, 6),
             ["Accent Start"] = Color3.fromRGB(160, 80, 255),
-            ["Accent End"] = Color3.fromRGB(80, 20, 180),
+            ["Accent End"] = Color3.fromRGB(10, 0, 30),
             ["Text"] = Color3.fromRGB(220, 215, 250),
             ["Text 2"] = Color3.fromRGB(140, 130, 175),
-            ["Element"] = Color3.fromRGB(18, 10, 32),
-            ["Hovered Element"] = Color3.fromRGB(28, 16, 48),
-            ["Topbar"] = Color3.fromRGB(7, 4, 14)
+            ["Element"] = Color3.fromRGB(12, 12, 12),
+            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
+            ["Topbar"] = Color3.fromRGB(4, 4, 4)
         },
         ["Pink"] = {
             ["Background"] = Color3.fromRGB(0, 0, 0),
@@ -355,48 +355,48 @@ local Library = {
             ["Topbar"] = Color3.fromRGB(4, 4, 4)
         },
         ["Purple"] = {
-            ["Background"] = Color3.fromRGB(5, 3, 10),
-            ["Inline"] = Color3.fromRGB(10, 6, 18),
+            ["Background"] = Color3.fromRGB(0, 0, 0),
+            ["Inline"] = Color3.fromRGB(6, 6, 6),
             ["Accent Start"] = Color3.fromRGB(160, 80, 255),
-            ["Accent End"] = Color3.fromRGB(80, 20, 180),
+            ["Accent End"] = Color3.fromRGB(10, 0, 30),
             ["Text"] = Color3.fromRGB(220, 215, 250),
             ["Text 2"] = Color3.fromRGB(140, 130, 175),
-            ["Element"] = Color3.fromRGB(18, 10, 32),
-            ["Hovered Element"] = Color3.fromRGB(28, 16, 48),
-            ["Topbar"] = Color3.fromRGB(7, 4, 14)
+            ["Element"] = Color3.fromRGB(12, 12, 12),
+            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
+            ["Topbar"] = Color3.fromRGB(4, 4, 4)
         },
         ["Cyan"] = {
-            ["Background"] = Color3.fromRGB(3, 10, 14),
-            ["Inline"] = Color3.fromRGB(6, 18, 24),
+            ["Background"] = Color3.fromRGB(0, 0, 0),
+            ["Inline"] = Color3.fromRGB(6, 6, 6),
             ["Accent Start"] = Color3.fromRGB(0, 210, 255),
-            ["Accent End"] = Color3.fromRGB(0, 160, 220),
+            ["Accent End"] = Color3.fromRGB(0, 20, 40),
             ["Text"] = Color3.fromRGB(210, 240, 255),
             ["Text 2"] = Color3.fromRGB(130, 165, 185),
-            ["Element"] = Color3.fromRGB(8, 24, 34),
-            ["Hovered Element"] = Color3.fromRGB(12, 36, 50),
-            ["Topbar"] = Color3.fromRGB(4, 12, 18)
+            ["Element"] = Color3.fromRGB(12, 12, 12),
+            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
+            ["Topbar"] = Color3.fromRGB(4, 4, 4)
         },
         ["Green"] = {
-            ["Background"] = Color3.fromRGB(3, 12, 5),
-            ["Inline"] = Color3.fromRGB(6, 20, 9),
+            ["Background"] = Color3.fromRGB(0, 0, 0),
+            ["Inline"] = Color3.fromRGB(6, 6, 6),
             ["Accent Start"] = Color3.fromRGB(50, 230, 100),
-            ["Accent End"] = Color3.fromRGB(30, 200, 80),
+            ["Accent End"] = Color3.fromRGB(0, 30, 10),
             ["Text"] = Color3.fromRGB(210, 250, 220),
             ["Text 2"] = Color3.fromRGB(130, 175, 140),
-            ["Element"] = Color3.fromRGB(8, 28, 12),
-            ["Hovered Element"] = Color3.fromRGB(12, 42, 18),
-            ["Topbar"] = Color3.fromRGB(4, 14, 6)
+            ["Element"] = Color3.fromRGB(12, 12, 12),
+            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
+            ["Topbar"] = Color3.fromRGB(4, 4, 4)
         },
         ["Blue"] = {
-            ["Background"] = Color3.fromRGB(3, 5, 15),
-            ["Inline"] = Color3.fromRGB(6, 10, 25),
+            ["Background"] = Color3.fromRGB(0, 0, 0),
+            ["Inline"] = Color3.fromRGB(6, 6, 6),
             ["Accent Start"] = Color3.fromRGB(60, 120, 255),
-            ["Accent End"] = Color3.fromRGB(40, 80, 235),
+            ["Accent End"] = Color3.fromRGB(0, 10, 50),
             ["Text"] = Color3.fromRGB(210, 220, 255),
             ["Text 2"] = Color3.fromRGB(130, 145, 190),
-            ["Element"] = Color3.fromRGB(8, 15, 38),
-            ["Hovered Element"] = Color3.fromRGB(12, 22, 56),
-            ["Topbar"] = Color3.fromRGB(4, 7, 20)
+            ["Element"] = Color3.fromRGB(12, 12, 12),
+            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
+            ["Topbar"] = Color3.fromRGB(4, 4, 4)
         },
     }
 
@@ -4105,8 +4105,8 @@ local Library = {
                     Size = UDim2.new(1, 0, 0, 25),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                })
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
+                }):AddToTheme({BackgroundColor3 = "Element"})
 
                 if Button.Premium then 
                     Items["Background"] = Library:Create("TextButton", {
@@ -4156,17 +4156,6 @@ local Library = {
                     CornerRadius = UDim.new(0, 5)
                 })
                 
-                Library:Create("UIGradient", {
-                    Parent = Items["ButtonBackground"].Instance,
-                    Name = "\0",
-                    Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 110, 130)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(235, 90, 175))
-                }
-                }):AddToTheme({Color = function()
-                    return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
-                end})
-                
                 Items["Button"] = Library:Create("TextButton", {
                     Parent = Items["ButtonBackground"].Instance,
                     Name = "\0",
@@ -4175,9 +4164,9 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
-                    AnchorPoint = Vector2.new(0, 0),
-                    Position = UDim2.new(0, 0, 0, 0),
-                    Size = UDim2.new(1, 0, 1, 0),
+                    AnchorPoint = Vector2.new(1, 0),
+                    Position = UDim2.new(1, 1, 0, 0),
+                    Size = UDim2.new(1, -2, 1, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
                     BackgroundColor3 = Color3.fromRGB(14, 14, 14)
@@ -4435,14 +4424,12 @@ local Library = {
                 Items["Text"].Instance.Text = tostring(Text)
             end
 
-            -- Direct MouseButton1Down on the slider (works on all executors)
             Items["RealSlider"].Instance.MouseButton1Down:Connect(function(x, y)
                 Slider.Sliding = true
                 local fakeInput = {Position = Vector3.new(x, y, 0)}
                 Slider:Set(Slider:GetSize(fakeInput))
             end)
 
-            -- Also hook InputBegan for Touch support
             Items["RealSlider"]:Connect("InputBegan", function(Input)
                 if Input.UserInputType == Enum.UserInputType.Touch then
                     Slider.Sliding = true
@@ -4450,14 +4437,12 @@ local Library = {
                 end
             end)
 
-            -- Stop sliding on release (global, works regardless of where mouse is released)
             Library:Connect(UserInputService.InputEnded, function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                     Slider.Sliding = false
                 end
             end)
 
-            -- Track drag movement globally
             Library:Connect(UserInputService.InputChanged, function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
                     if Slider.Sliding then
