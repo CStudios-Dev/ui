@@ -188,9 +188,6 @@ local GuiSystem = {}
 function GuiSystem:Hash()
 return tostring(math.random(1000000,9999999))
 end;
-function GuiSystem.new(frame,NoAutoBackground)
-local Part = Instance.new('Part',workspace);
-local DepthOfField = Instance.new('DepthOfFieldEffect',game:GetService('Lighting'));
 -- No glass effect; stub only
 function GuiSystem.new(frame, NoAutoBackground)
 local C4 = {
@@ -217,7 +214,7 @@ pcall(function()
 local Module = loadstring(game:HttpGetAsync(Library.FetchIcon))();
 Library['Icons'] = Module.icons;
 end)
-function Library.GradientImage(E : Frame , Color)
+function Library.GradientImage(E, Color)
 local GLImage = Instance.new("ImageLabel")
 local upd = tick();
 local nextU , Speed , speedy , SIZ = 4 , 5 , -5 , 0.8;
