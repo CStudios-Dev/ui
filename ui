@@ -2118,7 +2118,7 @@ local Library = {
                 })
             end
 
-            local OriginalSize = UDim2.new(0, 780, 0, 560)
+            local OriginalSize = UDim2.new(0, 660, 0, 430)
 
             local Items = { } do 
                 Items["MainFrame"] = Library:Create("Frame", {
@@ -2127,7 +2127,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     Position = UDim2.new(0.5, 0, 0.5, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 780, 0, 560),
+                    Size = UDim2.new(0, 660, 0, 430),
                     Visible = false,
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
@@ -2298,9 +2298,9 @@ local Library = {
                 Items["Content"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    Position = UDim2.new(0, 225, 0, 51),
+                    Position = UDim2.new(0, 193, 0, 51),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, -240, 1, -66),
+                    Size = UDim2.new(1, -203, 1, -66),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
@@ -2411,7 +2411,7 @@ local Library = {
             Items["MainFrame"].Instance.Visible = true
             Items["MainFrame"]:Tween({BackgroundTransparency = 0})
             task.wait(Library.Animation.Time - 0.05)
-            Items["MainFrame"]:Tween({Size = UDim2.new(0, 780, 0, 560)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
+            Items["MainFrame"]:Tween({Size = UDim2.new(0, 660, 0, 430)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
             task.wait(1)
             Items["Top"]:FadeDescendants(true, Debounce)
             Items["Pages"]:FadeDescendants(true, Debounce)
