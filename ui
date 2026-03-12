@@ -1,4 +1,4 @@
--- carbonstudios ui made by melissa
+-- made by big mommy melissa
 
 if getgenv().Library and getgenv().Library.Exit then
     getgenv().Library:Exit()
@@ -331,20 +331,65 @@ local Library = {
     end
 
     local Themes = {
-        ["Preset"] = {
-            ["Background"] = Color3.fromRGB(45, 6, 10),
-            ["Inline"] = Color3.fromRGB(35, 5, 8),
+        ["Crimson"] = {
+            ["Background"] = Color3.fromRGB(22, 2, 5),
+            ["Inline"] = Color3.fromRGB(16, 2, 4),
             ["Accent Start"] = Color3.fromRGB(175, 102, 126),
             ["Accent End"] = Color3.fromRGB(114, 75, 135),
             ["Text"] = Color3.fromRGB(220, 229, 247),
             ["Text 2"] = Color3.fromRGB(145, 151, 163),
-            ["Element"] = Color3.fromRGB(60, 10, 16),
-            ["Hovered Element"] = Color3.fromRGB(75, 14, 21),
-            ["Topbar"] = Color3.fromRGB(55, 8, 13)
-        }
+            ["Element"] = Color3.fromRGB(42, 6, 11),
+            ["Hovered Element"] = Color3.fromRGB(58, 9, 16),
+            ["Topbar"] = Color3.fromRGB(32, 4, 8)
+        },
+        ["Void"] = {
+            ["Background"] = Color3.fromRGB(8, 8, 12),
+            ["Inline"] = Color3.fromRGB(6, 6, 9),
+            ["Accent Start"] = Color3.fromRGB(138, 90, 200),
+            ["Accent End"] = Color3.fromRGB(80, 50, 160),
+            ["Text"] = Color3.fromRGB(220, 215, 240),
+            ["Text 2"] = Color3.fromRGB(140, 135, 160),
+            ["Element"] = Color3.fromRGB(20, 18, 30),
+            ["Hovered Element"] = Color3.fromRGB(30, 26, 45),
+            ["Topbar"] = Color3.fromRGB(14, 12, 22)
+        },
+        ["Ocean"] = {
+            ["Background"] = Color3.fromRGB(4, 14, 24),
+            ["Inline"] = Color3.fromRGB(3, 10, 18),
+            ["Accent Start"] = Color3.fromRGB(60, 140, 210),
+            ["Accent End"] = Color3.fromRGB(30, 90, 170),
+            ["Text"] = Color3.fromRGB(210, 228, 248),
+            ["Text 2"] = Color3.fromRGB(130, 155, 180),
+            ["Element"] = Color3.fromRGB(8, 25, 42),
+            ["Hovered Element"] = Color3.fromRGB(12, 36, 58),
+            ["Topbar"] = Color3.fromRGB(6, 18, 32)
+        },
+        ["Forest"] = {
+            ["Background"] = Color3.fromRGB(4, 16, 8),
+            ["Inline"] = Color3.fromRGB(3, 12, 6),
+            ["Accent Start"] = Color3.fromRGB(70, 170, 100),
+            ["Accent End"] = Color3.fromRGB(40, 120, 65),
+            ["Text"] = Color3.fromRGB(210, 240, 220),
+            ["Text 2"] = Color3.fromRGB(130, 165, 140),
+            ["Element"] = Color3.fromRGB(8, 30, 14),
+            ["Hovered Element"] = Color3.fromRGB(12, 42, 20),
+            ["Topbar"] = Color3.fromRGB(6, 22, 10)
+        },
+        ["Ash"] = {
+            ["Background"] = Color3.fromRGB(10, 10, 11),
+            ["Inline"] = Color3.fromRGB(7, 7, 8),
+            ["Accent Start"] = Color3.fromRGB(190, 190, 200),
+            ["Accent End"] = Color3.fromRGB(130, 130, 145),
+            ["Text"] = Color3.fromRGB(225, 225, 235),
+            ["Text 2"] = Color3.fromRGB(145, 145, 155),
+            ["Element"] = Color3.fromRGB(20, 20, 22),
+            ["Hovered Element"] = Color3.fromRGB(30, 30, 34),
+            ["Topbar"] = Color3.fromRGB(15, 15, 17)
+        },
     }
+    Library.ThemePresets = Themes
 
-    Library.Theme = Themes.Preset
+    Library.Theme = Themes.Crimson
 
     -- Custom Font
     local CustomFont = { } do
@@ -2055,7 +2100,7 @@ local Library = {
                 })
             end
 
-            local OriginalSize = UDim2.new(0, 980, 0, 650)
+            local OriginalSize = UDim2.new(0, 700, 0, 500)
 
             local Items = { } do 
                 Items["MainFrame"] = Library:Create("Frame", {
@@ -2064,7 +2109,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     Position = UDim2.new(0.5, 0, 0.5, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 980, 0, 650),
+                    Size = UDim2.new(0, 700, 0, 500),
                     Visible = false,
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
@@ -2220,7 +2265,7 @@ local Library = {
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0, 15, 0, 46),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 225, 1, -61),
+                    Size = UDim2.new(0, 190, 1, -61),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     ScrollingDirection = Enum.ScrollingDirection.Y,
@@ -2252,9 +2297,9 @@ local Library = {
                 Items["Content"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    Position = UDim2.new(0, 225, 0, 51),
+                    Position = UDim2.new(0, 190, 0, 51),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, -240, 1, -66),
+                    Size = UDim2.new(1, -205, 1, -66),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(15, 15, 16)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
@@ -2293,7 +2338,7 @@ local Library = {
                     Text = "",
                     AutoButtonColor = false,
                     AnchorPoint = Vector2.new(0, 0.5),
-                    Position = UDim2.new(0, 228, 0.5, 0),
+                    Position = UDim2.new(0, 193, 0.5, 0),
                     Size = UDim2.new(0, 18, 0, 36),
                     BorderSizePixel = 0,
                     ZIndex = 10,
@@ -2327,81 +2372,87 @@ local Library = {
             -- Sidebar state
             local SidebarExpanded = true
             local SidebarHovered = false
-            local SidebarCollapsedWidth = 62
-            local SidebarExpandedWidth = 225
+            local SidebarCollapsedWidth = 55
+            local SidebarExpandedWidth = 190
 
-            local function ApplySidebarState(Expanded, IsHover)
-                local TargetWidth = Expanded and SidebarExpandedWidth or SidebarCollapsedWidth
-                local SidebarTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            local SidebarTweenStyle = TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
-                Items["Pages"]:Tween({Size = UDim2.new(0, TargetWidth, 1, -61)}, SidebarTweenInfo)
-
-                -- Toggle button repositions to edge of sidebar
-                Items["SidebarToggle"]:Tween({
-                    Position = UDim2.new(0, TargetWidth + 3, 0.5, 0)
-                }, SidebarTweenInfo)
-
-                -- Arrow direction
-                Items["SidebarToggleArrow"].Instance.Text = Expanded and "‹" or "›"
-
-                -- When hovering over collapsed sidebar, float over content (don't resize it)
-                if SidebarExpanded then
-                    Items["Content"]:Tween({
-                        Position = UDim2.new(0, SidebarExpandedWidth + 15, 0, 51),
-                        Size = UDim2.new(1, -(SidebarExpandedWidth + 30), 1, -66)
-                    }, SidebarTweenInfo)
-                else
-                    if not IsHover then
-                        Items["Content"]:Tween({
-                            Position = UDim2.new(0, SidebarCollapsedWidth + 15, 0, 51),
-                            Size = UDim2.new(1, -(SidebarCollapsedWidth + 30), 1, -66)
-                        }, SidebarTweenInfo)
-                    end
-                end
-
-                -- Show/hide page text labels
+            local function SetPageLabelsVisible(Visible)
                 for _, PageObj in Window.Pages do
                     if PageObj and PageObj.Items then
                         if PageObj.Items["Text"] then
-                            PageObj.Items["Text"].Instance.Visible = Expanded or IsHover
+                            PageObj.Items["Text"].Instance.Visible = Visible
                         end
                         if PageObj.Items["Description"] then
-                            PageObj.Items["Description"].Instance.Visible = Expanded or IsHover
-                        end
-                        if PageObj.Items["Inactive"] then
-                            PageObj.Items["Inactive"]:Tween({
-                                Size = (Expanded or IsHover) and UDim2.new(1, 0, 0, 60) or UDim2.new(1, 0, 0, 50)
-                            }, SidebarTweenInfo)
+                            PageObj.Items["Description"].Instance.Visible = Visible
                         end
                     end
                 end
             end
 
-            -- Toggle button click: permanently expand/collapse
+            local function CollapseToIcons()
+                -- Snap sidebar narrow
+                Items["Pages"]:Tween({Size = UDim2.new(0, SidebarCollapsedWidth, 1, -61)}, SidebarTweenStyle)
+                Items["SidebarToggle"]:Tween({Position = UDim2.new(0, SidebarCollapsedWidth + 3, 0.5, 0)}, SidebarTweenStyle)
+                Items["SidebarToggleArrow"].Instance.Text = "›"
+                -- Content expands to fill freed space
+                Items["Content"]:Tween({
+                    Position = UDim2.new(0, SidebarCollapsedWidth + 10, 0, 51),
+                    Size = UDim2.new(1, -(SidebarCollapsedWidth + 20), 1, -66)
+                }, SidebarTweenStyle)
+                -- Hide labels after a tiny delay so tween looks clean
+                task.delay(0.05, function()
+                    SetPageLabelsVisible(false)
+                end)
+                Items["Pages"].Instance.ZIndex = 1
+            end
+
+            local function ExpandFull(IsHover)
+                SetPageLabelsVisible(true)
+                Items["Pages"]:Tween({Size = UDim2.new(0, SidebarExpandedWidth, 1, -61)}, SidebarTweenStyle)
+                Items["SidebarToggle"]:Tween({Position = UDim2.new(0, SidebarExpandedWidth + 3, 0.5, 0)}, SidebarTweenStyle)
+                Items["SidebarToggleArrow"].Instance.Text = "‹"
+                if not IsHover then
+                    -- Permanent expand: content shrinks back
+                    Items["Content"]:Tween({
+                        Position = UDim2.new(0, SidebarExpandedWidth + 10, 0, 51),
+                        Size = UDim2.new(1, -(SidebarExpandedWidth + 20), 1, -66)
+                    }, SidebarTweenStyle)
+                end
+                -- Float over content when just hovering
+                if IsHover then
+                    Items["Pages"].Instance.ZIndex = 5
+                end
+            end
+
+            -- Toggle button: permanently expand or collapse
             Items["SidebarToggle"]:Connect("MouseButton1Down", function()
                 SidebarExpanded = not SidebarExpanded
                 SidebarHovered = false
-                ApplySidebarState(SidebarExpanded, false)
-                -- When expanding, content must also fit back
                 if SidebarExpanded then
-                    Items["Pages"].Instance.ZIndex = 1
+                    ExpandFull(false)
+                else
+                    CollapseToIcons()
                 end
             end)
 
-            -- Hover: expand collapsed sidebar over content
+            -- Hover over sidebar when collapsed: float open
             Items["Pages"]:Connect("MouseEnter", function()
-                if not SidebarExpanded then
+                if not SidebarExpanded and not SidebarHovered then
                     SidebarHovered = true
-                    Items["Pages"].Instance.ZIndex = 5
-                    ApplySidebarState(true, true)
+                    ExpandFull(true)
                 end
             end)
 
+            -- Mouse leaves sidebar: snap closed again
             Items["Pages"]:Connect("MouseLeave", function()
                 if not SidebarExpanded and SidebarHovered then
                     SidebarHovered = false
                     Items["Pages"].Instance.ZIndex = 1
-                    ApplySidebarState(false, false)
+                    SetPageLabelsVisible(false)
+                    Items["Pages"]:Tween({Size = UDim2.new(0, SidebarCollapsedWidth, 1, -61)}, SidebarTweenStyle)
+                    Items["SidebarToggle"]:Tween({Position = UDim2.new(0, SidebarCollapsedWidth + 3, 0.5, 0)}, SidebarTweenStyle)
+                    Items["SidebarToggleArrow"].Instance.Text = "›"
                 end
             end)
 
@@ -2476,7 +2527,7 @@ local Library = {
             Items["MainFrame"].Instance.Visible = true
             Items["MainFrame"]:Tween({BackgroundTransparency = 0.28})
             task.wait(Library.Animation.Time - 0.05)
-            Items["MainFrame"]:Tween({Size = UDim2.new(0, 980, 0, 650)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
+            Items["MainFrame"]:Tween({Size = UDim2.new(0, 700, 0, 500)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
             task.wait(1)
             Items["Top"]:FadeDescendants(true, Debounce)
             Items["Pages"]:FadeDescendants(true, Debounce)
@@ -6255,16 +6306,40 @@ local Library = {
             end
         end
 
+        Library.ApplyThemePreset = function(Self, PresetName)
+            local Preset = Library.ThemePresets and Library.ThemePresets[PresetName]
+            if not Preset then return end
+            for Key, Color in Preset do
+                Library.Theme[Key] = Color
+                Library:ChangeTheme(Key, Color)
+            end
+        end
+
         Library.CreateThemingSection = function(Self)
             local ThemeSection = Self:Section({Name = "Theme", Side = 1})
 
-            do 
+            do
+                -- Preset theme buttons
+                local PresetNames = {"Crimson", "Void", "Ocean", "Forest", "Ash"}
+                for _, Name in PresetNames do
+                    ThemeSection:Button({
+                        Name = Name,
+                        Callback = function()
+                            Library:ApplyThemePreset(Name)
+                        end
+                    })
+                end
+
+                -- Divider label
+                ThemeSection:Label({Name = "Custom Colors"})
+
+                -- Individual color pickers for fine tuning
                 for Index, Value in Library.Theme do 
                     ThemeSection:Label({Name = Index}):Colorpicker({
-                        Flag = Index,
+                        Flag = "Theme_" .. Index,
                         Default = Value,
                         Callback = function(Value)
-                            Library.Theme[Index] = Value,
+                            Library.Theme[Index] = Value
                             Library:ChangeTheme(Index, Value)
                         end
                     })
