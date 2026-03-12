@@ -333,17 +333,80 @@ local Library = {
 
     local Themes = {
         ["Preset"] = {
-            ["Background"] = Color3.fromRGB(18, 18, 20),
-            ["Inline"] = Color3.fromRGB(15, 15, 16),
-            ["Accent Start"] = Color3.fromRGB(175, 102, 126),
-            ["Accent End"] = Color3.fromRGB(114, 75, 135),
+            ["Background"] = Color3.fromRGB(0, 0, 0),
+            ["Inline"] = Color3.fromRGB(6, 6, 6),
+            ["Accent Start"] = Color3.fromRGB(160, 80, 255),
+            ["Accent End"] = Color3.fromRGB(10, 0, 30),
+            ["Text"] = Color3.fromRGB(220, 215, 250),
+            ["Text 2"] = Color3.fromRGB(140, 130, 175),
+            ["Element"] = Color3.fromRGB(12, 12, 12),
+            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
+            ["Topbar"] = Color3.fromRGB(4, 4, 4)
+        },
+        ["Pink"] = {
+            ["Background"] = Color3.fromRGB(0, 0, 0),
+            ["Inline"] = Color3.fromRGB(8, 8, 8),
+            ["Accent Start"] = Color3.fromRGB(255, 110, 130),
+            ["Accent End"] = Color3.fromRGB(235, 90, 175),
             ["Text"] = Color3.fromRGB(220, 229, 247),
             ["Text 2"] = Color3.fromRGB(145, 151, 163),
-            ["Element"] = Color3.fromRGB(24, 24, 27),
-            ["Hovered Element"] = Color3.fromRGB(32, 32, 36),
-            ["Topbar"] = Color3.fromRGB(28, 28, 29)
-        }
+            ["Element"] = Color3.fromRGB(14, 14, 14),
+            ["Hovered Element"] = Color3.fromRGB(24, 24, 24),
+            ["Topbar"] = Color3.fromRGB(4, 4, 4)
+        },
+        ["Purple"] = {
+            ["Background"] = Color3.fromRGB(0, 0, 0),
+            ["Inline"] = Color3.fromRGB(6, 6, 6),
+            ["Accent Start"] = Color3.fromRGB(160, 80, 255),
+            ["Accent End"] = Color3.fromRGB(10, 0, 30),
+            ["Text"] = Color3.fromRGB(220, 215, 250),
+            ["Text 2"] = Color3.fromRGB(140, 130, 175),
+            ["Element"] = Color3.fromRGB(12, 12, 12),
+            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
+            ["Topbar"] = Color3.fromRGB(4, 4, 4)
+        },
+        ["Cyan"] = {
+            ["Background"] = Color3.fromRGB(0, 0, 0),
+            ["Inline"] = Color3.fromRGB(6, 6, 6),
+            ["Accent Start"] = Color3.fromRGB(0, 210, 255),
+            ["Accent End"] = Color3.fromRGB(0, 20, 40),
+            ["Text"] = Color3.fromRGB(210, 240, 255),
+            ["Text 2"] = Color3.fromRGB(130, 165, 185),
+            ["Element"] = Color3.fromRGB(12, 12, 12),
+            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
+            ["Topbar"] = Color3.fromRGB(4, 4, 4)
+        },
+        ["Green"] = {
+            ["Background"] = Color3.fromRGB(0, 0, 0),
+            ["Inline"] = Color3.fromRGB(6, 6, 6),
+            ["Accent Start"] = Color3.fromRGB(50, 230, 100),
+            ["Accent End"] = Color3.fromRGB(0, 30, 10),
+            ["Text"] = Color3.fromRGB(210, 250, 220),
+            ["Text 2"] = Color3.fromRGB(130, 175, 140),
+            ["Element"] = Color3.fromRGB(12, 12, 12),
+            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
+            ["Topbar"] = Color3.fromRGB(4, 4, 4)
+        },
+        ["Blue"] = {
+            ["Background"] = Color3.fromRGB(0, 0, 0),
+            ["Inline"] = Color3.fromRGB(6, 6, 6),
+            ["Accent Start"] = Color3.fromRGB(60, 120, 255),
+            ["Accent End"] = Color3.fromRGB(0, 10, 50),
+            ["Text"] = Color3.fromRGB(210, 220, 255),
+            ["Text 2"] = Color3.fromRGB(130, 145, 190),
+            ["Element"] = Color3.fromRGB(12, 12, 12),
+            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
+            ["Topbar"] = Color3.fromRGB(4, 4, 4)
+        },
     }
+
+    Library.SetTheme = function(Self, ThemeName)
+        local NewTheme = Themes[ThemeName]
+        if not NewTheme then return end
+        for Key, Value in NewTheme do
+            Library:ChangeTheme(Key, Value)
+        end
+    end
 
     Library.Theme = Themes.Preset
 
@@ -699,15 +762,14 @@ local Library = {
                 Name = "\0",
                 Size = Size,
                 Position = Position,
-                BackgroundColor3 = Color3.fromRGB(166, 147, 243),
+                BackgroundColor3 = Color3.fromRGB(0, 0, 0),
                 BackgroundTransparency = 1,
                 Text = "",
                 BorderSizePixel = 0,
                 AutoButtonColor = false,
                 Parent = Gui,
                 ZIndex = 99999,
-            })  Button:AddToTheme({BackgroundColor3 = "Accent End"})
-
+            })
             return Button
         end
 
@@ -1094,7 +1156,7 @@ local Library = {
                     Size = UDim2.new(0, 215, 0, 215),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 }):AddToTheme({BackgroundColor3 = "Background"})
                 
                 Library:Create("UICorner", {
@@ -1670,7 +1732,7 @@ local Library = {
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.X,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 }):AddToTheme({TextColor3 = "Text", BackgroundColor3 = "Element"})
 
                 Items["KeyButton"]:OnHover(function()
@@ -1706,7 +1768,7 @@ local Library = {
                     Size = UDim2.new(0, 241, 0, 71),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 })
                 
                 Library:Create("UICorner", {
@@ -2035,7 +2097,7 @@ local Library = {
             end
 
             local Window = {
-                Name = Params.Name or Params.name or '<font color="rgb(175, 102, 126)">ather.</font>hub',
+                Name = Params.Name or Params.name or '<font color="rgb(160, 80, 255)">carbon studios</font>',
                 Logo = Params.Logo or Params.logo or "rbxassetid://133218922939038",
 
                 IsOpen = true,
@@ -2056,7 +2118,7 @@ local Library = {
                 })
             end
 
-            local OriginalSize = UDim2.new(0, 615, 0, 420)
+            local OriginalSize = UDim2.new(0, 660, 0, 430)
 
             local Items = { } do 
                 Items["MainFrame"] = Library:Create("Frame", {
@@ -2065,11 +2127,11 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     Position = UDim2.new(0.5, 0, 0.5, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 615, 0, 420),
+                    Size = UDim2.new(0, 660, 0, 430),
                     Visible = false,
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 }):AddToTheme({BackgroundColor3 = "Background"})
 
                 Items["MainFrame"]:MakeDraggable()
@@ -2080,13 +2142,21 @@ local Library = {
                     Name = "\0"
                 })
                 
+                Library:Create("UIStroke", {
+                    Parent = Items["MainFrame"].Instance,
+                    Name = "\0",
+                    Color = Color3.fromRGB(60, 60, 60),
+                    Thickness = 1.5,
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                })
+                
                 Items["Top"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(1, 0, 0, 35),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(28, 28, 29)
+                    BackgroundColor3 = Color3.fromRGB(4, 4, 4)
                 }):AddToTheme({BackgroundColor3 = "Topbar"})
                 
                 Library:Create("UICorner", {
@@ -2102,7 +2172,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(1, 0, 0, 6),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(28, 28, 29)
+                    BackgroundColor3 = Color3.fromRGB(4, 4, 4)
                 }):AddToTheme({BackgroundColor3 = "Topbar"})
                 
                 Items["Logo"] = Library:Create("ImageLabel", {
@@ -2122,8 +2192,8 @@ local Library = {
                     Parent = Items["Logo"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(175, 102, 126)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(114, 75, 130))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 110, 130)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(235, 90, 175))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -2154,13 +2224,11 @@ local Library = {
                     AnchorPoint = Vector2.new(0, 1),
                     Position = UDim2.new(0, 0, 1, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, 0, 0, 1),
+                    Size = UDim2.new(1, 0, 0, 0),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
-                
-                
                 
                 Items["CloseButton"] = Library:Create("ImageButton", {
                     Parent = Items["Top"].Instance,
@@ -2177,20 +2245,7 @@ local Library = {
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 }):AddToTheme({ImageColor3 = "Text"})
                 
-                Items["FullScreenButton"] = Library:Create("ImageButton", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0",
-                    ImageColor3 = Color3.fromRGB(220, 229, 247),
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    AutoButtonColor = false,
-                    AnchorPoint = Vector2.new(1, 0.5),
-                    Image = "rbxassetid://79119806011839",
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(1, -37, 0.5, 0),
-                    Size = UDim2.new(0, 16, 0, 16),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                }):AddToTheme({ImageColor3 = "Text"})
+
                 
                 Items["MinimizeButton"] = Library:Create("ImageButton", {
                     Parent = Items["Top"].Instance,
@@ -2213,14 +2268,14 @@ local Library = {
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0, 15, 0, 46),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 225, 1, -61),
+                    Size = UDim2.new(0, 160, 1, -61),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     ScrollingDirection = Enum.ScrollingDirection.Y,
                     AutomaticCanvasSize = Enum.AutomaticSize.Y,
                     CanvasSize = UDim2.new(0, 0, 0, 0),
                     ScrollBarThickness = 2,
-                    ScrollBarImageColor3 = Color3.fromRGB(60, 60, 65),
+                    ScrollBarImageColor3 = Color3.fromRGB(20, 20, 20),
                     ScrollBarImageTransparency = 0.5
                 })
                 
@@ -2243,11 +2298,11 @@ local Library = {
                 Items["Content"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    Position = UDim2.new(0, 225, 0, 51),
+                    Position = UDim2.new(0, 193, 0, 51),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, -240, 1, -66),
+                    Size = UDim2.new(1, -203, 1, -66),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(15, 15, 16)
+                    BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
                 
                 Library:Create("UICorner", {
@@ -2269,7 +2324,7 @@ local Library = {
                     Size = UDim2.new(1, 0, 1, 0),
                     ZIndex = 99,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 })
 
                 Library:Create("UICorner", {
@@ -2299,6 +2354,11 @@ local Library = {
                 end
             end
 
+            function Window:SetTitle(Text)
+                Window.Name = Text
+                Items["Title"].Instance.Text = Text
+            end
+
             -- Toggle Button with Logo (supports both asset ids and lucide icons)
             -- Same size for both PC and Mobile: 70x70, bottom left corner
             local toggleSize = UDim2.new(0, 70, 0, 70)
@@ -2312,7 +2372,7 @@ local Library = {
                 AnchorPoint = toggleAnchor,
                 Position = togglePos,
                 Size = toggleSize,
-                BackgroundColor3 = Color3.fromRGB(24, 24, 27),
+                BackgroundColor3 = Color3.fromRGB(14, 14, 14),
                 BorderSizePixel = 0,
                 Text = "",
                 AutoButtonColor = false
@@ -2328,7 +2388,7 @@ local Library = {
                 Parent = Items["ToggleButton"].Instance,
                 Name = "\0",
                 ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-                Color = Color3.fromRGB(37, 37, 37),
+                Color = Color3.fromRGB(22, 22, 22),
                 Thickness = 1.5
             })
 
@@ -2351,7 +2411,7 @@ local Library = {
             Items["MainFrame"].Instance.Visible = true
             Items["MainFrame"]:Tween({BackgroundTransparency = 0})
             task.wait(Library.Animation.Time - 0.05)
-            Items["MainFrame"]:Tween({Size = UDim2.new(0, 615, 0, 420)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
+            Items["MainFrame"]:Tween({Size = UDim2.new(0, 660, 0, 430)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
             task.wait(1)
             Items["Top"]:FadeDescendants(true, Debounce)
             Items["Pages"]:FadeDescendants(true, Debounce)
@@ -2380,7 +2440,7 @@ local Library = {
                         Size = UDim2.new(0, 350, 0, 155),
                         ZIndex = 99,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(15, 15, 16)
+                        BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                     }):AddToTheme({BackgroundColor3 = "Inline"})
                     
                     Library:Create("UICorner", {
@@ -2480,8 +2540,8 @@ local Library = {
                             Parent = ButtonItems["ButtonBackground"].Instance,
                             Name = "\0",
                             Color = ColorSequence.new{
-                            ColorSequenceKeypoint.new(0, Color3.fromRGB(175, 102, 126)),
-                            ColorSequenceKeypoint.new(1, Color3.fromRGB(114, 75, 130))
+                            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 110, 130)),
+                            ColorSequenceKeypoint.new(1, Color3.fromRGB(235, 90, 175))
                         }
                         }):AddToTheme({Color = function()
                             return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -2501,7 +2561,7 @@ local Library = {
                             Size = UDim2.new(1, -2, 1, 0),
                             ZIndex = 99,
                             TextSize = 14,
-                            BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                            BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                         }):AddToTheme({BackgroundColor3 = "Element"})
                         
                         Library:Create("UICorner", {
@@ -2616,7 +2676,7 @@ local Library = {
                 -- Main notification frame
                 local NotifFrame = Instance.new("Frame")
                 NotifFrame.Name = "Notification"
-                NotifFrame.BackgroundColor3 = Library.Theme and Library.Theme.Background or Color3.fromRGB(18, 18, 20)
+                NotifFrame.BackgroundColor3 = Library.Theme and Library.Theme.Background or Color3.fromRGB(0, 0, 0)
                 NotifFrame.Size = UDim2.new(1, 0, 0, 0)
                 NotifFrame.AutomaticSize = Enum.AutomaticSize.Y
                 NotifFrame.ClipsDescendants = true
@@ -2627,7 +2687,7 @@ local Library = {
                 NotifCorner.Parent = NotifFrame
 
                 local NotifStroke = Instance.new("UIStroke")
-                NotifStroke.Color = Library.Theme and Library.Theme.Outline or Color3.fromRGB(37, 37, 37)
+                NotifStroke.Color = Library.Theme and Library.Theme.Outline or Color3.fromRGB(22, 22, 22)
                 NotifStroke.Thickness = 1
                 NotifStroke.Parent = NotifFrame
 
@@ -2669,7 +2729,7 @@ local Library = {
                 -- Progress bar at bottom
                 local ProgressBg = Instance.new("Frame")
                 ProgressBg.Name = "ProgressBg"
-                ProgressBg.BackgroundColor3 = Library.Theme and Library.Theme.Inline or Color3.fromRGB(30, 30, 32)
+                ProgressBg.BackgroundColor3 = Library.Theme and Library.Theme.Inline or Color3.fromRGB(8, 8, 8)
                 ProgressBg.Size = UDim2.new(1, 24, 0, 3)
                 ProgressBg.Position = UDim2.new(0, -12, 1, 7)
                 ProgressBg.BorderSizePixel = 0
@@ -2677,15 +2737,15 @@ local Library = {
 
                 local ProgressBar = Instance.new("Frame")
                 ProgressBar.Name = "ProgressBar"
-                ProgressBar.BackgroundColor3 = Library.Theme and Library.Theme["Accent Start"] or Color3.fromRGB(175, 102, 126)
+                ProgressBar.BackgroundColor3 = Library.Theme and Library.Theme["Accent Start"] or Color3.fromRGB(255, 110, 130)
                 ProgressBar.Size = UDim2.new(1, 0, 1, 0)
                 ProgressBar.BorderSizePixel = 0
                 ProgressBar.Parent = ProgressBg
 
                 local ProgressGradient = Instance.new("UIGradient")
                 ProgressGradient.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Library.Theme and Library.Theme["Accent Start"] or Color3.fromRGB(175, 102, 126)),
-                    ColorSequenceKeypoint.new(1, Library.Theme and Library.Theme["Accent End"] or Color3.fromRGB(114, 75, 130))
+                    ColorSequenceKeypoint.new(0, Library.Theme and Library.Theme["Accent Start"] or Color3.fromRGB(255, 110, 130)),
+                    ColorSequenceKeypoint.new(1, Library.Theme and Library.Theme["Accent End"] or Color3.fromRGB(235, 90, 175))
                 }
                 ProgressGradient.Parent = ProgressBar
 
@@ -2763,20 +2823,10 @@ local Library = {
             end)
 
             Items["MinimizeButton"]:Connect("MouseButton1Down", function()
-                if Window.IsFullScreen then 
-                    Window:FullScreen(false)
-                end
-
-                Window:Minimize(not Window.IsMinimized)
+                Window:SetOpen(not Window.IsOpen)
             end)
 
-            Items["FullScreenButton"]:Connect("MouseButton1Down", function()
-                if Window.IsMinimized then 
-                    Window:Minimize(false)
-                end
 
-                Window:FullScreen(not Window.IsFullScreen)
-            end)
 
             Library:Connect(Players.PlayerRemoving, function(Player)
                 if Player == LocalPlayer and Library.AutoSave then 
@@ -2820,7 +2870,7 @@ local Library = {
                     Size = UDim2.new(1, 0, 0, 60),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(15, 15, 16)
+                    BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
                 
                 Library:Create("UICorner", {
@@ -2849,7 +2899,7 @@ local Library = {
                     Parent = Items["IconBackground"].Instance,
                     Name = "\0",
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-                    Color = Color3.fromRGB(37, 37, 37),
+                    Color = Color3.fromRGB(22, 22, 22),
                     Thickness = 1.399999976158142
                 })
                 
@@ -2858,8 +2908,8 @@ local Library = {
                     Name = "\0",
                     Enabled = false,
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(175, 102, 126)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(114, 75, 130))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 110, 130)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(235, 90, 175))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -2938,12 +2988,14 @@ local Library = {
                     TextColor3 = Color3.fromRGB(220, 229, 247),
                     TextTransparency = 0.800000011920929,
                     Text = Page.Description,
-                    Size = UDim2.new(0, 0, 0, 15),
+                    Size = UDim2.new(1, -70, 0, 15),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0, 62, 0, 32),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.X,
+                    AutomaticSize = Enum.AutomaticSize.None,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
+                    TextXAlignment = Enum.TextXAlignment.Left,
                     TextSize = 14,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 }):AddToTheme({TextColor3 = "Text"})                
@@ -2971,7 +3023,7 @@ local Library = {
                     AutomaticCanvasSize = Enum.AutomaticSize.X,
                     CanvasSize = UDim2.new(0, 0, 0, 0),
                     ScrollBarThickness = 2,
-                    ScrollBarImageColor3 = Color3.fromRGB(60, 60, 65),
+                    ScrollBarImageColor3 = Color3.fromRGB(20, 20, 20),
                     ScrollBarImageTransparency = 0.5
                 })                
 
@@ -3000,58 +3052,7 @@ local Library = {
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
 
-                if Page.Search then 
-                    Items["Columns"].Instance.Position = UDim2.new(0, 0, 0, 115)
-                    Items["Columns"].Instance.Size = UDim2.new(1, 0, 1, -115)
-
-                    Items["Search"] = Library:Create("Frame", {
-                        Parent = Items["Page"].Instance,
-                        Name = "\0",
-                        Position = UDim2.new(0, 10, 0, 80),
-                        BorderColor3 = Color3.fromRGB(0, 0, 0),
-                        Size = UDim2.new(1, -20, 0, 35),
-                        BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
-                    }):AddToTheme({BackgroundColor3 = "Background"})
-                    
-                    Library:Create("UICorner", {
-                        Parent = Items["Search"].Instance,
-                        Name = "\0"
-                    })
-                    
-                    Items["Input"] = Library:Create("TextBox", {
-                        Parent = Items["Search"].Instance,
-                        Name = "\0",
-                        FontFace = Library.Font,
-                        TextColor3 = Color3.fromRGB(220, 229, 247),
-                        BorderColor3 = Color3.fromRGB(0, 0, 0),
-                        Text = "",
-                        Size = UDim2.new(0, 0, 0, 15),
-                        Position = UDim2.new(0, 38, 0.5, -1),
-                        AnchorPoint = Vector2.new(0, 0.5),
-                        BorderSizePixel = 0,
-                        BackgroundTransparency = 1,
-                        PlaceholderColor3 = Color3.fromRGB(145, 151, 163),
-                        AutomaticSize = Enum.AutomaticSize.X,
-                        PlaceholderText = "Search..",
-                        TextSize = 14,
-                        BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                    }):AddToTheme({TextColor3 = "Text", PlaceholderColor3 = "Text 2"})
-                    
-                    Items["Icon__"] = Library:Create("ImageLabel", {
-                        Parent = Items["Search"].Instance,
-                        Name = "\0",
-                        BorderColor3 = Color3.fromRGB(0, 0, 0),
-                        AnchorPoint = Vector2.new(0, 0.5),
-                        Image = "rbxassetid://79227204687245",
-                        BackgroundTransparency = 1,
-                        Position = UDim2.new(0, 10, 0.5, 0),
-                        Size = UDim2.new(0, 18, 0, 18),
-                        BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                    }):AddToTheme({ImageColor3 = "Text"})                    
-                end
-
+                -- Search bar removed
                 Page.Items = Items
             end
 
@@ -3067,11 +3068,7 @@ local Library = {
                 Page.Active = Bool 
 
                 if Bool then 
-                    if Page.Search then
-                        Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 100)}) 
-                    else
-                        Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 60)})
-                    end
+                    Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 60)})
 
                     Items["UIStroke"].Instance.Color = Color3.fromRGB(255, 255, 255)
                     Items["Gradient"].Instance.Enabled = true 
@@ -3082,13 +3079,9 @@ local Library = {
 
                     Items["Inactive"]:Tween({BackgroundTransparency = 0})
                 else
-                    if Page.Search then
-                        Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 120)}) 
-                    else
-                        Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 80)})
-                    end
+                    Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 80)})
                     Items["Gradient"].Instance.Enabled = false 
-                    Items["UIStroke"].Instance.Color = Color3.fromRGB(37, 37, 37)
+                    Items["UIStroke"].Instance.Color = Color3.fromRGB(22, 22, 22)
 
                     Items["Text"]:Tween({TextTransparency = 0.5})
                     Items["Description"]:ChangeItemTheme({TextColor3 = "Text"})
@@ -3121,25 +3114,6 @@ local Library = {
                     Value:Turn(Value == Page)
                 end
             end)
-
-            if Page.Search then
-                Library:Connect(Items["Input"].Instance:GetPropertyChangedSignal("Text"), function()
-                    for Index, Value in Page.SearchItems do
-                        local Name = Value.Name
-                        local Element = Value.Item
-
-                        if string.find(string.lower(Name), string.lower(Items["Input"].Instance.Text)) then
-                            if Items["Input"].Instance.Text ~= "" then 
-                                Element.Instance.Visible  = true 
-                            else
-                                Element.Instance.Visible  = true 
-                            end
-                        else
-                            Element.Instance.Visible = false
-                        end 
-                    end
-                end)
-            end
 
             if #Page.Window.Pages == 0 then 
                 Page:Turn(true)
@@ -3184,14 +3158,57 @@ local Library = {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 38, 0, 38),
-                    AnchorPoint = Vector2.new(0.5, 0),
+                    Size = UDim2.new(0, 28, 0, 28),
+                    AnchorPoint = Vector2.new(0.5, 0.5),
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0.5, 0, 0, 0),
+                    Position = UDim2.new(0.5, 0, 0.5, -4),
                     ZIndex = 2,
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
+                
+                -- Hover tooltip
+                Items["Tooltip"] = Library:Create("Frame", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2.new(0.5, 0),
+                    Position = UDim2.new(0.5, 0, 1, 4),
+                    Size = UDim2.new(0, 0, 0, 20),
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    BackgroundColor3 = Color3.fromRGB(20, 20, 22),
+                    BorderSizePixel = 0,
+                    ZIndex = 999,
+                    Visible = false,
+                })
+                
+                Library:Create("UICorner", {
+                    Parent = Items["Tooltip"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDim.new(0, 4)
+                })
+                
+                Library:Create("UIPadding", {
+                    Parent = Items["Tooltip"].Instance,
+                    Name = "\0",
+                    PaddingLeft = UDim.new(0, 7),
+                    PaddingRight = UDim.new(0, 7),
+                })
+                
+                Library:Create("TextLabel", {
+                    Parent = Items["Tooltip"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    Text = Page.Name ~= "" and Page.Name or "Tab",
+                    TextColor3 = Color3.fromRGB(210, 210, 215),
+                    TextSize = 11,
+                    Size = UDim2.new(0, 0, 1, 0),
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    ZIndex = 999,
+                    AnchorPoint = Vector2.new(0, 0.5),
+                    Position = UDim2.new(0, 0, 0.5, 0),
+                }):AddToTheme({TextColor3 = "Text"})
                 
                 -- Track the actual ImageLabel for gradient parenting
                 local gradientTarget = nil
@@ -3266,8 +3283,8 @@ local Library = {
                     Name = "\0",
                     Enabled = false,
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(175, 102, 126)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(114, 75, 130))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 110, 130)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(235, 90, 175))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -3294,45 +3311,47 @@ local Library = {
                     Parent = Items["Shadow"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(175, 102, 126)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(114, 75, 130))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 110, 130)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(235, 90, 175))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
                 end})
 
-                -- Name label below icon (always shown)
-                Items["NameLabel"] = Library:Create("TextLabel", {
-                    Parent = Items["Inactive"].Instance,
-                    Name = "\0",
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    TextSize = 10,
-                    TextXAlignment = Enum.TextXAlignment.Center,
-                    TextYAlignment = Enum.TextYAlignment.Top,
-                    Size = UDim2.new(1, -4, 0, 14),
-                    Position = UDim2.new(0.5, 0, 0, 38),
-                    AnchorPoint = Vector2.new(0.5, 0),
-                    BackgroundTransparency = 1,
-                    Text = Page.Name ~= "" and Page.Name or "Tab",
-                    Font = Enum.Font.GothamMedium,
-                    TextColor3 = Color3.fromRGB(220, 229, 247),
-                    TextTransparency = 0.8,
-                    TextTruncate = Enum.TextTruncate.AtEnd,
-                    ZIndex = 2,
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                }):AddToTheme({TextColor3 = "Text"})
-                Items["NameLabelGradient"] = Library:Create("UIGradient", {
-                    Parent = Items["NameLabel"].Instance,
-                    Name = "\0",
-                    Enabled = false,
-                    Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(175, 102, 126)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(114, 75, 130))
-                    }
-                }):AddToTheme({Color = function()
-                    return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
-                end})
+                -- Optional name label below icon (when DisplayName = true)
+                if Page.DisplayName and Page.Name and #Page.Name > 0 then
+                    Items["NameLabel"] = Library:Create("TextLabel", {
+                        Parent = Items["Inactive"].Instance,
+                        Name = "\0",
+                        BorderColor3 = Color3.fromRGB(0, 0, 0),
+                        TextSize = 10,
+                        TextXAlignment = Enum.TextXAlignment.Center,
+                        TextYAlignment = Enum.TextYAlignment.Top,
+                        Size = UDim2.new(1, -4, 0, 14),
+                        Position = UDim2.new(0.5, 0, 0, 38),
+                        AnchorPoint = Vector2.new(0.5, 0),
+                        BackgroundTransparency = 1,
+                        Text = Page.Name,
+                        Font = Enum.Font.GothamMedium,
+                        TextColor3 = Color3.fromRGB(220, 229, 247),
+                        TextTransparency = 0.8,
+                        TextTruncate = Enum.TextTruncate.AtEnd,
+                        ZIndex = 2,
+                        BorderSizePixel = 0,
+                        BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    }):AddToTheme({TextColor3 = "Text"})
+                    Items["NameLabelGradient"] = Library:Create("UIGradient", {
+                        Parent = Items["NameLabel"].Instance,
+                        Name = "\0",
+                        Enabled = false,
+                        Color = ColorSequence.new{
+                            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 110, 130)),
+                            ColorSequenceKeypoint.new(1, Color3.fromRGB(235, 90, 175))
+                        }
+                    }):AddToTheme({Color = function()
+                        return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
+                    end})
+                end
                 
                 Items["Page"] = Library:Create("Frame", {
                     Parent = Library.UnusedHolder.Instance,
@@ -3478,6 +3497,14 @@ local Library = {
                     Value:Turn(Value == Page)
                 end
             end)
+            
+            Items["Inactive"]:Connect("MouseEnter", function()
+                Items["Tooltip"].Instance.Visible = true
+            end)
+            
+            Items["Inactive"]:Connect("MouseLeave", function()
+                Items["Tooltip"].Instance.Visible = false
+            end)
 
             if #Page.Page.SubPages == 0 then 
                 Page:Turn(true)
@@ -3539,7 +3566,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(1, 0, 1, -25),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 }):AddToTheme({BackgroundColor3 = "Background"})
                 
                 Items["Content"] = Library:Create("Frame", {
@@ -3604,7 +3631,7 @@ local Library = {
                     Size = UDim2.new(1, 40, 1, 0),
                     Selectable = false,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 }):AddToTheme({BackgroundColor3 = "Background"})
 
                 Library:Create("UICorner", {
@@ -3689,7 +3716,7 @@ local Library = {
                         Size = UDim2.new(1, 40, 1, 0),
                         Selectable = false,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):AddToTheme({BackgroundColor3 = "Background"})
                     
                     Library:Create("UICorner", {
@@ -3707,7 +3734,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(0, 20, 0, 20),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27),
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14),
                     Text = "",
                     AutoButtonColor = false
                 }):AddToTheme({BackgroundColor3 = "Element"})
@@ -3740,8 +3767,8 @@ local Library = {
                     Parent = Items["Inline"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(175, 102, 126)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(114, 75, 130))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 110, 130)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(235, 90, 175))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -3752,14 +3779,13 @@ local Library = {
                     Name = "\0",
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     Position = UDim2.new(0.5, 0, 0.5, 0),
-                    Size = UDim2.new(0, 9, 0, 9),
+                    Size = UDim2.new(0, 10, 0, 10),
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
                     ImageTransparency = 1,
                     Image = "rbxassetid://10709791437",
                     ImageColor3 = Color3.fromRGB(255, 255, 255),
-                    ScaleType = Enum.ScaleType.Fit,
-                    ZIndex = 3
+                    ScaleType = Enum.ScaleType.Fit
                 })
                 
                 Items["Text"] = Library:Create("TextLabel", {
@@ -4076,8 +4102,8 @@ local Library = {
                     Size = UDim2.new(1, 0, 0, 25),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                })
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
+                }):AddToTheme({BackgroundColor3 = "Element"})
 
                 if Button.Premium then 
                     Items["Background"] = Library:Create("TextButton", {
@@ -4093,7 +4119,7 @@ local Library = {
                         Size = UDim2.new(1, 40, 1, 0),
                         Selectable = false,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):AddToTheme({BackgroundColor3 = "Background"})
                     
                     Library:Create("UICorner", {
@@ -4127,17 +4153,6 @@ local Library = {
                     CornerRadius = UDim.new(0, 5)
                 })
                 
-                Library:Create("UIGradient", {
-                    Parent = Items["ButtonBackground"].Instance,
-                    Name = "\0",
-                    Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(175, 102, 126)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(114, 75, 130))
-                }
-                }):AddToTheme({Color = function()
-                    return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
-                end})
-                
                 Items["Button"] = Library:Create("TextButton", {
                     Parent = Items["ButtonBackground"].Instance,
                     Name = "\0",
@@ -4146,12 +4161,12 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
-                    AnchorPoint = Vector2.new(1, 0),
-                    Position = UDim2.new(1, 1, 0, 0),
-                    Size = UDim2.new(1, -2, 1, 0),
+                    AnchorPoint = Vector2.new(0, 0),
+                    Position = UDim2.new(0, 0, 0, 0),
+                    Size = UDim2.new(1, 0, 1, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 }):AddToTheme({BackgroundColor3 = "Element"})
                 
                 Library:Create("UICorner", {
@@ -4261,7 +4276,7 @@ local Library = {
                         Size = UDim2.new(1, 40, 1, 0),
                         Selectable = false,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):AddToTheme({BackgroundColor3 = "Background"})
                     
                     Library:Create("UICorner", {
@@ -4300,7 +4315,7 @@ local Library = {
                     Size = UDim2.new(1, 0, 0, 10),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 }):AddToTheme({BackgroundColor3 = "Element"})
                 
                 Library:Create("UICorner", {
@@ -4328,8 +4343,8 @@ local Library = {
                     Parent = Items["Accent"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(175, 102, 126)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(114, 75, 130))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 110, 130)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(235, 90, 175))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -4352,41 +4367,9 @@ local Library = {
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 }):AddToTheme({TextColor3 = "Text"})
                 
-                Items["Minus"] = Library:Create("TextButton", {
-                    Parent = Items["Slider"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = Color3.fromRGB(220, 229, 247),
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Text = "-",
-                    TextTransparency = 1,
-                    AutoButtonColor = false,
-                    AnchorPoint = Vector2.new(0, 1),
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(0, -20, 1, 0),
-                    Size = UDim2.new(0, 15, 0, 15),
-                    BorderSizePixel = 0,
-                    TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                }):AddToTheme({TextColor3 = "Text"})
+
                 
-                Items["Plus"] = Library:Create("TextButton", {
-                    Parent = Items["Slider"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = Color3.fromRGB(220, 229, 247),
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Text = "+",
-                    TextTransparency = 1,
-                    AutoButtonColor = false,
-                    AnchorPoint = Vector2.new(1, 1),
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(1, 20, 1, 0),
-                    Size = UDim2.new(0, 15, 0, 15),
-                    BorderSizePixel = 0,
-                    TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                }):AddToTheme({TextColor3 = "Text"})    
+
                 
                 Items["RealSlider"]:OnHover(function()
                     Items["RealSlider"]:Tween({BackgroundColor3 = Library.Theme["Hovered Element"]})
@@ -4440,17 +4423,16 @@ local Library = {
                     Slider.Sliding = true
 
                     local Value = Slider:GetSize(Input)
-
                     Slider:Set(Value)
 
                     if InputChanged then
-                        return
+                        InputChanged:Disconnect()
+                        InputChanged = nil
                     end
 
                     InputChanged = Input.Changed:Connect(function()
                         if Input.UserInputState == Enum.UserInputState.End then
                             Slider.Sliding = false
-
                             InputChanged:Disconnect()
                             InputChanged = nil
                         end
@@ -4479,15 +4461,22 @@ local Library = {
                         end
                     end
                 end)
+            else
+                -- PC fallback: always stop sliding on mouse release
+                Library:Connect(UserInputService.InputEnded, function(Input)
+                    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        if Slider.Sliding then
+                            Slider.Sliding = false
+                            if InputChanged then
+                                InputChanged:Disconnect()
+                                InputChanged = nil
+                            end
+                        end
+                    end
+                end)
             end
 
-            Items["Plus"]:Connect("MouseButton1Down", function()
-                Slider:Set(Slider.Value + Slider.Decimals)
-            end)
 
-            Items["Minus"]:Connect("MouseButton1Down", function()
-                Slider:Set(Slider.Value - Slider.Decimals)
-            end)
 
             Library:Connect(UserInputService.InputChanged, function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
@@ -4575,7 +4564,7 @@ local Library = {
                         Size = UDim2.new(1, 40, 1, 0),
                         Selectable = false,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):AddToTheme({BackgroundColor3 = "Background"})
                     
                     Library:Create("UICorner", {
@@ -4626,8 +4615,8 @@ local Library = {
                     Parent = Items["DropdownBackground"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(175, 102, 126)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(114, 75, 130))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 110, 130)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(235, 90, 175))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -4645,7 +4634,7 @@ local Library = {
                     Size = UDim2.new(1, 0, 1, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 }):AddToTheme({BackgroundColor3 = "Element"})
                 
                 Library:Create("UICorner", {
@@ -4708,7 +4697,7 @@ local Library = {
                     Size = UDim2.new(0, 263, 0, 146),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 }):AddToTheme({BackgroundColor3 = "Background"})
                 
                 Library:Create("UICorner", {
@@ -4771,7 +4760,7 @@ local Library = {
                     AutomaticCanvasSize = Enum.AutomaticSize.Y,
                     BorderSizePixel = 0,
                     CanvasSize = UDim2.new(0, 0, 0, 0),
-                    ScrollBarImageColor3 = Color3.fromRGB(175, 102, 126),
+                    ScrollBarImageColor3 = Color3.fromRGB(255, 110, 130),
                     MidImage = "rbxassetid://81680855285439",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     ScrollBarThickness = 2,
@@ -4882,8 +4871,8 @@ local Library = {
                     Parent = OptionBackground.Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(175, 102, 126)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(114, 75, 130))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 110, 130)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(235, 90, 175))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -4902,7 +4891,7 @@ local Library = {
                     Size = UDim2.new(1, -2, 1, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 })
                 
                 Library:Create("UICorner", {
@@ -5214,7 +5203,7 @@ local Library = {
                         Size = UDim2.new(1, 40, 1, 0),
                         Selectable = false,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):AddToTheme({BackgroundColor3 = "Background"})
                     
                     Library:Create("UICorner", {
@@ -5397,7 +5386,7 @@ local Library = {
                         Size = UDim2.new(1, 40, 1, 0),
                         Selectable = false,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     }):AddToTheme({BackgroundColor3 = "Background"})
                     
                     Library:Create("UICorner", {
@@ -5445,8 +5434,8 @@ local Library = {
                     Parent = Items["Background"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(175, 102, 126)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(114, 75, 130))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 110, 130)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(235, 90, 175))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -5464,7 +5453,7 @@ local Library = {
                     Size = UDim2.new(1, 0, 1, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 }):AddToTheme({BackgroundColor3 = "Element"})
                 
                 Library:Create("UICorner", {
@@ -5714,7 +5703,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(1, 0, 0, 250),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 27)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 14)
                 })
                 
                 Items["Holder"] = Library:Create("ScrollingFrame", {
@@ -5744,7 +5733,7 @@ local Library = {
                 Library:Create("UIStroke", {
                     Parent = Items["Holder"].Instance,
                     Name = "\0",
-                    Color = Color3.fromRGB(15, 15, 16)
+                    Color = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({Color = 'Inline'})
                 
                 Library:Create("UICorner", {
@@ -5789,7 +5778,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(1, 0, 0, 35),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(15, 15, 16)
+                    BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
                 
                 Library:Create("UICorner", {
@@ -5832,7 +5821,7 @@ local Library = {
                 Library:Create("UIStroke", {
                     Parent = Items["Search"].Instance,
                     Name = "\0",
-                    Color = Color3.fromRGB(15, 15, 16)
+                    Color = Color3.fromRGB(8, 8, 8)
                 })
             end
 
@@ -5848,7 +5837,7 @@ local Library = {
                     LayoutOrder = #List.Items,
                     Size = UDim2.new(1, 0, 0, 30),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(15, 15, 16)
+                    BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 })
 
                 local ColorSelected
@@ -6144,14 +6133,22 @@ local Library = {
 
         Library.CreateThemingSection = function(Self)
             local ThemeSection = Self:Section({Name = "Theme", Side = 1})
-
-            do 
-                for Index, Value in Library.Theme do 
+            do
+                ThemeSection:Dropdown({
+                    Name = "Preset Theme", Flag = "_ThemePreset",
+                    Items = {"Preset", "Pink", "Purple", "Cyan", "Green", "Blue"},
+                    Default = "Preset",
+                    Callback = function(Value) Library:SetTheme(Value) end
+                })
+                ThemeSection:Button({
+                    Name = "Reset to Default",
+                    Callback = function() Library:SetTheme("Preset") end
+                })
+                for Index, Value in Library.Theme do
                     ThemeSection:Label({Name = Index}):Colorpicker({
-                        Flag = Index,
-                        Default = Value,
+                        Flag = Index, Default = Value,
                         Callback = function(Value)
-                            Library.Theme[Index] = Value,
+                            Library.Theme[Index] = Value
                             Library:ChangeTheme(Index, Value)
                         end
                     })
