@@ -960,8 +960,12 @@ local Library = {
     end
 
     Library.Round = function(Self, Number, Float)
-        local Multiplier = 1 / (Float or 1)
-        return math.floor(Number * Multiplier) / Multiplier
+        local decimals = Float or 0
+        if decimals <= 0 then
+            return math.floor(Number + 0.5)
+        end
+        local Multiplier = 10 ^ decimals
+        return math.floor(Number * Multiplier + 0.5) / Multiplier
     end
 
     Library.GetConfig = function(Self)
@@ -3757,9 +3761,10 @@ local Library = {
                     AnchorPoint = Vector2.new(1, 0.5),
                     Position = UDim2.new(1, -8, 0.5, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 32, 0, 16),
+                    Size = UDim2.new(0, 38, 0, 20),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(18, 7, 7),
+                    ClipsDescendants = true,
                     Text = "",
                     AutoButtonColor = false
                 }):AddToTheme({BackgroundColor3 = "Element"})
@@ -3782,12 +3787,13 @@ local Library = {
                     Parent = Items["Indicator"].Instance,
                     Name = "\0",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    AnchorPoint = Vector2.new(0.5, 0.5),
-                    BackgroundTransparency = 0,
-                    Position = UDim2.new(0, 10, 0.5, 0),
-                    Size = UDim2.new(0, 10, 0, 10),
+                    AnchorPoint = Vector2.new(0, 0),
+                    BackgroundTransparency = 1,
+                    Position = UDim2.new(0, 0, 0, 0),
+                    Size = UDim2.new(1, 0, 1, 0),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(80, 30, 30)
+                    BackgroundColor3 = Color3.fromRGB(80, 30, 30),
+                    ZIndex = 1
                 })
 
                 Library:Create("UICorner", {
@@ -3807,18 +3813,22 @@ local Library = {
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
                 end})
 
-                Items["Checkmark"] = Library:Create("ImageLabel", {
-                    Parent = Items["Inline"].Instance,
+                Items["Checkmark"] = Library:Create("Frame", {
+                    Parent = Items["Indicator"].Instance,
                     Name = "\0",
                     AnchorPoint = Vector2.new(0.5, 0.5),
-                    Position = UDim2.new(0.5, 0, 0.5, 0),
-                    Size = UDim2.new(0, 10, 0, 10),
-                    BackgroundTransparency = 1,
+                    Position = UDim2.new(0, 10, 0.5, 0),
+                    Size = UDim2.new(0, 14, 0, 14),
+                    BackgroundTransparency = 0,
                     BorderSizePixel = 0,
-                    ImageTransparency = 1,
-                    Image = "rbxassetid://10709791437",
-                    ImageColor3 = Color3.fromRGB(255, 255, 255),
-                    ScaleType = Enum.ScaleType.Fit
+                    BackgroundColor3 = Color3.fromRGB(170, 160, 165),
+                    ZIndex = 3
+                })
+
+                Library:Create("UICorner", {
+                    Parent = Items["Checkmark"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDim.new(1, 0)
                 })
                 
                 Items["Text"] = Library:Create("TextLabel", {
@@ -3960,15 +3970,14 @@ local Library = {
                 Toggle.Value = Bool 
 
                 if Bool then
-                    Items["Inline"]:Tween({Position = UDim2.new(1, -10, 0.5, 0), BackgroundColor3 = Library.Theme["Accent Start"]})
-                    Items["Indicator"]:Tween({BackgroundColor3 = Library.Theme["Hovered Element"]})
+                    Items["Inline"]:Tween({BackgroundTransparency = 0})
+                    Items["Checkmark"]:Tween({Position = UDim2.new(1, -10, 0.5, 0), BackgroundColor3 = Color3.fromRGB(255, 255, 255)})
                     Items["Text"]:Tween({TextTransparency = 0})
-                    Items["Checkmark"].Instance.ImageTransparency = 1
                 else
-                    Items["Inline"]:Tween({Position = UDim2.new(0, 10, 0.5, 0), BackgroundColor3 = Color3.fromRGB(50, 20, 20)})
+                    Items["Inline"]:Tween({BackgroundTransparency = 1})
+                    Items["Checkmark"]:Tween({Position = UDim2.new(0, 10, 0.5, 0), BackgroundColor3 = Color3.fromRGB(170, 160, 165)})
                     Items["Indicator"]:Tween({BackgroundColor3 = Library.Theme["Element"]})
                     Items["Text"]:Tween({TextTransparency = 0.7})
-                    Items["Checkmark"].Instance.ImageTransparency = 1
                 end
 
                 Flags[Toggle.Flag] = Bool
