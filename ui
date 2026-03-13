@@ -2837,6 +2837,7 @@ local Library = {
 
             Library.Windoww = Window
             Window:Center()
+            Library:SetTheme("Preset")
             return setmetatable(Window, Library)
         end
 
