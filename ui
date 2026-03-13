@@ -342,15 +342,15 @@ local Library = {
 
     local Themes = {
         ["Preset"] = {
-            ["Background"] = Color3.fromRGB(8, 3, 3),
-            ["Inline"] = Color3.fromRGB(14, 5, 5),
-            ["Accent Start"] = Color3.fromRGB(220, 30, 30),
-            ["Accent End"] = Color3.fromRGB(10, 0, 0),
-            ["Text"] = Color3.fromRGB(255, 220, 225),
-            ["Text 2"] = Color3.fromRGB(200, 140, 150),
-            ["Element"] = Color3.fromRGB(18, 7, 7),
-            ["Hovered Element"] = Color3.fromRGB(30, 12, 14),
-            ["Topbar"] = Color3.fromRGB(12, 4, 4)
+            ["Background"]      = Color3.fromRGB(4, 4, 4),
+            ["Inline"]          = Color3.fromRGB(10, 10, 10),
+            ["Accent Start"]    = Color3.fromRGB(220, 30, 30),
+            ["Accent End"]      = Color3.fromRGB(10, 0, 0),
+            ["Text"]            = Color3.fromRGB(220, 220, 225),
+            ["Text 2"]          = Color3.fromRGB(140, 140, 148),
+            ["Element"]         = Color3.fromRGB(16, 16, 18),
+            ["Hovered Element"] = Color3.fromRGB(26, 26, 28),
+            ["Topbar"]          = Color3.fromRGB(6, 6, 6)
         },
         ["Pink"] = {
             ["Background"] = Color3.fromRGB(5, 0, 8),
@@ -3122,30 +3122,34 @@ local Library = {
                     Name = "\0",
                     BackgroundTransparency = 1,
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, 0, 0, 38),
+                    Size = UDim2.new(1, 0, 0, 44),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     ScrollingDirection = Enum.ScrollingDirection.X,
                     AutomaticCanvasSize = Enum.AutomaticSize.X,
                     CanvasSize = UDim2.new(0, 0, 0, 0),
-                    ScrollBarThickness = 2,
+                    ScrollBarThickness = 0,
                     ScrollBarImageColor3 = Color3.fromRGB(20, 20, 20),
                     ScrollBarImageTransparency = 0.5
-                })                
+                })
 
                 Library:Create("UIListLayout", {
                     Parent = Items["SubPages"].Instance,
                     Name = "\0",
-                    Padding = UDim.new(0, 12),
+                    Padding = UDim.new(0, 8),
                     FillDirection = Enum.FillDirection.Horizontal,
-                    SortOrder = Enum.SortOrder.LayoutOrder
+                    SortOrder = Enum.SortOrder.LayoutOrder,
+                    VerticalAlignment = Enum.VerticalAlignment.Center
                 })
                 
                 Library:Create("UIPadding", {
                     Parent = Items["SubPages"].Instance,
                     Name = "\0",
-                    PaddingTop = UDim.new(0, 12)
-                })                
+                    PaddingTop = UDim.new(0, 6),
+                    PaddingBottom = UDim.new(0, 6),
+                    PaddingLeft = UDim.new(0, 8),
+                    PaddingRight = UDim.new(0, 8)
+                })
 
                 Items["Columns"] = Library:Create("Frame", {
                     Parent = Items["Page"].Instance,
