@@ -2295,7 +2295,7 @@ local Library = {
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0, 8, 0, 46),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 68, 1, -61),
+                    Size = UDim2.new(0, 82, 1, -61),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     ScrollingDirection = Enum.ScrollingDirection.Y,
@@ -2325,9 +2325,9 @@ local Library = {
                 Items["Content"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    Position = UDim2.new(0, 88, 0, 51),
+                    Position = UDim2.new(0, 100, 0, 51),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, -98, 1, -66),
+                    Size = UDim2.new(1, -108, 1, -66),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
@@ -2929,7 +2929,7 @@ local Library = {
                     Transparency = 0
                 })
 
-                Library:Create("UIGradient", {
+                Items["StrokeGradient"] = Library:Create("UIGradient", {
                     Parent = Items["UIStroke"].Instance,
                     Name = "\0",
                     Enabled = false,
@@ -3121,6 +3121,7 @@ local Library = {
 
                 if Bool then 
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 60)})
+                    Items["StrokeGradient"].Instance.Enabled = true
                     Items["UIStroke"].Instance.Color = Library.Theme["Accent Start"]
                     Items["UIStroke"]:Tween({Transparency = 0})
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
@@ -3128,6 +3129,7 @@ local Library = {
                     end
                 else
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 80)})
+                    Items["StrokeGradient"].Instance.Enabled = false
                     Items["UIStroke"].Instance.Color = Color3.fromRGB(50, 50, 55)
                     Items["UIStroke"]:Tween({Transparency = 0})
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
