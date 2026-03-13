@@ -2309,16 +2309,16 @@ local Library = {
                 Library:Create("UIPadding", {
                     Parent = Items["Pages"].Instance,
                     Name = "\0",
-                    PaddingTop = UDim.new(0, 5),
-                    PaddingBottom = UDim.new(0, 5),
-                    PaddingRight = UDim.new(0, 5),
-                    PaddingLeft = UDim.new(0, 5)
+                    PaddingTop = UDim.new(0, 4),
+                    PaddingBottom = UDim.new(0, 4),
+                    PaddingRight = UDim.new(0, 4),
+                    PaddingLeft = UDim.new(0, 4)
                 })
 
                 Library:Create("UIListLayout", {
                     Parent = Items["Pages"].Instance,
                     Name = "\0",
-                    Padding = UDim.new(0, 15),
+                    Padding = UDim.new(0, 8),
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })                
 
@@ -2907,7 +2907,7 @@ local Library = {
                     Text = "",
                     AutoButtonColor = false,
                     BackgroundTransparency = 0,
-                    Size = UDim2.new(1, 0, 0, 50),
+                    Size = UDim2.new(1, 0, 0, 44),
                     BorderSizePixel = 0,
                     TextSize = 14,
                     BackgroundColor3 = Color3.fromRGB(18, 7, 7)
@@ -2954,7 +2954,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0.5, 0, 0.5, 0),
-                    Size = UDim2.new(0, 28, 0, 28),
+                    Size = UDim2.new(0, 22, 0, 22),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
@@ -2972,7 +2972,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0.5, 0, 0.5, -1),
-                    Size = UDim2.new(0, 18, 0, 18),
+                    Size = UDim2.new(0, 14, 0, 14),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
