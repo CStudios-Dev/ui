@@ -960,10 +960,7 @@ local Library = {
     end
 
     Library.Round = function(Self, Number, Float)
-        if not Float or Float == 0 then
-            return math.floor(Number)
-        end
-        local Multiplier = 1 / Float
+        local Multiplier = 1 / (Float or 1)
         return math.floor(Number * Multiplier) / Multiplier
     end
 
@@ -2293,15 +2290,15 @@ local Library = {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 15, 0, 46),
+                    Position = UDim2.new(0, 8, 0, 46),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 160, 1, -61),
+                    Size = UDim2.new(0, 68, 1, -61),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     ScrollingDirection = Enum.ScrollingDirection.Y,
                     AutomaticCanvasSize = Enum.AutomaticSize.Y,
                     CanvasSize = UDim2.new(0, 0, 0, 0),
-                    ScrollBarThickness = 2,
+                    ScrollBarThickness = 0,
                     ScrollBarImageColor3 = Color3.fromRGB(20, 20, 20),
                     ScrollBarImageTransparency = 0.5
                 })
@@ -2325,9 +2322,9 @@ local Library = {
                 Items["Content"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    Position = UDim2.new(0, 193, 0, 51),
+                    Position = UDim2.new(0, 88, 0, 51),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, -203, 1, -66),
+                    Size = UDim2.new(1, -96, 1, -66),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
@@ -2906,7 +2903,7 @@ local Library = {
                     Text = "",
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 60),
+                    Size = UDim2.new(1, 0, 0, 52),
                     BorderSizePixel = 0,
                     TextSize = 14,
                     BackgroundColor3 = Color3.fromRGB(8, 8, 8)
@@ -2921,10 +2918,10 @@ local Library = {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    AnchorPoint = Vector2.new(0, 0.5),
+                    AnchorPoint = Vector2.new(0.5, 0.5),
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 10, 0.5, 0),
-                    Size = UDim2.new(0, 40, 0, 40),
+                    Position = UDim2.new(0.5, 0, 0.5, 0),
+                    Size = UDim2.new(0, 36, 0, 36),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
@@ -3013,6 +3010,7 @@ local Library = {
                     Size = UDim2.new(0, 0, 0, 15),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
+                    Visible = false,
                     Position = UDim2.new(0, 62, 0, 12),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AutomaticSize = Enum.AutomaticSize.X,
@@ -3030,6 +3028,7 @@ local Library = {
                     Size = UDim2.new(1, -70, 0, 15),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
+                    Visible = false,
                     Position = UDim2.new(0, 62, 0, 32),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AutomaticSize = Enum.AutomaticSize.None,
@@ -5883,15 +5882,8 @@ local Library = {
             do
                 local ColumnParent = PlayerDataSubTab.Items.LeftColumn.Instance
 
-                -- Track time used (persistent across sessions)
-                local usageFile = Library.Directory .. "/usage_time.dat"
-                local savedSeconds = 0
-                pcall(function()
-                    if isfile(usageFile) then
-                        savedSeconds = tonumber(readfile(usageFile)) or 0
-                    end
-                end)
-                local sessionStart = tick()
+                -- Track time used
+                local startTime = tick()
                 local runCount = 0
                 local playerName = (game:GetService("Players").LocalPlayer and game:GetService("Players").LocalPlayer.Name) or "Unknown"
 
@@ -6047,25 +6039,53 @@ local Library = {
 
                     local cellPad = Instance.new("UIPadding")
                     cellPad.PaddingLeft = UDim.new(0, 10)
-                    cellPad.PaddingTop = UDim.new(0, 6)
+                    cellPad.PaddingRight = UDim.new(0, 8)
+                    cellPad.PaddingTop = UDim.new(0, 0)
+                    cellPad.PaddingBottom = UDim.new(0, 0)
                     cellPad.Parent = Cell
+
+                    -- Icon circle on the left, vertically centered
+                    local IconBg = Instance.new("Frame")
+                    IconBg.Name = "\0"
+                    IconBg.Size = UDim2.new(0, 28, 0, 28)
+                    IconBg.AnchorPoint = Vector2.new(0, 0.5)
+                    IconBg.Position = UDim2.new(0, 0, 0.5, 0)
+                    IconBg.BackgroundColor3 = Color3.fromRGB(35, 8, 8)
+                    IconBg.BorderSizePixel = 0
+                    IconBg.Parent = Cell
+
+                    local iconBgCorner = Instance.new("UICorner")
+                    iconBgCorner.CornerRadius = UDim.new(0, 6)
+                    iconBgCorner.Parent = IconBg
 
                     local IconLbl = Instance.new("TextLabel")
                     IconLbl.Name = "\0"
-                    IconLbl.Size = UDim2.new(0, 20, 0, 20)
-                    IconLbl.Position = UDim2.new(0, 0, 0, 0)
+                    IconLbl.Size = UDim2.new(1, 0, 1, 0)
+                    IconLbl.AnchorPoint = Vector2.new(0.5, 0.5)
+                    IconLbl.Position = UDim2.new(0.5, 0, 0.5, 0)
                     IconLbl.BackgroundTransparency = 1
                     IconLbl.BorderSizePixel = 0
                     IconLbl.Text = icon
                     IconLbl.TextSize = 14
                     IconLbl.TextColor3 = Color3.fromRGB(220, 50, 50)
                     IconLbl.FontFace = Library.Font
-                    IconLbl.Parent = Cell
+                    IconLbl.Parent = IconBg
+
+                    -- Text stack to the right of the icon
+                    local TextStack = Instance.new("Frame")
+                    TextStack.Name = "\0"
+                    TextStack.Size = UDim2.new(1, -38, 1, 0)
+                    TextStack.AnchorPoint = Vector2.new(0, 0.5)
+                    TextStack.Position = UDim2.new(0, 38, 0.5, 0)
+                    TextStack.BackgroundTransparency = 1
+                    TextStack.BorderSizePixel = 0
+                    TextStack.Parent = Cell
 
                     local StatLabel = Instance.new("TextLabel")
                     StatLabel.Name = "\0"
-                    StatLabel.Size = UDim2.new(1, -10, 0, 14)
-                    StatLabel.Position = UDim2.new(0, 0, 0, 20)
+                    StatLabel.Size = UDim2.new(1, 0, 0, 13)
+                    StatLabel.AnchorPoint = Vector2.new(0, 1)
+                    StatLabel.Position = UDim2.new(0, 0, 0.5, -1)
                     StatLabel.BackgroundTransparency = 1
                     StatLabel.BorderSizePixel = 0
                     StatLabel.Text = labelText
@@ -6073,20 +6093,22 @@ local Library = {
                     StatLabel.TextSize = 10
                     StatLabel.TextXAlignment = Enum.TextXAlignment.Left
                     StatLabel.FontFace = Library.Font
-                    StatLabel.Parent = Cell
+                    StatLabel.Parent = TextStack
 
                     local ValLabel = Instance.new("TextLabel")
                     ValLabel.Name = "\0"
-                    ValLabel.Size = UDim2.new(1, -10, 0, 16)
-                    ValLabel.Position = UDim2.new(0, 0, 0, 32)
+                    ValLabel.Size = UDim2.new(1, 0, 0, 16)
+                    ValLabel.AnchorPoint = Vector2.new(0, 0)
+                    ValLabel.Position = UDim2.new(0, 0, 0.5, 2)
                     ValLabel.BackgroundTransparency = 1
                     ValLabel.BorderSizePixel = 0
                     ValLabel.Text = valueText
                     ValLabel.TextColor3 = Color3.fromRGB(250, 215, 215)
                     ValLabel.TextSize = 13
                     ValLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    ValLabel.TextTruncate = Enum.TextTruncate.AtEnd
                     ValLabel.FontFace = Library.Font
-                    ValLabel.Parent = Cell
+                    ValLabel.Parent = TextStack
 
                     return ValLabel
                 end
@@ -6094,30 +6116,15 @@ local Library = {
                 local TimeLabel = MakeStat("🕐", "Script Use Time", "0s", 1)
                 local RunsLabel = MakeStat("↻", "Executions", "0x", 2)
                 local UserLabel = MakeStat("★", "Username", playerName, 3)
-                local GameLabel = MakeStat("🎮", "Current Game", "...", 4)
-
-                -- Fill in game name
-                task.spawn(function()
-                    local gameName = "Unknown"
-                    pcall(function()
-                        local info = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
-                        gameName = info and info.Name or game.Name or "Unknown"
-                    end)
-                    if gameName == "Unknown" or gameName == "" then
-                        gameName = game.Name ~= "" and game.Name or "Unknown"
-                    end
-                    GameLabel.Text = gameName
-                end)
+                MakeStat("∞", "Access", "inf hours", 4)
 
                 -- Auto-increment run count on load
                 runCount = runCount + 1
                 RunsLabel.Text = runCount .. "x"
 
-                -- Live time ticker (accumulated + current session)
-                local lastSave = tick()
+                -- Live time ticker
                 Library:Connect(RunService.Heartbeat, function()
-                    local sessionElapsed = tick() - sessionStart
-                    local elapsed = savedSeconds + sessionElapsed
+                    local elapsed = tick() - startTime
                     local h = math.floor(elapsed / 3600)
                     local m = math.floor((elapsed % 3600) / 60)
                     local s = math.floor(elapsed % 60)
@@ -6127,13 +6134,6 @@ local Library = {
                         TimeLabel.Text = string.format("%dm %ds", m, s)
                     else
                         TimeLabel.Text = string.format("%ds", s)
-                    end
-                    -- Save every 30 seconds
-                    if tick() - lastSave >= 30 then
-                        lastSave = tick()
-                        pcall(function()
-                            writefile(usageFile, tostring(math.floor(elapsed)))
-                        end)
                     end
                 end)
 
@@ -6267,11 +6267,12 @@ local Library = {
                 jBtnGrad.Parent = JoinBtn
 
                 JoinBtn.MouseButton1Down:Connect(function()
+                    -- Try setclipboard, then try open URL
                     pcall(function() setclipboard(DISCORD_LINK) end)
-                    pcall(function() syn.open_browser(DISCORD_LINK) end)
-                    pcall(function() open_browser_window(DISCORD_LINK) end)
-                    pcall(function() game:GetService("GuiService"):OpenBrowserWindow(DISCORD_LINK) end)
-                    Library:Notify({ Title = "Discord", Description = "Copied to clipboard! discord.gg/" .. DISCORD_INVITE, Duration = 4 })
+                    pcall(function() 
+                        game:GetService("GuiService"):OpenBrowserWindow(DISCORD_LINK)
+                    end)
+                    Library:Notify({ Title = "Discord", Description = "Link copied! " .. DISCORD_LINK, Duration = 4 })
                 end)
 
                 -- Fetch Discord invite data asynchronously
