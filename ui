@@ -21,93 +21,8 @@ local CoreGui = cloneref(game:GetService("CoreGui"))
 -- Blur background system (ported from sugar ui)
 local ElBlurSource = (function()
     local GuiSystem = {}
-    local CurrentCamera = Workspace.CurrentCamera
-    local function Hiter(planePos, planeNormal, rayOrigin, rayDirection)
-        local n = planeNormal
-        local d = rayDirection
-        local v = rayOrigin - planePos
-        local num = (n.x*v.x) + (n.y*v.y) + (n.z*v.z)
-        local den = (n.x*d.x) + (n.y*d.y) + (n.z*d.z)
-        local a = -num / den
-        return rayOrigin + (a * rayDirection), a
-    end
     function GuiSystem.new(frame)
-        local Part = Instance.new("Part", Workspace)
-        local DepthOfField = Instance.new("DepthOfFieldEffect", game:GetService("Lighting"))
-        local SurfaceGui = Instance.new("SurfaceGui", Part)
-        local BlockMesh = Instance.new("BlockMesh")
-        BlockMesh.Parent = Part
-        Part.Material = Enum.Material.Glass
-        Part.Transparency = 1
-        Part.Reflectance = 1
-        Part.CastShadow = false
-        Part.Anchored = true
-        Part.CanCollide = false
-        Part.CanQuery = false
-        Part.Size = Vector3.new(1,1,1) * 0.01
-        Part.Color = Color3.fromRGB(0,0,0)
-        TweenService:Create(Part, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {Transparency = 0.8}):Play()
-        DepthOfField.Enabled = true
-        DepthOfField.FarIntensity = 1
-        DepthOfField.FocusDistance = 0
-        DepthOfField.InFocusRadius = 500
-        DepthOfField.NearIntensity = 1
-        SurfaceGui.AlwaysOnTop = true
-        SurfaceGui.Adornee = Part
-        SurfaceGui.Active = true
-        SurfaceGui.Face = Enum.NormalId.Front
-        SurfaceGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-        local C4 = {
-            Update = nil,
-            Enabled = true,
-            Instances = { BlockMesh = BlockMesh, Part = Part, DepthOfField = DepthOfField, SurfaceGui = SurfaceGui },
-            Signal = nil
-        }
-        local Update = function()
-            if not C4.Enabled then
-                TweenService:Create(Part, TweenInfo.new(0.5, Enum.EasingStyle.Quint), {Transparency = 1}):Play()
-                return
-            end
-            TweenService:Create(Part, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Transparency = 0.8}):Play()
-            local corner0 = frame.AbsolutePosition
-            local corner1 = corner0 + frame.AbsoluteSize
-            local ray0 = CurrentCamera:ScreenPointToRay(corner0.X, corner0.Y, 1)
-            local ray1 = CurrentCamera:ScreenPointToRay(corner1.X, corner1.Y, 1)
-            local planeOrigin = CurrentCamera.CFrame.Position + CurrentCamera.CFrame.LookVector * (0.05 - CurrentCamera.NearPlaneZ)
-            local planeNormal = CurrentCamera.CFrame.LookVector
-            local pos0 = Hiter(planeOrigin, planeNormal, ray0.Origin, ray0.Direction)
-            local pos1 = Hiter(planeOrigin, planeNormal, ray1.Origin, ray1.Direction)
-            pos0 = CurrentCamera.CFrame:PointToObjectSpace(pos0)
-            pos1 = CurrentCamera.CFrame:PointToObjectSpace(pos1)
-            local size = pos1 - pos0
-            local center = (pos0 + pos1) / 2
-            BlockMesh.Offset = center
-            BlockMesh.Scale = size / 0.0101
-            Part.CFrame = CurrentCamera.CFrame
-            -- auto background transparency based on quality
-            pcall(function()
-                local q = UserSettings():GetService("UserGameSettings").SavedQualityLevel.Value
-                TweenService:Create(frame, TweenInfo.new(0.5), {
-                    BackgroundTransparency = q < 8 and 0 or 0.4
-                }):Play()
-            end)
-        end
-        C4.Update = Update
-        C4.Signal = RunService.RenderStepped:Connect(Update)
-        pcall(function()
-            C4.Signal2 = CurrentCamera:GetPropertyChangedSignal("CFrame"):Connect(function()
-                Part.CFrame = CurrentCamera.CFrame
-            end)
-        end)
-        C4.Destroy = function()
-            C4.Signal:Disconnect()
-            pcall(function() C4.Signal2:Disconnect() end)
-            C4.Update = function() end
-            TweenService:Create(Part, TweenInfo.new(0.5), {Transparency = 1}):Play()
-            DepthOfField:Destroy()
-            task.delay(0.6, function() Part:Destroy() end)
-        end
-        return C4
+        return { Destroy = function() end, Enabled = true }
     end
     return GuiSystem
 end)()
@@ -427,15 +342,15 @@ local Library = {
 
     local Themes = {
         ["Preset"] = {
-            ["Background"] = Color3.fromRGB(10, 4, 4),
-            ["Inline"] = Color3.fromRGB(16, 6, 6),
-            ["Accent Start"] = Color3.fromRGB(220, 40, 40),
-            ["Accent End"] = Color3.fromRGB(80, 8, 8),
+            ["Background"] = Color3.fromRGB(8, 3, 3),
+            ["Inline"] = Color3.fromRGB(14, 5, 5),
+            ["Accent Start"] = Color3.fromRGB(200, 30, 30),
+            ["Accent End"] = Color3.fromRGB(0, 0, 0),
             ["Text"] = Color3.fromRGB(250, 215, 215),
             ["Text 2"] = Color3.fromRGB(175, 130, 130),
-            ["Element"] = Color3.fromRGB(20, 8, 8),
-            ["Hovered Element"] = Color3.fromRGB(32, 14, 14),
-            ["Topbar"] = Color3.fromRGB(14, 5, 5)
+            ["Element"] = Color3.fromRGB(18, 7, 7),
+            ["Hovered Element"] = Color3.fromRGB(28, 10, 10),
+            ["Topbar"] = Color3.fromRGB(12, 4, 4)
         },
         ["Pink"] = {
             ["Background"] = Color3.fromRGB(0, 0, 0),
@@ -2227,9 +2142,9 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Size = UDim2.new(0, 660, 0, 430),
                     Visible = false,
-                    BackgroundTransparency = 1,
+                    BackgroundTransparency = 0,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(15, 5, 5)
+                    BackgroundColor3 = Color3.fromRGB(8, 3, 3)
                 }):AddToTheme({BackgroundColor3 = "Background"})
 
                 Items["MainFrame"]:MakeDraggable()
@@ -3839,51 +3754,59 @@ local Library = {
                 Items["Indicator"] = Library:Create("TextButton", {
                     Parent = Items["Toggle"].Instance,
                     Name = "\0",
-                    AnchorPoint = Vector2.new(0, 0.5),
-                    Position = UDim2.new(0, -20, 0.5, 0),
+                    AnchorPoint = Vector2.new(1, 0.5),
+                    Position = UDim2.new(1, -8, 0.5, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 20, 0, 20),
+                    Size = UDim2.new(0, 32, 0, 16),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(14, 14, 14),
+                    BackgroundColor3 = Color3.fromRGB(18, 7, 7),
                     Text = "",
                     AutoButtonColor = false
                 }):AddToTheme({BackgroundColor3 = "Element"})
-                
+
                 Library:Create("UICorner", {
                     Parent = Items["Indicator"].Instance,
                     Name = "\0",
-                    CornerRadius = UDim.new(0, 5)
+                    CornerRadius = UDim.new(1, 0)
                 })
-                
+
+                Library:Create("UIStroke", {
+                    Parent = Items["Indicator"].Instance,
+                    Name = "\0",
+                    Color = Color3.fromRGB(40, 15, 15),
+                    Thickness = 1,
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                }):AddToTheme({Color = "Inline"})
+
                 Items["Inline"] = Library:Create("Frame", {
                     Parent = Items["Indicator"].Instance,
                     Name = "\0",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AnchorPoint = Vector2.new(0.5, 0.5),
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(0.5, 0, 0.5, 0),
-                    Size = UDim2.new(0, 0, 0, 0),
+                    BackgroundTransparency = 0,
+                    Position = UDim2.new(0, 10, 0.5, 0),
+                    Size = UDim2.new(0, 10, 0, 10),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    BackgroundColor3 = Color3.fromRGB(80, 30, 30)
                 })
-                
+
                 Library:Create("UICorner", {
                     Parent = Items["Inline"].Instance,
                     Name = "\0",
-                    CornerRadius = UDim.new(0, 5)
+                    CornerRadius = UDim.new(1, 0)
                 })
-                
+
                 Library:Create("UIGradient", {
                     Parent = Items["Inline"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 8, 8))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 30, 30)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
                 end})
-                
+
                 Items["Checkmark"] = Library:Create("ImageLabel", {
                     Parent = Items["Inline"].Instance,
                     Name = "\0",
@@ -3986,13 +3909,11 @@ local Library = {
                     if Toggle.Value then 
                         return 
                     end
-
                     Items["Indicator"]:Tween({BackgroundColor3 = Library.Theme["Hovered Element"]})
                 end, function()
                     if Toggle.Value then 
                         return 
                     end
-                    
                     Items["Indicator"]:Tween({BackgroundColor3 = Library.Theme["Element"]})
                 end)
             
@@ -4038,12 +3959,14 @@ local Library = {
 
                 Toggle.Value = Bool 
 
-                if Bool then 
-                    Items["Inline"]:Tween({BackgroundTransparency = 0, Size = UDim2.new(0, 14, 0, 14)})
+                if Bool then
+                    Items["Inline"]:Tween({Position = UDim2.new(1, -10, 0.5, 0), BackgroundColor3 = Library.Theme["Accent Start"]})
+                    Items["Indicator"]:Tween({BackgroundColor3 = Library.Theme["Hovered Element"]})
                     Items["Text"]:Tween({TextTransparency = 0})
-                    Items["Checkmark"].Instance.ImageTransparency = 0
+                    Items["Checkmark"].Instance.ImageTransparency = 1
                 else
-                    Items["Inline"]:Tween({BackgroundTransparency = 1, Size = UDim2.new(0, 0, 0, 0)})
+                    Items["Inline"]:Tween({Position = UDim2.new(0, 10, 0.5, 0), BackgroundColor3 = Color3.fromRGB(50, 20, 20)})
+                    Items["Indicator"]:Tween({BackgroundColor3 = Library.Theme["Element"]})
                     Items["Text"]:Tween({TextTransparency = 0.7})
                     Items["Checkmark"].Instance.ImageTransparency = 1
                 end
