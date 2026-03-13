@@ -3241,7 +3241,6 @@ local Library = {
             }
 
             local Items = { } do 
-                -- TEXT-BASED sub tab button (no icon)
                 local tabName = Page.Name ~= "" and Page.Name or "Tab"
 
                 Items["Inactive"] = Library:Create("TextButton", {
@@ -3250,7 +3249,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
-                    BackgroundColor3 = Color3.fromRGB(30, 6, 8),
+                    BackgroundColor3 = Color3.fromRGB(20, 5, 5),
                     ZIndex = 2,
                     BorderSizePixel = 0,
                     Size = UDim2.new(0, 0, 1, 0),
@@ -3266,15 +3265,31 @@ local Library = {
                     CornerRadius = UDim.new(0, 6)
                 })
 
-                -- Hover border stroke (hidden by default)
+                -- Grey outline always visible
                 Items["HoverStroke"] = Library:Create("UIStroke", {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-                    Color = Color3.fromRGB(180, 25, 35),
+                    Color = Color3.fromRGB(55, 55, 60),
                     Thickness = 1,
-                    Transparency = 1
-                }):AddToTheme({Color = "Accent Start"})
+                    Transparency = 0
+                })
+
+                -- Gradient on the stroke (enabled when active)
+                Items["StrokeGradient"] = Library:Create("UIGradient", {
+                    Parent = Items["HoverStroke"].Instance,
+                    Name = "\0",
+                    Enabled = false,
+                    Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
+                    }
+                }):AddToTheme({Color = function()
+                    return ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),
+                        ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])
+                    }
+                end})
 
                 Library:Create("UIPadding", {
                     Parent = Items["Inactive"].Instance,
@@ -3283,7 +3298,6 @@ local Library = {
                     PaddingRight = UDim.new(0, 10),
                 })
 
-                -- Tab text label
                 Items["TabLabel"] = Library:Create("TextLabel", {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
@@ -3292,7 +3306,7 @@ local Library = {
                     TextColor3 = Color3.fromRGB(200, 200, 200),
                     TextTransparency = 0.5,
                     TextSize = 13,
-                    Size = UDim2.new(1, 0, 1, -4),
+                    Size = UDim2.new(1, 0, 1, 0),
                     AnchorPoint = Vector2.new(0, 0),
                     Position = UDim2.new(0, 0, 0, 0),
                     BackgroundTransparency = 1,
@@ -3301,45 +3315,8 @@ local Library = {
                     TextXAlignment = Enum.TextXAlignment.Center,
                 }):AddToTheme({TextColor3 = "Text"})
 
-                -- Active underline bar with red gradient
-                Items["ActiveBar"] = Library:Create("Frame", {
-                    Parent = Items["Inactive"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2.new(0, 1),
-                    Position = UDim2.new(0, 0, 1, 0),
-                    Size = UDim2.new(1, 0, 0, 2),
-                    BackgroundTransparency = 1,
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(200, 30, 30),
-                    ZIndex = 3,
-                })
-
-                Library:Create("UICorner", {
-                    Parent = Items["ActiveBar"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDim.new(1, 0)
-                })
-
-                Library:Create("UIGradient", {
-                    Parent = Items["ActiveBar"].Instance,
-                    Name = "\0",
-                    Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
-                        ColorSequenceKeypoint.new(0.25, Color3.fromRGB(220, 30, 30)),
-                        ColorSequenceKeypoint.new(0.75, Color3.fromRGB(220, 30, 30)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
-                    }
-                }):AddToTheme({Color = function()
-                    local s = Library.Theme["Accent Start"]
-                    return ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(0,0,0)),
-                        ColorSequenceKeypoint.new(0.25, s),
-                        ColorSequenceKeypoint.new(0.75, s),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(0,0,0))
-                    }
-                end})
-
-                -- Stub items so Turn() doesn't error on icon-related calls
+                -- Stub (no underline bar needed)
+                Items["ActiveBar"] = { Instance = { BackgroundTransparency = 1 } }
                 Items["Shadow"] = { Tween = function() end, Instance = { ImageTransparency = 1 } }
                 Items["IconGradient"] = { Instance = { Enabled = false } }
                 Items["Icon"] = { Tween = function() end, ChangeItemTheme = function() end, Instance = { ImageTransparency = 0 } }
@@ -3416,19 +3393,18 @@ local Library = {
                 Page.Active = Bool 
 
                 if Bool then 
-                    Items["ActiveBar"].Instance.BackgroundTransparency = 0
+                    Items["StrokeGradient"].Instance.Enabled = true
+                    Items["HoverStroke"].Instance.Color = Library.Theme["Accent Start"]
                     Items["TabLabel"]:Tween({TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)})
-                    -- keep hover look on active tab
-                    Items["Inactive"]:Tween({BackgroundTransparency = 0.82})
-                    Items["HoverStroke"]:Tween({Transparency = 0})
+                    Items["Inactive"]:Tween({BackgroundTransparency = 0.88})
                     if Page.Page.Search then 
                         Page.Page.CurrentPage = Page
                     end
                 else
-                    Items["ActiveBar"].Instance.BackgroundTransparency = 1
+                    Items["StrokeGradient"].Instance.Enabled = false
+                    Items["HoverStroke"].Instance.Color = Color3.fromRGB(55, 55, 60)
                     Items["TabLabel"]:Tween({TextTransparency = 0.5, TextColor3 = Library.Theme.Text})
                     Items["Inactive"]:Tween({BackgroundTransparency = 1})
-                    Items["HoverStroke"]:Tween({Transparency = 1})
                 end
 
                 Items["Page"]:FadeDescendants(Bool, function()
@@ -3458,15 +3434,16 @@ local Library = {
 
             Items["Inactive"]:Connect("MouseEnter", function()
                 if not Page.Active then
-                    Items["Inactive"]:Tween({BackgroundTransparency = 0.82})
                     Items["HoverStroke"]:Tween({Transparency = 0})
+                    Items["HoverStroke"].Instance.Color = Color3.fromRGB(100, 100, 108)
+                    Items["Inactive"]:Tween({BackgroundTransparency = 0.92})
                 end
             end)
 
             Items["Inactive"]:Connect("MouseLeave", function()
                 if not Page.Active then
+                    Items["HoverStroke"].Instance.Color = Color3.fromRGB(55, 55, 60)
                     Items["Inactive"]:Tween({BackgroundTransparency = 1})
-                    Items["HoverStroke"]:Tween({Transparency = 1})
                 end
             end)
 
