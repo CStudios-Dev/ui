@@ -960,7 +960,10 @@ local Library = {
     end
 
     Library.Round = function(Self, Number, Float)
-        local Multiplier = 1 / (Float or 1)
+        if not Float or Float == 0 then
+            return math.floor(Number)
+        end
+        local Multiplier = 1 / Float
         return math.floor(Number * Multiplier) / Multiplier
     end
 
@@ -5880,8 +5883,15 @@ local Library = {
             do
                 local ColumnParent = PlayerDataSubTab.Items.LeftColumn.Instance
 
-                -- Track time used
-                local startTime = tick()
+                -- Track time used (persistent across sessions)
+                local usageFile = Library.Directory .. "/usage_time.dat"
+                local savedSeconds = 0
+                pcall(function()
+                    if isfile(usageFile) then
+                        savedSeconds = tonumber(readfile(usageFile)) or 0
+                    end
+                end)
+                local sessionStart = tick()
                 local runCount = 0
                 local playerName = (game:GetService("Players").LocalPlayer and game:GetService("Players").LocalPlayer.Name) or "Unknown"
 
@@ -6084,15 +6094,30 @@ local Library = {
                 local TimeLabel = MakeStat("🕐", "Script Use Time", "0s", 1)
                 local RunsLabel = MakeStat("↻", "Executions", "0x", 2)
                 local UserLabel = MakeStat("★", "Username", playerName, 3)
-                MakeStat("∞", "Access", "inf hours", 4)
+                local GameLabel = MakeStat("🎮", "Current Game", "...", 4)
+
+                -- Fill in game name
+                task.spawn(function()
+                    local gameName = "Unknown"
+                    pcall(function()
+                        local info = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
+                        gameName = info and info.Name or game.Name or "Unknown"
+                    end)
+                    if gameName == "Unknown" or gameName == "" then
+                        gameName = game.Name ~= "" and game.Name or "Unknown"
+                    end
+                    GameLabel.Text = gameName
+                end)
 
                 -- Auto-increment run count on load
                 runCount = runCount + 1
                 RunsLabel.Text = runCount .. "x"
 
-                -- Live time ticker
+                -- Live time ticker (accumulated + current session)
+                local lastSave = tick()
                 Library:Connect(RunService.Heartbeat, function()
-                    local elapsed = tick() - startTime
+                    local sessionElapsed = tick() - sessionStart
+                    local elapsed = savedSeconds + sessionElapsed
                     local h = math.floor(elapsed / 3600)
                     local m = math.floor((elapsed % 3600) / 60)
                     local s = math.floor(elapsed % 60)
@@ -6102,6 +6127,13 @@ local Library = {
                         TimeLabel.Text = string.format("%dm %ds", m, s)
                     else
                         TimeLabel.Text = string.format("%ds", s)
+                    end
+                    -- Save every 30 seconds
+                    if tick() - lastSave >= 30 then
+                        lastSave = tick()
+                        pcall(function()
+                            writefile(usageFile, tostring(math.floor(elapsed)))
+                        end)
                     end
                 end)
 
@@ -6235,12 +6267,11 @@ local Library = {
                 jBtnGrad.Parent = JoinBtn
 
                 JoinBtn.MouseButton1Down:Connect(function()
-                    -- Try setclipboard, then try open URL
                     pcall(function() setclipboard(DISCORD_LINK) end)
-                    pcall(function() 
-                        game:GetService("GuiService"):OpenBrowserWindow(DISCORD_LINK)
-                    end)
-                    Library:Notify({ Title = "Discord", Description = "Link copied! " .. DISCORD_LINK, Duration = 4 })
+                    pcall(function() syn.open_browser(DISCORD_LINK) end)
+                    pcall(function() open_browser_window(DISCORD_LINK) end)
+                    pcall(function() game:GetService("GuiService"):OpenBrowserWindow(DISCORD_LINK) end)
+                    Library:Notify({ Title = "Discord", Description = "Copied to clipboard! discord.gg/" .. DISCORD_INVITE, Duration = 4 })
                 end)
 
                 -- Fetch Discord invite data asynchronously
