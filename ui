@@ -2897,6 +2897,7 @@ local Library = {
             }
 
             local Items = { } do 
+                -- The tab IS the dark box
                 Items["Inactive"] = Library:Create("TextButton", {
                     Parent = Page.Window.Items["Pages"].Instance,
                     Name = "\0",
@@ -2905,40 +2906,64 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
-                    BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 60),
+                    BackgroundTransparency = 0,
+                    Size = UDim2.new(1, 0, 0, 50),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(8, 8, 8)
-                }):AddToTheme({BackgroundColor3 = "Inline"})
+                    BackgroundColor3 = Color3.fromRGB(18, 7, 7)
+                }):AddToTheme({BackgroundColor3 = "Element"})
                 
                 Library:Create("UICorner", {
                     Parent = Items["Inactive"].Instance,
-                    Name = "\0"
+                    Name = "\0",
+                    CornerRadius = UDim.new(0, 8)
                 })
+
+                -- Accent border stroke, hidden until active
+                Items["UIStroke"] = Library:Create("UIStroke", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    Color = Color3.fromRGB(160, 20, 40),
+                    Thickness = 1.5,
+                    Transparency = 1
+                })
+
+                Library:Create("UIGradient", {
+                    Parent = Items["UIStroke"].Instance,
+                    Name = "\0",
+                    Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 10, 20))
+                    }
+                }):AddToTheme({Color = function()
+                    return ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),
+                        ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])
+                    }
+                end})
+
+                -- Stub Gradient so Turn() doesn't error
+                Items["Gradient"] = { Instance = { Enabled = false } }
                 
+                -- Icon background (transparent, just for positioning)
                 Items["IconBackground"] = Library:Create("Frame", {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AnchorPoint = Vector2.new(0.5, 0.5),
-                    BackgroundTransparency = 0,
+                    BackgroundTransparency = 1,
                     Position = UDim2.new(0.5, 0, 0.5, 0),
-                    Size = UDim2.new(0, 36, 0, 36),
+                    Size = UDim2.new(0, 28, 0, 28),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(22, 8, 8)
-                }):AddToTheme({BackgroundColor3 = "Element"})
+                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                })
                 
                 Library:Create("UICorner", {
                     Parent = Items["IconBackground"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDim.new(0, 8)
+                    Name = "\0"
                 })
 
-                -- Stub so Turn() doesn't error
-                Items["UIStroke"] = { Instance = { Transparency = 1 }, Tween = function() end }
-                Items["Gradient"] = { Instance = { Enabled = false } }
-                
                 -- Icon container frame (supports both asset ids and lucide icons)
                 Items["IconContainer"] = Library:Create("Frame", {
                     Parent = Items["IconBackground"].Instance,
@@ -3095,12 +3120,12 @@ local Library = {
 
                 if Bool then 
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 60)})
-                    Items["IconBackground"]:Tween({BackgroundColor3 = Library.Theme["Hovered Element"]})
-                    Items["Inactive"]:Tween({BackgroundTransparency = 0})
+                    Items["UIStroke"]:Tween({Transparency = 0})
+                    Items["Inactive"]:Tween({BackgroundColor3 = Library.Theme["Hovered Element"]})
                 else
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 80)})
-                    Items["IconBackground"]:Tween({BackgroundColor3 = Library.Theme["Element"]})
-                    Items["Inactive"]:Tween({BackgroundTransparency = 1})
+                    Items["UIStroke"]:Tween({Transparency = 1})
+                    Items["Inactive"]:Tween({BackgroundColor3 = Library.Theme["Element"]})
                 end
 
                 Items["Page"]:FadeDescendants(Bool, function()
