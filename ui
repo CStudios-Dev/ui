@@ -3199,7 +3199,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
-                    BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+                    BackgroundColor3 = Color3.fromRGB(30, 6, 8),
                     ZIndex = 2,
                     BorderSizePixel = 0,
                     Size = UDim2.new(0, 0, 1, 0),
@@ -3207,6 +3207,22 @@ local Library = {
                     Text = "",
                     FontFace = Library.Font,
                     TextSize = 13
+                })
+
+                Library:Create("UICorner", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDim.new(0, 6)
+                })
+
+                -- Hover border stroke (hidden by default)
+                Items["HoverStroke"] = Library:Create("UIStroke", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    Color = Color3.fromRGB(130, 20, 28),
+                    Thickness = 1,
+                    Transparency = 1
                 })
 
                 Library:Create("UIPadding", {
@@ -3369,12 +3385,17 @@ local Library = {
                 if Bool then 
                     Items["ActiveBar"].Instance.BackgroundTransparency = 0
                     Items["TabLabel"]:Tween({TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)})
+                    -- clear any hover state since this tab is now active
+                    Items["Inactive"]:Tween({BackgroundTransparency = 1})
+                    Items["HoverStroke"]:Tween({Transparency = 1})
                     if Page.Page.Search then 
                         Page.Page.CurrentPage = Page
                     end
                 else
                     Items["ActiveBar"].Instance.BackgroundTransparency = 1
                     Items["TabLabel"]:Tween({TextTransparency = 0.5, TextColor3 = Library.Theme.Text})
+                    Items["Inactive"]:Tween({BackgroundTransparency = 1})
+                    Items["HoverStroke"]:Tween({Transparency = 1})
                 end
 
                 Items["Page"]:FadeDescendants(Bool, function()
@@ -3399,6 +3420,20 @@ local Library = {
                     end
 
                     Value:Turn(Value == Page)
+                end
+            end)
+
+            Items["Inactive"]:Connect("MouseEnter", function()
+                if not Page.Active then
+                    Items["Inactive"]:Tween({BackgroundTransparency = 0.82})
+                    Items["HoverStroke"]:Tween({Transparency = 0})
+                end
+            end)
+
+            Items["Inactive"]:Connect("MouseLeave", function()
+                if not Page.Active then
+                    Items["Inactive"]:Tween({BackgroundTransparency = 1})
+                    Items["HoverStroke"]:Tween({Transparency = 1})
                 end
             end)
 
