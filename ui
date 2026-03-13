@@ -222,7 +222,7 @@ local Library = {
         Configs = "/Configs"
     },
 
-    FontSize = 14,
+    FontSize = 13,
 
     Animation = {
         Time = 0.3,
@@ -2934,12 +2934,19 @@ local Library = {
                     Name = "\0"
                 })
                 
-                Items["UIStroke"] = { Instance = { Color = Color3.fromRGB(22, 22, 22) } }
-                
-                Items["Gradient"] = Library:Create("UIGradient", {
+                Items["UIStroke"] = Library:Create("UIStroke", {
                     Parent = Items["IconBackground"].Instance,
                     Name = "\0",
-                    Enabled = false,
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    Color = Color3.fromRGB(220, 40, 40),
+                    Thickness = 1.5,
+                    Transparency = 1
+                })
+                
+                Items["Gradient"] = Library:Create("UIGradient", {
+                    Parent = Items["UIStroke"].Instance,
+                    Name = "\0",
+                    Enabled = true,
                     Color = ColorSequence.new{
                     ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
                     ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 8, 8))
@@ -3103,8 +3110,7 @@ local Library = {
                 if Bool then 
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 60)})
 
-                    Items["UIStroke"].Instance.Color = Color3.fromRGB(255, 255, 255)
-                    Items["Gradient"].Instance.Enabled = true 
+                    Items["UIStroke"]:Tween({Transparency = 0})
 
                     Items["Text"]:Tween({TextTransparency = 0})
                     Items["Description"]:ChangeItemTheme({TextColor3 = "Accent End"})
@@ -3113,8 +3119,7 @@ local Library = {
                     Items["Inactive"]:Tween({BackgroundTransparency = 0})
                 else
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 80)})
-                    Items["Gradient"].Instance.Enabled = false 
-                    Items["UIStroke"].Instance.Color = Color3.fromRGB(22, 22, 22)
+                    Items["UIStroke"]:Tween({Transparency = 1})
 
                     Items["Text"]:Tween({TextTransparency = 0.5})
                     Items["Description"]:ChangeItemTheme({TextColor3 = "Text"})
