@@ -1,4 +1,6 @@
--- made by melissa
+-- Made by samet
+-- Example at bottom
+
 if getgenv().Library and getgenv().Library.Exit then
     getgenv().Library:Exit()
 end
@@ -2196,36 +2198,8 @@ local Library = {
                     Parent = Items["Top"].Instance,
                     Name = "\0"
                 })
-                
-                -- Gradient accent line under the topbar
-                local TopbarLine = Library:Create("Frame", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2.new(0, 1),
-                    Position = UDim2.new(0, 0, 1, 0),
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, 0, 0, 2),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(220, 40, 80),
-                    ZIndex = 5,
-                })
 
-                Library:Create("UIGradient", {
-                    Parent = TopbarLine.Instance,
-                    Name = "\0",
-                    Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 80)),
-                        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180, 20, 50)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 10, 25))
-                    }
-                }):AddToTheme({Color = function()
-                    return ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),
-                        ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])
-                    }
-                end})
-
-                -- Cover fill behind line so rounded corners don't gap
+                -- Cover fill so rounded corners don't gap below topbar
                 Library:Create("Frame", {
                     Parent = Items["Top"].Instance,
                     Name = "\0",
@@ -4361,39 +4335,40 @@ local Library = {
             end
 
             function Slider:GetSize(Input)
+                -- Input.Position is ABSOLUTE screen coords (from InputBegan / InputChanged)
                 local sliderInst = Items["RealSlider"].Instance
                 local sliderSize = sliderInst.AbsoluteSize.X
                 if not sliderSize or sliderSize <= 0 then return Slider.Min end
-                local inputX = (typeof(Input.Position) == "Vector3") and Input.Position.X or Input.Position.X
-                if not inputX or inputX ~= inputX then return Slider.Min end -- NaN guard
+                local inputX = Input.Position.X
                 local SizeX = math.clamp((inputX - sliderInst.AbsolutePosition.X) / sliderSize, 0, 1)
-                local Value = ((Slider.Max - Slider.Min) * SizeX) + Slider.Min
-                if Value ~= Value then return Slider.Min end -- NaN guard
+                local Value = Slider.Min + (Slider.Max - Slider.Min) * SizeX
                 return Value
+            end
+
+            function Slider:GetSizeFromLocal(localX)
+                -- localX is LOCAL to the button (0 = left edge) from MouseButton1Down
+                local sliderSize = Items["RealSlider"].Instance.AbsoluteSize.X
+                if not sliderSize or sliderSize <= 0 then return Slider.Min end
+                local SizeX = math.clamp(localX / sliderSize, 0, 1)
+                return Slider.Min + (Slider.Max - Slider.Min) * SizeX
             end
 
             function Slider:SetText(Text)
                 Items["Text"].Instance.Text = tostring(Text)
             end
 
-            local InputChanged 
-            
+            local InputChanged
+
+            -- Primary: InputBegan (absolute coords)
             Items["RealSlider"]:Connect("InputBegan", function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                     Slider.Sliding = true
+                    Slider:Set(Slider:GetSize(Input))
 
-                    local Value = Slider:GetSize(Input)
-
-                    Slider:Set(Value)
-
-                    if InputChanged then
-                        return
-                    end
-
+                    if InputChanged then return end
                     InputChanged = Input.Changed:Connect(function()
                         if Input.UserInputState == Enum.UserInputState.End then
                             Slider.Sliding = false
-
                             InputChanged:Disconnect()
                             InputChanged = nil
                         end
@@ -4401,70 +4376,30 @@ local Library = {
                 end
             end)
 
-            -- Fallback: MouseButton1Down fires in more executors than InputBegan
-            Items["RealSlider"].Instance.MouseButton1Down:Connect(function(x, y)
-                if not Slider.Sliding then
-                    Slider.Sliding = true
-                    -- x,y may be absolute OR local depending on executor
-                    -- If x is smaller than AbsolutePosition it's likely local, add offset
-                    local absX = x
-                    local absPos = Items["RealSlider"].Instance.AbsolutePosition.X
-                    if x and x < absPos then
-                        absX = absPos + x  -- local → absolute
+            -- Fallback: MouseButton1Down gives LOCAL coords relative to the button
+            Items["RealSlider"].Instance.MouseButton1Down:Connect(function(localX, localY)
+                Slider.Sliding = true
+                Slider:Set(Slider:GetSizeFromLocal(localX))
+            end)
+
+            -- Stop sliding on mouse release
+            Library:Connect(UserInputService.InputEnded, function(Input)
+                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                    if Slider.Sliding then
+                        Slider.Sliding = false
+                        if InputChanged then
+                            InputChanged:Disconnect()
+                            InputChanged = nil
+                        end
                     end
-                    local fakeInput = {Position = Vector3.new(absX or absPos, 0, 0)}
-                    local Value = Slider:GetSize(fakeInput)
-                    Slider:Set(Value)
                 end
             end)
 
-            -- Mobile fallback: for executors where GuiObject.InputBegan doesn't fire for touch
-            if IsMobile then
-                Items["RealSlider"].Instance.MouseButton1Down:Connect(function(x, y)
-                    if Slider.Sliding then return end
-                    Slider.Sliding = true
-                    local absX = x
-                    local absPos = Items["RealSlider"].Instance.AbsolutePosition.X
-                    if x and x < absPos then absX = absPos + x end
-                    local fakeInput = {Position = Vector3.new(absX or absPos, 0, 0)}
-                    local Value = Slider:GetSize(fakeInput)
-                    Slider:Set(Value)
-                end)
-
-                Library:Connect(UserInputService.InputEnded, function(Input)
-                    if (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1) then
-                        if Slider.Sliding then
-                            Slider.Sliding = false
-                            if InputChanged then
-                                InputChanged:Disconnect()
-                                InputChanged = nil
-                            end
-                        end
-                    end
-                end)
-            else
-                -- PC fallback: always stop sliding on mouse release
-                Library:Connect(UserInputService.InputEnded, function(Input)
-                    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        if Slider.Sliding then
-                            Slider.Sliding = false
-                            if InputChanged then
-                                InputChanged:Disconnect()
-                                InputChanged = nil
-                            end
-                        end
-                    end
-                end)
-            end
-
-
-
+            -- Drag: InputChanged gives ABSOLUTE coords
             Library:Connect(UserInputService.InputChanged, function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
                     if Slider.Sliding then
-                        local Value = Slider:GetSize(Input)
-
-                        Slider:Set(Value)
+                        Slider:Set(Slider:GetSize(Input))
                     end
                 end
             end)
@@ -6213,6 +6148,182 @@ local Library = {
                         TimeLabel.Text = string.format("%dm %ds", m, s)
                     else
                         TimeLabel.Text = string.format("%ds", s)
+                    end
+                end)
+
+                -- ── Discord Server Card ──────────────────────────────────────
+                -- CONFIGURE THESE TWO VALUES:
+                local DISCORD_INVITE = "qphZBPNDPZ"
+                local DISCORD_LINK   = "https://discord.gg/" .. DISCORD_INVITE
+
+                local DiscordCard = Instance.new("Frame")
+                DiscordCard.Name = "\0"
+                DiscordCard.Size = UDim2.new(1, 0, 0, 64)
+                DiscordCard.BackgroundColor3 = Color3.fromRGB(10, 3, 3)
+                DiscordCard.BorderSizePixel = 0
+                DiscordCard.Parent = ColumnParent
+
+                local dcCorner = Instance.new("UICorner")
+                dcCorner.CornerRadius = UDim.new(0, 8)
+                dcCorner.Parent = DiscordCard
+
+                local dcStroke = Instance.new("UIStroke")
+                dcStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                dcStroke.Color = Color3.fromRGB(50, 14, 22)
+                dcStroke.Thickness = 1.2
+                dcStroke.Parent = DiscordCard
+
+                local dcStrokeGrad = Instance.new("UIGradient")
+                dcStrokeGrad.Color = ColorSequence.new{
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 80)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 10, 25))
+                }
+                dcStrokeGrad.Rotation = 90
+                dcStrokeGrad.Parent = dcStroke
+
+                -- Server icon (left side circle)
+                local ServerIconBg = Instance.new("Frame")
+                ServerIconBg.Name = "\0"
+                ServerIconBg.Size = UDim2.new(0, 42, 0, 42)
+                ServerIconBg.AnchorPoint = Vector2.new(0, 0.5)
+                ServerIconBg.Position = UDim2.new(0, 12, 0.5, 0)
+                ServerIconBg.BackgroundColor3 = Color3.fromRGB(30, 8, 14)
+                ServerIconBg.BorderSizePixel = 0
+                ServerIconBg.Parent = DiscordCard
+
+                local siBgCorner = Instance.new("UICorner")
+                siBgCorner.CornerRadius = UDim.new(0, 10)
+                siBgCorner.Parent = ServerIconBg
+
+                local ServerIcon = Instance.new("ImageLabel")
+                ServerIcon.Name = "\0"
+                ServerIcon.Size = UDim2.new(1, 0, 1, 0)
+                ServerIcon.BackgroundTransparency = 1
+                ServerIcon.BorderSizePixel = 0
+                ServerIcon.Image = ""
+                ServerIcon.ScaleType = Enum.ScaleType.Crop
+                ServerIcon.Parent = ServerIconBg
+
+                local siCorner = Instance.new("UICorner")
+                siCorner.CornerRadius = UDim.new(0, 10)
+                siCorner.Parent = ServerIcon
+
+                -- Server name
+                local ServerName = Instance.new("TextLabel")
+                ServerName.Name = "\0"
+                ServerName.Size = UDim2.new(1, -170, 0, 16)
+                ServerName.AnchorPoint = Vector2.new(0, 0)
+                ServerName.Position = UDim2.new(0, 64, 0, 12)
+                ServerName.BackgroundTransparency = 1
+                ServerName.BorderSizePixel = 0
+                ServerName.Text = "Loading..."
+                ServerName.TextColor3 = Color3.fromRGB(255, 220, 225)
+                ServerName.TextSize = 14
+                ServerName.TextXAlignment = Enum.TextXAlignment.Left
+                ServerName.FontFace = Library.Font
+                ServerName.Parent = DiscordCard
+
+                -- Members row
+                local MembersLabel = Instance.new("TextLabel")
+                MembersLabel.Name = "\0"
+                MembersLabel.Size = UDim2.new(1, -170, 0, 13)
+                MembersLabel.AnchorPoint = Vector2.new(0, 0)
+                MembersLabel.Position = UDim2.new(0, 64, 0, 30)
+                MembersLabel.BackgroundTransparency = 1
+                MembersLabel.BorderSizePixel = 0
+                MembersLabel.Text = "Members: —"
+                MembersLabel.TextColor3 = Color3.fromRGB(175, 130, 140)
+                MembersLabel.TextSize = 11
+                MembersLabel.TextXAlignment = Enum.TextXAlignment.Left
+                MembersLabel.FontFace = Library.Font
+                MembersLabel.Parent = DiscordCard
+
+                -- Online row (green dot + count)
+                local OnlineLabel = Instance.new("TextLabel")
+                OnlineLabel.Name = "\0"
+                OnlineLabel.Size = UDim2.new(1, -170, 0, 13)
+                OnlineLabel.AnchorPoint = Vector2.new(0, 0)
+                OnlineLabel.Position = UDim2.new(0, 64, 0, 45)
+                OnlineLabel.BackgroundTransparency = 1
+                OnlineLabel.BorderSizePixel = 0
+                OnlineLabel.RichText = true
+                OnlineLabel.Text = '<font color="rgb(87,242,135)">●</font> Online: —'
+                OnlineLabel.TextColor3 = Color3.fromRGB(175, 130, 140)
+                OnlineLabel.TextSize = 11
+                OnlineLabel.TextXAlignment = Enum.TextXAlignment.Left
+                OnlineLabel.FontFace = Library.Font
+                OnlineLabel.Parent = DiscordCard
+
+                -- Join Discord button (right side)
+                local JoinBtn = Instance.new("TextButton")
+                JoinBtn.Name = "\0"
+                JoinBtn.Size = UDim2.new(0, 100, 0, 32)
+                JoinBtn.AnchorPoint = Vector2.new(1, 0.5)
+                JoinBtn.Position = UDim2.new(1, -12, 0.5, 0)
+                JoinBtn.BorderSizePixel = 0
+                JoinBtn.Text = "Join Discord"
+                JoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                JoinBtn.TextSize = 12
+                JoinBtn.AutoButtonColor = false
+                JoinBtn.FontFace = Library.Font
+                JoinBtn.Parent = DiscordCard
+
+                local jBtnCorner = Instance.new("UICorner")
+                jBtnCorner.CornerRadius = UDim.new(0, 7)
+                jBtnCorner.Parent = JoinBtn
+
+                local jBtnGrad = Instance.new("UIGradient")
+                jBtnGrad.Color = ColorSequence.new{
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 80)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(160, 15, 35))
+                }
+                jBtnGrad.Rotation = 90
+                jBtnGrad.Parent = JoinBtn
+
+                JoinBtn.MouseButton1Down:Connect(function()
+                    -- Try setclipboard, then try open URL
+                    pcall(function() setclipboard(DISCORD_LINK) end)
+                    pcall(function() 
+                        game:GetService("GuiService"):OpenBrowserWindow(DISCORD_LINK)
+                    end)
+                    Library:Notify({ Title = "Discord", Description = "Link copied! " .. DISCORD_LINK, Duration = 4 })
+                end)
+
+                -- Fetch Discord invite data asynchronously
+                task.spawn(function()
+                    local ok, result = pcall(function()
+                        local url = "https://discord.com/api/v9/invites/" .. DISCORD_INVITE .. "?with_counts=true"
+                        local raw = game:GetService("HttpService"):GetAsync(url)
+                        return game:GetService("HttpService"):JSONDecode(raw)
+                    end)
+
+                    if ok and result and result.guild then
+                        local guild = result.guild
+
+                        -- Server name
+                        ServerName.Text = guild.name or "Unknown"
+
+                        -- Member counts
+                        local members = result.approximate_member_count
+                        local online  = result.approximate_presence_count
+
+                        if members then
+                            MembersLabel.Text = "Members: " .. string.format("%s", tostring(members))
+                        end
+                        if online then
+                            OnlineLabel.Text = '<font color="rgb(87,242,135)">●</font> Online: ' .. tostring(online)
+                        end
+
+                        -- Server icon
+                        if guild.icon then
+                            local iconUrl = "https://cdn.discordapp.com/icons/" .. guild.id .. "/" .. guild.icon .. ".png?size=64"
+                            pcall(function()
+                                ServerIcon.Image = iconUrl
+                            end)
+                        end
+                    else
+                        ServerName.Text = "Set DISCORD_INVITE code"
+                        MembersLabel.Text = "Members: —"
                     end
                 end)
             end
