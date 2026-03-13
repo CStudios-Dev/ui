@@ -3324,11 +3324,19 @@ local Library = {
                     Parent = Items["ActiveBar"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+                        ColorSequenceKeypoint.new(0.25, Color3.fromRGB(220, 30, 30)),
+                        ColorSequenceKeypoint.new(0.75, Color3.fromRGB(220, 30, 30)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
                     }
                 }):AddToTheme({Color = function()
-                    return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
+                    local s = Library.Theme["Accent Start"]
+                    return ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(0,0,0)),
+                        ColorSequenceKeypoint.new(0.25, s),
+                        ColorSequenceKeypoint.new(0.75, s),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(0,0,0))
+                    }
                 end})
 
                 -- Stub items so Turn() doesn't error on icon-related calls
@@ -3367,7 +3375,8 @@ local Library = {
                     Name = "\0",
                     PaddingBottom = UDim.new(0, 15),
                     PaddingTop = UDim.new(0, 10),
-                    PaddingLeft = UDim.new(0, 15)
+                    PaddingLeft = UDim.new(0, 15),
+                    PaddingRight = UDim.new(0, 15)
                 })
                 
                 Library:Create("UIListLayout", {
@@ -3377,47 +3386,20 @@ local Library = {
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
 
+                -- Single column layout (no horizontal split)
                 Library:Create("UIListLayout", {
                     Parent = Items["Page"].Instance,
                     Name = "\0",
-                    FillDirection = Enum.FillDirection.Horizontal,
-                    HorizontalFlex = Enum.UIFlexAlignment.Fill,
-                    Padding = UDim.new(0, 15),
+                    FillDirection = Enum.FillDirection.Vertical,
+                    Padding = UDim.new(0, 0),
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
                 
-                Items["RightColumn"] = Library:Create("ScrollingFrame", {
-                    Parent = Items["Page"].Instance,
-                    Name = "\0",
-                    ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0),
-                    Active = true,
-                    AutomaticCanvasSize = Enum.AutomaticSize.Y,
-                    ScrollBarThickness = 0,
-                    BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 1, 0),
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    BorderSizePixel = 0,
-                    CanvasSize = UDim2.new(0, 0, 0, 0)
-                })
-                
-                Library:Create("UIPadding", {
-                    Parent = Items["RightColumn"].Instance,
-                    Name = "\0",
-                    PaddingBottom = UDim.new(0, 15),
-                    PaddingTop = UDim.new(0, 10),
-                    PaddingRight = UDim.new(0, 15)
-                })
-                
-                Library:Create("UIListLayout", {
-                    Parent = Items["RightColumn"].Instance,
-                    Name = "\0",
-                    Padding = UDim.new(0, 10),
-                    SortOrder = Enum.SortOrder.LayoutOrder
-                })           
+                -- RightColumn points to same column so existing Section calls work
+                Items["RightColumn"] = Items["LeftColumn"]
                 
                 Page.ColumnsData[1] = Items["LeftColumn"].Instance
-                Page.ColumnsData[2] = Items["RightColumn"].Instance
+                Page.ColumnsData[2] = Items["LeftColumn"].Instance
 
                 Page.Items = Items
             end
