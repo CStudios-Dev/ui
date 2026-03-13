@@ -342,15 +342,15 @@ local Library = {
 
     local Themes = {
         ["Preset"] = {
-            ["Background"] = Color3.fromRGB(8, 3, 3),
-            ["Inline"] = Color3.fromRGB(14, 5, 5),
+            ["Background"] = Color3.fromRGB(0, 0, 0),
+            ["Inline"] = Color3.fromRGB(8, 8, 8),
             ["Accent Start"] = Color3.fromRGB(200, 30, 30),
             ["Accent End"] = Color3.fromRGB(80, 8, 8),
             ["Text"] = Color3.fromRGB(250, 215, 215),
             ["Text 2"] = Color3.fromRGB(175, 130, 130),
-            ["Element"] = Color3.fromRGB(18, 7, 7),
-            ["Hovered Element"] = Color3.fromRGB(28, 10, 10),
-            ["Topbar"] = Color3.fromRGB(12, 4, 4)
+            ["Element"] = Color3.fromRGB(14, 14, 14),
+            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
+            ["Topbar"] = Color3.fromRGB(4, 4, 4)
         },
         ["Pink"] = {
             ["Background"] = Color3.fromRGB(0, 0, 0),
@@ -6181,6 +6181,21 @@ local Library = {
                 ThemeSection:Button({
                     Name = "Reset to Default",
                     Callback = function() Library:SetTheme("Preset") end
+                })
+                ThemeSection:Slider({
+                    Name = "Opacity",
+                    Flag = "_UIOpacity",
+                    Default = 10,
+                    Min = 1,
+                    Max = 10,
+                    Decimals = 0,
+                    Suffix = "",
+                    Callback = function(Value)
+                        local t = 1 - (Value / 10)
+                        if Library.Windoww and Library.Windoww.Items and Library.Windoww.Items["MainFrame"] then
+                            Library.Windoww.Items["MainFrame"].Instance.BackgroundTransparency = t
+                        end
+                    end
                 })
                 for Index, Value in Library.Theme do
                     ThemeSection:Label({Name = Index}):Colorpicker({
