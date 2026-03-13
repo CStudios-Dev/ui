@@ -344,8 +344,8 @@ local Library = {
         ["Preset"] = {
             ["Background"] = Color3.fromRGB(8, 3, 3),
             ["Inline"] = Color3.fromRGB(14, 5, 5),
-            ["Accent Start"] = Color3.fromRGB(220, 40, 80),
-            ["Accent End"] = Color3.fromRGB(160, 15, 30),
+            ["Accent Start"] = Color3.fromRGB(220, 30, 30),
+            ["Accent End"] = Color3.fromRGB(10, 0, 0),
             ["Text"] = Color3.fromRGB(255, 220, 225),
             ["Text 2"] = Color3.fromRGB(200, 140, 150),
             ["Element"] = Color3.fromRGB(18, 7, 7),
@@ -353,59 +353,103 @@ local Library = {
             ["Topbar"] = Color3.fromRGB(12, 4, 4)
         },
         ["Pink"] = {
-            ["Background"] = Color3.fromRGB(0, 0, 0),
-            ["Inline"] = Color3.fromRGB(8, 8, 8),
-            ["Accent Start"] = Color3.fromRGB(220, 40, 40),
-            ["Accent End"] = Color3.fromRGB(80, 8, 8),
-            ["Text"] = Color3.fromRGB(220, 229, 247),
-            ["Text 2"] = Color3.fromRGB(145, 151, 163),
-            ["Element"] = Color3.fromRGB(14, 14, 14),
-            ["Hovered Element"] = Color3.fromRGB(24, 24, 24),
-            ["Topbar"] = Color3.fromRGB(4, 4, 4)
+            ["Background"] = Color3.fromRGB(5, 0, 8),
+            ["Inline"] = Color3.fromRGB(10, 4, 14),
+            ["Accent Start"] = Color3.fromRGB(240, 60, 160),
+            ["Accent End"] = Color3.fromRGB(60, 0, 40),
+            ["Text"] = Color3.fromRGB(255, 210, 240),
+            ["Text 2"] = Color3.fromRGB(190, 140, 175),
+            ["Element"] = Color3.fromRGB(20, 8, 22),
+            ["Hovered Element"] = Color3.fromRGB(35, 14, 38),
+            ["Topbar"] = Color3.fromRGB(8, 2, 10)
         },
         ["Purple"] = {
-            ["Background"] = Color3.fromRGB(0, 0, 0),
-            ["Inline"] = Color3.fromRGB(6, 6, 6),
+            ["Background"] = Color3.fromRGB(4, 2, 10),
+            ["Inline"] = Color3.fromRGB(8, 5, 18),
             ["Accent Start"] = Color3.fromRGB(160, 80, 255),
-            ["Accent End"] = Color3.fromRGB(10, 0, 30),
+            ["Accent End"] = Color3.fromRGB(20, 0, 60),
             ["Text"] = Color3.fromRGB(220, 215, 250),
             ["Text 2"] = Color3.fromRGB(140, 130, 175),
-            ["Element"] = Color3.fromRGB(12, 12, 12),
-            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
-            ["Topbar"] = Color3.fromRGB(4, 4, 4)
+            ["Element"] = Color3.fromRGB(15, 10, 28),
+            ["Hovered Element"] = Color3.fromRGB(26, 18, 44),
+            ["Topbar"] = Color3.fromRGB(6, 3, 12)
         },
         ["Cyan"] = {
-            ["Background"] = Color3.fromRGB(0, 0, 0),
-            ["Inline"] = Color3.fromRGB(6, 6, 6),
+            ["Background"] = Color3.fromRGB(0, 5, 8),
+            ["Inline"] = Color3.fromRGB(0, 10, 16),
             ["Accent Start"] = Color3.fromRGB(0, 210, 255),
-            ["Accent End"] = Color3.fromRGB(0, 20, 40),
-            ["Text"] = Color3.fromRGB(210, 240, 255),
-            ["Text 2"] = Color3.fromRGB(130, 165, 185),
-            ["Element"] = Color3.fromRGB(12, 12, 12),
-            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
-            ["Topbar"] = Color3.fromRGB(4, 4, 4)
+            ["Accent End"] = Color3.fromRGB(0, 30, 50),
+            ["Text"] = Color3.fromRGB(210, 245, 255),
+            ["Text 2"] = Color3.fromRGB(130, 175, 195),
+            ["Element"] = Color3.fromRGB(0, 16, 24),
+            ["Hovered Element"] = Color3.fromRGB(0, 26, 38),
+            ["Topbar"] = Color3.fromRGB(0, 6, 10)
         },
         ["Green"] = {
-            ["Background"] = Color3.fromRGB(0, 0, 0),
-            ["Inline"] = Color3.fromRGB(6, 6, 6),
+            ["Background"] = Color3.fromRGB(0, 6, 2),
+            ["Inline"] = Color3.fromRGB(0, 12, 5),
             ["Accent Start"] = Color3.fromRGB(50, 230, 100),
-            ["Accent End"] = Color3.fromRGB(0, 30, 10),
-            ["Text"] = Color3.fromRGB(210, 250, 220),
-            ["Text 2"] = Color3.fromRGB(130, 175, 140),
-            ["Element"] = Color3.fromRGB(12, 12, 12),
-            ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
-            ["Topbar"] = Color3.fromRGB(4, 4, 4)
+            ["Accent End"] = Color3.fromRGB(0, 40, 12),
+            ["Text"] = Color3.fromRGB(210, 255, 225),
+            ["Text 2"] = Color3.fromRGB(130, 180, 145),
+            ["Element"] = Color3.fromRGB(0, 18, 8),
+            ["Hovered Element"] = Color3.fromRGB(0, 30, 14),
+            ["Topbar"] = Color3.fromRGB(0, 7, 3)
         },
         ["Blue"] = {
-            ["Background"] = Color3.fromRGB(0, 0, 0),
-            ["Inline"] = Color3.fromRGB(6, 6, 6),
+            ["Background"] = Color3.fromRGB(0, 3, 10),
+            ["Inline"] = Color3.fromRGB(0, 6, 18),
             ["Accent Start"] = Color3.fromRGB(60, 120, 255),
-            ["Accent End"] = Color3.fromRGB(0, 10, 50),
-            ["Text"] = Color3.fromRGB(210, 220, 255),
-            ["Text 2"] = Color3.fromRGB(130, 145, 190),
-            ["Element"] = Color3.fromRGB(12, 12, 12),
+            ["Accent End"] = Color3.fromRGB(0, 10, 60),
+            ["Text"] = Color3.fromRGB(210, 225, 255),
+            ["Text 2"] = Color3.fromRGB(130, 150, 200),
+            ["Element"] = Color3.fromRGB(0, 10, 28),
+            ["Hovered Element"] = Color3.fromRGB(0, 16, 44),
+            ["Topbar"] = Color3.fromRGB(0, 4, 12)
+        },
+        ["Gold"] = {
+            ["Background"] = Color3.fromRGB(8, 6, 0),
+            ["Inline"] = Color3.fromRGB(14, 10, 0),
+            ["Accent Start"] = Color3.fromRGB(255, 185, 0),
+            ["Accent End"] = Color3.fromRGB(80, 40, 0),
+            ["Text"] = Color3.fromRGB(255, 240, 200),
+            ["Text 2"] = Color3.fromRGB(190, 165, 110),
+            ["Element"] = Color3.fromRGB(22, 16, 0),
+            ["Hovered Element"] = Color3.fromRGB(36, 26, 0),
+            ["Topbar"] = Color3.fromRGB(10, 7, 0)
+        },
+        ["Orange"] = {
+            ["Background"] = Color3.fromRGB(8, 4, 0),
+            ["Inline"] = Color3.fromRGB(14, 7, 0),
+            ["Accent Start"] = Color3.fromRGB(255, 110, 20),
+            ["Accent End"] = Color3.fromRGB(80, 20, 0),
+            ["Text"] = Color3.fromRGB(255, 230, 210),
+            ["Text 2"] = Color3.fromRGB(190, 150, 120),
+            ["Element"] = Color3.fromRGB(22, 10, 0),
+            ["Hovered Element"] = Color3.fromRGB(36, 16, 0),
+            ["Topbar"] = Color3.fromRGB(10, 5, 0)
+        },
+        ["Rose"] = {
+            ["Background"] = Color3.fromRGB(8, 2, 4),
+            ["Inline"] = Color3.fromRGB(14, 4, 8),
+            ["Accent Start"] = Color3.fromRGB(255, 80, 110),
+            ["Accent End"] = Color3.fromRGB(80, 0, 20),
+            ["Text"] = Color3.fromRGB(255, 215, 225),
+            ["Text 2"] = Color3.fromRGB(195, 145, 158),
+            ["Element"] = Color3.fromRGB(22, 6, 10),
+            ["Hovered Element"] = Color3.fromRGB(36, 10, 16),
+            ["Topbar"] = Color3.fromRGB(10, 2, 5)
+        },
+        ["Midnight"] = {
+            ["Background"] = Color3.fromRGB(3, 3, 3),
+            ["Inline"] = Color3.fromRGB(8, 8, 8),
+            ["Accent Start"] = Color3.fromRGB(130, 130, 145),
+            ["Accent End"] = Color3.fromRGB(20, 20, 25),
+            ["Text"] = Color3.fromRGB(230, 230, 235),
+            ["Text 2"] = Color3.fromRGB(150, 150, 160),
+            ["Element"] = Color3.fromRGB(13, 13, 13),
             ["Hovered Element"] = Color3.fromRGB(22, 22, 22),
-            ["Topbar"] = Color3.fromRGB(4, 4, 4)
+            ["Topbar"] = Color3.fromRGB(5, 5, 5)
         },
     }
 
@@ -2158,7 +2202,14 @@ local Library = {
                         ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
                     },
                     Rotation = 135
-                })
+                }):AddToTheme({Color = function()
+                    local s = Library.Theme["Accent Start"]
+                    local dim = Color3.fromRGB(math.floor(s.R*255*0.12), math.floor(s.G*255*0.06), math.floor(s.B*255*0.06))
+                    return ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, dim),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+                    }
+                end})
 
                 Items["MainFrame"]:MakeDraggable()
                 Window.ResizeHandler = Items["MainFrame"]:MakeResizeable(Vector2.new(Items["MainFrame"].Instance.AbsoluteSize.X, Items["MainFrame"].Instance.AbsoluteSize.Y))
@@ -2219,8 +2270,8 @@ local Library = {
                     Parent = Items["Logo"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 8, 8))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -2579,8 +2630,8 @@ local Library = {
                             Parent = ButtonItems["ButtonBackground"].Instance,
                             Name = "\0",
                             Color = ColorSequence.new{
-                            ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
-                            ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 8, 8))
+                            ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
+                            ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
                         }
                         }):AddToTheme({Color = function()
                             return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -2937,7 +2988,7 @@ local Library = {
                     Name = "\0",
                     Enabled = false,
                     Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
                         ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 10, 20))
                     }
                 }):AddToTheme({Color = function()
@@ -3273,8 +3324,8 @@ local Library = {
                     Parent = Items["ActiveBar"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 30, 30)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 8, 8))
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
                     }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -3708,7 +3759,7 @@ local Library = {
                     Parent = Items["Inline"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 30, 30)),
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
                     ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
                 }
                 }):AddToTheme({Color = function()
@@ -4537,8 +4588,8 @@ local Library = {
                     Parent = Items["DropdownBackground"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 8, 8))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -4793,8 +4844,8 @@ local Library = {
                     Parent = OptionBackground.Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 8, 8))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -5356,8 +5407,8 @@ local Library = {
                     Parent = Items["Background"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 8, 8))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -5955,7 +6006,7 @@ local Library = {
 
                 local cardGrad = Instance.new("UIGradient")
                 cardGrad.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 30, 30)),
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
                     ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 0, 0))
                 }
                 cardGrad.Rotation = 90
@@ -5996,7 +6047,7 @@ local Library = {
 
                 local avatarGrad = Instance.new("UIGradient")
                 avatarGrad.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 30, 30)),
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
                     ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
                 }
                 avatarGrad.Rotation = 135
