@@ -2147,6 +2147,16 @@ local Library = {
                     BackgroundColor3 = Color3.fromRGB(8, 3, 3)
                 }):AddToTheme({BackgroundColor3 = "Background"})
 
+                Library:Create("UIGradient", {
+                    Parent = Items["MainFrame"].Instance,
+                    Name = "\0",
+                    Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 5, 5)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+                    },
+                    Rotation = 135
+                })
+
                 Items["MainFrame"]:MakeDraggable()
                 Window.ResizeHandler = Items["MainFrame"]:MakeResizeable(Vector2.new(Items["MainFrame"].Instance.AbsoluteSize.X, Items["MainFrame"].Instance.AbsoluteSize.Y))
                 
@@ -2155,13 +2165,25 @@ local Library = {
                     Name = "\0"
                 })
                 
-                Library:Create("UIStroke", {
+                local mainStroke = Library:Create("UIStroke", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    Color = Color3.fromRGB(60, 60, 60),
+                    Color = Color3.fromRGB(60, 15, 15),
                     Thickness = 1.5,
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 })
+
+                Library:Create("UIGradient", {
+                    Parent = mainStroke.Instance,
+                    Name = "\0",
+                    Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 30, 30)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 0, 0))
+                    },
+                    Rotation = 45
+                }):AddToTheme({Color = function()
+                    return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
+                end})
                 
                 Items["Top"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
@@ -3041,7 +3063,7 @@ local Library = {
                     Name = "\0",
                     BackgroundTransparency = 1,
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, 0, 0, 65),
+                    Size = UDim2.new(1, 0, 0, 38),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     ScrollingDirection = Enum.ScrollingDirection.X,
@@ -3070,9 +3092,9 @@ local Library = {
                     Parent = Items["Page"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 0, 0, 75),
+                    Position = UDim2.new(0, 0, 0, 48),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, 0, 1, -75),
+                    Size = UDim2.new(1, 0, 1, -48),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
@@ -3165,218 +3187,84 @@ local Library = {
             }
 
             local Items = { } do 
-                Items["Inactive"] = Library:Create("ImageButton", {
+                -- TEXT-BASED sub tab button (no icon)
+                local tabName = Page.Name ~= "" and Page.Name or "Tab"
+
+                Items["Inactive"] = Library:Create("TextButton", {
                     Parent = Page.Page.Items["SubPages"].Instance,
                     Name = "\0",
-                    ScaleType = Enum.ScaleType.Fit,
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0),
                     ZIndex = 2,
                     BorderSizePixel = 0,
-                    Size = UDim2.new(0, 60, 1, 0)
-                })
-                
-                -- Icon container for SubPage (supports both asset ids and lucide icons)
-                Items["IconContainer"] = Library:Create("Frame", {
-                    Parent = Items["Inactive"].Instance,
-                    Name = "\0",
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 28, 0, 28),
-                    AnchorPoint = Vector2.new(0.5, 0.5),
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(0.5, 0, 0.5, -4),
-                    ZIndex = 2,
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                })
-                
-                -- Hover tooltip
-                Items["Tooltip"] = Library:Create("Frame", {
-                    Parent = Items["Inactive"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2.new(0.5, 0),
-                    Position = UDim2.new(0.5, 0, 1, 4),
-                    Size = UDim2.new(0, 0, 0, 20),
-                    AutomaticSize = Enum.AutomaticSize.X,
-                    BackgroundColor3 = Color3.fromRGB(20, 20, 22),
-                    BorderSizePixel = 0,
-                    ZIndex = 999,
-                    Visible = false,
-                })
-                
-                Library:Create("UICorner", {
-                    Parent = Items["Tooltip"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDim.new(0, 4)
-                })
-                
-                Library:Create("UIPadding", {
-                    Parent = Items["Tooltip"].Instance,
-                    Name = "\0",
-                    PaddingLeft = UDim.new(0, 7),
-                    PaddingRight = UDim.new(0, 7),
-                })
-                
-                Library:Create("TextLabel", {
-                    Parent = Items["Tooltip"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    Text = Page.Name ~= "" and Page.Name or "Tab",
-                    TextColor3 = Color3.fromRGB(210, 210, 215),
-                    TextSize = 11,
                     Size = UDim2.new(0, 0, 1, 0),
                     AutomaticSize = Enum.AutomaticSize.X,
-                    BackgroundTransparency = 1,
-                    BorderSizePixel = 0,
-                    ZIndex = 999,
-                    AnchorPoint = Vector2.new(0, 0.5),
-                    Position = UDim2.new(0, 0, 0.5, 0),
-                }):AddToTheme({TextColor3 = "Text"})
-                
-                -- Track the actual ImageLabel for gradient parenting
-                local gradientTarget = nil
-                
-                -- Apply the icon (asset id or lucide)
-                if IsAssetId(Page.Icon) then
-                    Items["Icon"] = Library:Create("ImageLabel", {
-                        Parent = Items["IconContainer"].Instance,
-                        Name = "\0",
-                        ImageColor3 = Color3.fromRGB(220, 229, 247),
-                        ImageTransparency = 0.800000011920929,
-                        BorderColor3 = Color3.fromRGB(0, 0, 0),
-                        Size = UDim2.new(1, 0, 1, 0),
-                        AnchorPoint = Vector2.new(0.5, 0.5),
-                        Image = GetAssetImage(Page.Icon),
-                        BackgroundTransparency = 1,
-                        Position = UDim2.new(0.5, 0, 0.5, 0),
-                        ZIndex = 2,
-                        BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                    }):AddToTheme({ImageColor3 = "Text"})
-                    gradientTarget = Items["Icon"].Instance
-                else
-                    -- Lucide icon - create the icon inside the container
-                    local iconCreated = ApplyIconToContainer(Items["IconContainer"].Instance, Page.Icon, UDim2.new(1, 0, 1, 0), Library.Theme.Text)
-                    if iconCreated then
-                        -- Set transparency on the resolved ImageLabel inside
-                        local resolvedImg = ResolveIconImage(iconCreated)
-                        if resolvedImg then
-                            resolvedImg.ImageTransparency = 0.8
-                            gradientTarget = resolvedImg
-                        elseif iconCreated:IsA("ImageLabel") then
-                            iconCreated.ImageTransparency = 0.8
-                            gradientTarget = iconCreated
-                        end
-                        Items["Icon"] = { 
-                            Instance = iconCreated, 
-                            Tween = function(self, props) 
-                                -- Apply to the resolved ImageLabel inside
-                                local img = ResolveIconImage(iconCreated)
-                                if img then
-                                    TweenService:Create(img, TweenInfo.new(Library.Animation.Time, Enum.EasingStyle[Library.Animation.Style], Enum.EasingDirection[Library.Animation.Direction]), props):Play()
-                                end
-                            end, 
-                            ChangeItemTheme = function(self, themeProps) 
-                                -- Lucide icons don't need theme changes in the same way
-                            end 
-                        }
-                    else
-                        -- Fallback to empty ImageLabel
-                        Items["Icon"] = Library:Create("ImageLabel", {
-                            Parent = Items["IconContainer"].Instance,
-                            Name = "\0",
-                            ImageColor3 = Color3.fromRGB(220, 229, 247),
-                            ImageTransparency = 0.800000011920929,
-                            BorderColor3 = Color3.fromRGB(0, 0, 0),
-                            Size = UDim2.new(1, 0, 1, 0),
-                            AnchorPoint = Vector2.new(0.5, 0.5),
-                            Image = "",
-                            BackgroundTransparency = 1,
-                            Position = UDim2.new(0.5, 0, 0.5, 0),
-                            ZIndex = 2,
-                            BorderSizePixel = 0,
-                            BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                        }):AddToTheme({ImageColor3 = "Text"})
-                        gradientTarget = Items["Icon"].Instance
-                    end
-                end
-                
-                Items["IconGradient"] = Library:Create("UIGradient", {
-                    Parent = gradientTarget or Items["IconContainer"].Instance,
-                    Name = "\0",
-                    Enabled = false,
-                    Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 8, 8))
-                }
-                }):AddToTheme({Color = function()
-                    return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
-                end})
-                
-                Items["Shadow"] = Library:Create("ImageLabel", {
-                    Parent = Items["IconContainer"].Instance,
-                    Name = "\0",
-                    ScaleType = Enum.ScaleType.Slice,
-                    ImageTransparency = 1,
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                    Size = UDim2.new(1, 5, 1, 5),
-                    AnchorPoint = Vector2.new(0.5, 0.5),
-                    Image = "http://www.roblox.com/asset/?id=18245826428",
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(0.5, 0, 0.5, 0),
-                    ZIndex = 1,
-                    BorderSizePixel = 0,
-                    SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79))
+                    Text = "",
+                    FontFace = Library.Font,
+                    TextSize = 13
                 })
-                
+
+                Library:Create("UIPadding", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    PaddingLeft = UDim.new(0, 10),
+                    PaddingRight = UDim.new(0, 10),
+                })
+
+                -- Tab text label
+                Items["TabLabel"] = Library:Create("TextLabel", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    Text = tabName,
+                    TextColor3 = Color3.fromRGB(200, 200, 200),
+                    TextTransparency = 0.5,
+                    TextSize = 13,
+                    Size = UDim2.new(1, 0, 1, -4),
+                    AnchorPoint = Vector2.new(0, 0),
+                    Position = UDim2.new(0, 0, 0, 0),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    ZIndex = 2,
+                    TextXAlignment = Enum.TextXAlignment.Center,
+                }):AddToTheme({TextColor3 = "Text"})
+
+                -- Active underline bar with red gradient
+                Items["ActiveBar"] = Library:Create("Frame", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2.new(0, 1),
+                    Position = UDim2.new(0, 0, 1, 0),
+                    Size = UDim2.new(1, 0, 0, 2),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.fromRGB(200, 30, 30),
+                    ZIndex = 3,
+                })
+
+                Library:Create("UICorner", {
+                    Parent = Items["ActiveBar"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDim.new(1, 0)
+                })
+
                 Library:Create("UIGradient", {
-                    Parent = Items["Shadow"].Instance,
+                    Parent = Items["ActiveBar"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 8, 8))
-                }
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 30, 30)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 8, 8))
+                    }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
                 end})
 
-                -- Optional name label below icon (when DisplayName = true)
-                if Page.DisplayName and Page.Name and #Page.Name > 0 then
-                    Items["NameLabel"] = Library:Create("TextLabel", {
-                        Parent = Items["Inactive"].Instance,
-                        Name = "\0",
-                        BorderColor3 = Color3.fromRGB(0, 0, 0),
-                        TextSize = 10,
-                        TextXAlignment = Enum.TextXAlignment.Center,
-                        TextYAlignment = Enum.TextYAlignment.Top,
-                        Size = UDim2.new(1, -4, 0, 14),
-                        Position = UDim2.new(0.5, 0, 0, 38),
-                        AnchorPoint = Vector2.new(0.5, 0),
-                        BackgroundTransparency = 1,
-                        Text = Page.Name,
-                        Font = Enum.Font.GothamMedium,
-                        TextColor3 = Color3.fromRGB(220, 229, 247),
-                        TextTransparency = 0.8,
-                        TextTruncate = Enum.TextTruncate.AtEnd,
-                        ZIndex = 2,
-                        BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                    }):AddToTheme({TextColor3 = "Text"})
-                    Items["NameLabelGradient"] = Library:Create("UIGradient", {
-                        Parent = Items["NameLabel"].Instance,
-                        Name = "\0",
-                        Enabled = false,
-                        Color = ColorSequence.new{
-                            ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
-                            ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 8, 8))
-                        }
-                    }):AddToTheme({Color = function()
-                        return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
-                    end})
-                end
+                -- Stub items so Turn() doesn't error on icon-related calls
+                Items["Shadow"] = { Tween = function() end, Instance = { ImageTransparency = 1 } }
+                Items["IconGradient"] = { Instance = { Enabled = false } }
+                Items["Icon"] = { Tween = function() end, ChangeItemTheme = function() end, Instance = { ImageTransparency = 0 } }
                 
                 Items["Page"] = Library:Create("Frame", {
                     Parent = Library.UnusedHolder.Instance,
@@ -3476,26 +3364,14 @@ local Library = {
                 Page.Active = Bool 
 
                 if Bool then 
-                    Items["Shadow"]:Tween({ImageTransparency = 0.7})
-                    Items["IconGradient"].Instance.Enabled = true 
-                    Items["Icon"]:ChangeItemTheme({ImageColor3 = "Accent End"})
-                    Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(255, 255, 255), ImageTransparency = 0})
-                    if Items["NameLabel"] then
-                        Items["NameLabelGradient"].Instance.Enabled = true
-                        Items["NameLabel"]:Tween({TextColor3 = Color3.fromRGB(255, 255, 255), TextTransparency = 0})
-                    end
+                    Items["ActiveBar"].Instance.BackgroundTransparency = 0
+                    Items["TabLabel"]:Tween({TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)})
                     if Page.Page.Search then 
                         Page.Page.CurrentPage = Page
                     end
                 else
-                    Items["Shadow"]:Tween({ImageTransparency = 1})
-                    Items["IconGradient"].Instance.Enabled = false 
-                    Items["Icon"]:ChangeItemTheme({ImageColor3 = "Text"})
-                    Items["Icon"]:Tween({ImageColor3 = Library.Theme.Text, ImageTransparency = 0.8})
-                    if Items["NameLabel"] then
-                        Items["NameLabelGradient"].Instance.Enabled = false
-                        Items["NameLabel"]:Tween({TextColor3 = Library.Theme.Text, TextTransparency = 0.8})
-                    end
+                    Items["ActiveBar"].Instance.BackgroundTransparency = 1
+                    Items["TabLabel"]:Tween({TextTransparency = 0.5, TextColor3 = Library.Theme.Text})
                 end
 
                 Items["Page"]:FadeDescendants(Bool, function()
@@ -3521,14 +3397,6 @@ local Library = {
 
                     Value:Turn(Value == Page)
                 end
-            end)
-            
-            Items["Inactive"]:Connect("MouseEnter", function()
-                Items["Tooltip"].Instance.Visible = true
-            end)
-            
-            Items["Inactive"]:Connect("MouseLeave", function()
-                Items["Tooltip"].Instance.Visible = false
             end)
 
             if #Page.Page.SubPages == 0 then 
@@ -3593,6 +3461,20 @@ local Library = {
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 }):AddToTheme({BackgroundColor3 = "Background"})
+
+                Library:Create("UIStroke", {
+                    Parent = Items["Inline"].Instance,
+                    Name = "\0",
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    Color = Color3.fromRGB(60, 15, 15),
+                    Thickness = 1
+                }):AddToTheme({Color = function()
+                    return Color3.fromRGB(
+                        math.floor(Library.Theme["Accent Start"].R * 255 * 0.3),
+                        math.floor(Library.Theme["Accent Start"].G * 255 * 0.1),
+                        math.floor(Library.Theme["Accent Start"].B * 255 * 0.1)
+                    )
+                end})
                 
                 Items["Content"] = Library:Create("Frame", {
                     Parent = Items["Inline"].Instance,
@@ -3751,13 +3633,15 @@ local Library = {
                     })
                 end                    
                 
+
+                -- Square checkbox indicator
                 Items["Indicator"] = Library:Create("TextButton", {
                     Parent = Items["Toggle"].Instance,
                     Name = "\0",
                     AnchorPoint = Vector2.new(1, 0.5),
                     Position = UDim2.new(1, -8, 0.5, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 32, 0, 16),
+                    Size = UDim2.new(0, 16, 0, 16),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(18, 7, 7),
                     Text = "",
@@ -3767,33 +3651,33 @@ local Library = {
                 Library:Create("UICorner", {
                     Parent = Items["Indicator"].Instance,
                     Name = "\0",
-                    CornerRadius = UDim.new(1, 0)
+                    CornerRadius = UDim.new(0, 3)
                 })
 
                 Library:Create("UIStroke", {
                     Parent = Items["Indicator"].Instance,
                     Name = "\0",
-                    Color = Color3.fromRGB(40, 15, 15),
-                    Thickness = 1,
+                    Color = Color3.fromRGB(80, 20, 20),
+                    Thickness = 1.2,
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 }):AddToTheme({Color = "Inline"})
 
+                -- Red gradient fill shown when ON
                 Items["Inline"] = Library:Create("Frame", {
                     Parent = Items["Indicator"].Instance,
                     Name = "\0",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    AnchorPoint = Vector2.new(0.5, 0.5),
-                    BackgroundTransparency = 0,
-                    Position = UDim2.new(0, 10, 0.5, 0),
-                    Size = UDim2.new(0, 10, 0, 10),
+                    BackgroundTransparency = 1,
+                    Position = UDim2.new(0, 0, 0, 0),
+                    Size = UDim2.new(1, 0, 1, 0),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(80, 30, 30)
+                    BackgroundColor3 = Color3.fromRGB(200, 30, 30)
                 })
 
                 Library:Create("UICorner", {
                     Parent = Items["Inline"].Instance,
                     Name = "\0",
-                    CornerRadius = UDim.new(1, 0)
+                    CornerRadius = UDim.new(0, 3)
                 })
 
                 Library:Create("UIGradient", {
@@ -3807,20 +3691,23 @@ local Library = {
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
                 end})
 
-                Items["Checkmark"] = Library:Create("ImageLabel", {
-                    Parent = Items["Inline"].Instance,
+                -- Checkmark symbol shown on top of red fill
+                Items["Checkmark"] = Library:Create("TextLabel", {
+                    Parent = Items["Indicator"].Instance,
                     Name = "\0",
                     AnchorPoint = Vector2.new(0.5, 0.5),
-                    Position = UDim2.new(0.5, 0, 0.5, 0),
-                    Size = UDim2.new(0, 10, 0, 10),
+                    Position = UDim2.new(0.5, 0, 0.5, -1),
+                    Size = UDim2.new(1, 0, 1, 0),
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
-                    ImageTransparency = 1,
-                    Image = "rbxassetid://10709791437",
-                    ImageColor3 = Color3.fromRGB(255, 255, 255),
-                    ScaleType = Enum.ScaleType.Fit
+                    TextTransparency = 1,
+                    Text = "✓",
+                    TextColor3 = Color3.fromRGB(255, 255, 255),
+                    TextSize = 12,
+                    ZIndex = 3,
+                    FontFace = Library.Font
                 })
-                
+
                 Items["Text"] = Library:Create("TextLabel", {
                     Parent = Items["Toggle"].Instance,
                     Name = "\0",
@@ -3906,15 +3793,13 @@ local Library = {
                 }):AddToTheme({TextColor3 = "Text"}) 
 
                 Items["Toggle"]:OnHover(function()
-                    if Toggle.Value then 
-                        return 
+                    if not Toggle.Value then
+                        Items["Indicator"]:Tween({BackgroundColor3 = Library.Theme["Hovered Element"]})
                     end
-                    Items["Indicator"]:Tween({BackgroundColor3 = Library.Theme["Hovered Element"]})
                 end, function()
-                    if Toggle.Value then 
-                        return 
+                    if not Toggle.Value then
+                        Items["Indicator"]:Tween({BackgroundColor3 = Library.Theme["Element"]})
                     end
-                    Items["Indicator"]:Tween({BackgroundColor3 = Library.Theme["Element"]})
                 end)
             
                 Toggle.Items = Items
@@ -3960,15 +3845,15 @@ local Library = {
                 Toggle.Value = Bool 
 
                 if Bool then
-                    Items["Inline"]:Tween({Position = UDim2.new(1, -10, 0.5, 0), BackgroundColor3 = Library.Theme["Accent Start"]})
-                    Items["Indicator"]:Tween({BackgroundColor3 = Library.Theme["Hovered Element"]})
+                    Items["Inline"].Instance.BackgroundTransparency = 0
+                    Items["Checkmark"].Instance.TextTransparency = 0
+                    Items["Indicator"]:Tween({BackgroundColor3 = Library.Theme["Element"]})
                     Items["Text"]:Tween({TextTransparency = 0})
-                    Items["Checkmark"].Instance.ImageTransparency = 1
                 else
-                    Items["Inline"]:Tween({Position = UDim2.new(0, 10, 0.5, 0), BackgroundColor3 = Color3.fromRGB(50, 20, 20)})
+                    Items["Inline"].Instance.BackgroundTransparency = 1
+                    Items["Checkmark"].Instance.TextTransparency = 1
                     Items["Indicator"]:Tween({BackgroundColor3 = Library.Theme["Element"]})
                     Items["Text"]:Tween({TextTransparency = 0.7})
-                    Items["Checkmark"].Instance.ImageTransparency = 1
                 end
 
                 Flags[Toggle.Flag] = Bool
@@ -4471,6 +4356,16 @@ local Library = {
                             InputChanged = nil
                         end
                     end)
+                end
+            end)
+
+            -- Fallback: MouseButton1Down fires in more executors than InputBegan
+            Items["RealSlider"].Instance.MouseButton1Down:Connect(function(x, y)
+                if not Slider.Sliding then
+                    Slider.Sliding = true
+                    local fakeInput = {Position = Vector3.new(x, y, 0)}
+                    local Value = Slider:GetSize(fakeInput)
+                    Slider:Set(Value)
                 end
             end)
 
@@ -6033,6 +5928,240 @@ local Library = {
             GeneralSubTab.Items.RightColumn.Instance:Destroy()
             GeneralSubTab.Items.LeftColumn.Instance:FindFirstChildOfClass("UIPadding").PaddingRight = UDim.new(0, 15)
 
+            -- Player Data sub tab (hardcoded stats display)
+            local PlayerDataSubTab = SettingsPage:SubPage({Name = "Player Data", Icon = "rbxassetid://72301479762701"})
+            PlayerDataSubTab.Items.RightColumn.Instance:Destroy()
+            PlayerDataSubTab.Items.LeftColumn.Instance:FindFirstChildOfClass("UIPadding").PaddingRight = UDim.new(0, 15)
+
+            do
+                local ColumnParent = PlayerDataSubTab.Items.LeftColumn.Instance
+
+                -- Track time used
+                local startTime = tick()
+                local runCount = 0
+                local playerName = (game:GetService("Players").LocalPlayer and game:GetService("Players").LocalPlayer.Name) or "Unknown"
+
+                -- Card container
+                local CardFrame = Instance.new("Frame")
+                CardFrame.Name = "\0"
+                CardFrame.Size = UDim2.new(1, 0, 0, 0)
+                CardFrame.AutomaticSize = Enum.AutomaticSize.Y
+                CardFrame.BackgroundColor3 = Color3.fromRGB(10, 3, 3)
+                CardFrame.BorderSizePixel = 0
+                CardFrame.Parent = ColumnParent
+
+                local cardCorner = Instance.new("UICorner")
+                cardCorner.CornerRadius = UDim.new(0, 8)
+                cardCorner.Parent = CardFrame
+
+                local cardStroke = Instance.new("UIStroke")
+                cardStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                cardStroke.Color = Color3.fromRGB(80, 15, 15)
+                cardStroke.Thickness = 1.2
+                cardStroke.Parent = CardFrame
+
+                local cardGrad = Instance.new("UIGradient")
+                cardGrad.Color = ColorSequence.new{
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 30, 30)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 0, 0))
+                }
+                cardGrad.Rotation = 90
+                cardGrad.Parent = cardStroke
+
+                local cardPad = Instance.new("UIPadding")
+                cardPad.PaddingTop = UDim.new(0, 14)
+                cardPad.PaddingBottom = UDim.new(0, 14)
+                cardPad.PaddingLeft = UDim.new(0, 16)
+                cardPad.PaddingRight = UDim.new(0, 16)
+                cardPad.Parent = CardFrame
+
+                local cardList = Instance.new("UIListLayout")
+                cardList.Padding = UDim.new(0, 10)
+                cardList.SortOrder = Enum.SortOrder.LayoutOrder
+                cardList.Parent = CardFrame
+
+                -- Avatar + username row
+                local AvatarRow = Instance.new("Frame")
+                AvatarRow.Name = "\0"
+                AvatarRow.Size = UDim2.new(1, 0, 0, 50)
+                AvatarRow.BackgroundTransparency = 1
+                AvatarRow.BorderSizePixel = 0
+                AvatarRow.LayoutOrder = 1
+                AvatarRow.Parent = CardFrame
+
+                local AvatarBg = Instance.new("Frame")
+                AvatarBg.Name = "\0"
+                AvatarBg.Size = UDim2.new(0, 50, 0, 50)
+                AvatarBg.Position = UDim2.new(0, 0, 0, 0)
+                AvatarBg.BackgroundColor3 = Color3.fromRGB(200, 30, 30)
+                AvatarBg.BorderSizePixel = 0
+                AvatarBg.Parent = AvatarRow
+
+                local avatarCorner = Instance.new("UICorner")
+                avatarCorner.CornerRadius = UDim.new(1, 0)
+                avatarCorner.Parent = AvatarBg
+
+                local avatarGrad = Instance.new("UIGradient")
+                avatarGrad.Color = ColorSequence.new{
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 30, 30)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+                }
+                avatarGrad.Rotation = 135
+                avatarGrad.Parent = AvatarBg
+
+                local AvatarIcon = Instance.new("ImageLabel")
+                AvatarIcon.Name = "\0"
+                AvatarIcon.Size = UDim2.new(0, 42, 0, 42)
+                AvatarIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+                AvatarIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
+                AvatarIcon.BackgroundTransparency = 1
+                AvatarIcon.BorderSizePixel = 0
+                AvatarIcon.Image = "rbxthumb://type=AvatarHeadShot&id=" .. (game:GetService("Players").LocalPlayer and game:GetService("Players").LocalPlayer.UserId or 0) .. "&w=150&h=150"
+                AvatarIcon.Parent = AvatarBg
+
+                local avatarImgCorner = Instance.new("UICorner")
+                avatarImgCorner.CornerRadius = UDim.new(1, 0)
+                avatarImgCorner.Parent = AvatarIcon
+
+                local NameLabel = Instance.new("TextLabel")
+                NameLabel.Name = "\0"
+                NameLabel.Size = UDim2.new(1, -60, 0, 20)
+                NameLabel.Position = UDim2.new(0, 60, 0, 5)
+                NameLabel.BackgroundTransparency = 1
+                NameLabel.BorderSizePixel = 0
+                NameLabel.FontFace = Library.Font
+                NameLabel.Text = playerName
+                NameLabel.TextColor3 = Color3.fromRGB(250, 215, 215)
+                NameLabel.TextSize = 15
+                NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+                NameLabel.Parent = AvatarRow
+
+                local SubNameLabel = Instance.new("TextLabel")
+                SubNameLabel.Name = "\0"
+                SubNameLabel.Size = UDim2.new(1, -60, 0, 16)
+                SubNameLabel.Position = UDim2.new(0, 60, 0, 28)
+                SubNameLabel.BackgroundTransparency = 1
+                SubNameLabel.BorderSizePixel = 0
+                SubNameLabel.FontFace = Library.Font
+                SubNameLabel.Text = "Script User"
+                SubNameLabel.TextColor3 = Color3.fromRGB(175, 80, 80)
+                SubNameLabel.TextSize = 11
+                SubNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+                SubNameLabel.Parent = AvatarRow
+
+                -- Divider
+                local Divider = Instance.new("Frame")
+                Divider.Name = "\0"
+                Divider.Size = UDim2.new(1, 0, 0, 1)
+                Divider.BackgroundColor3 = Color3.fromRGB(60, 15, 15)
+                Divider.BorderSizePixel = 0
+                Divider.LayoutOrder = 2
+                Divider.Parent = CardFrame
+
+                -- Stats grid
+                local StatsFrame = Instance.new("Frame")
+                StatsFrame.Name = "\0"
+                StatsFrame.Size = UDim2.new(1, 0, 0, 0)
+                StatsFrame.AutomaticSize = Enum.AutomaticSize.Y
+                StatsFrame.BackgroundTransparency = 1
+                StatsFrame.BorderSizePixel = 0
+                StatsFrame.LayoutOrder = 3
+                StatsFrame.Parent = CardFrame
+
+                local statsGrid = Instance.new("UIGridLayout")
+                statsGrid.CellSize = UDim2.new(0.5, -6, 0, 52)
+                statsGrid.CellPadding = UDim2.new(0, 8, 0, 8)
+                statsGrid.SortOrder = Enum.SortOrder.LayoutOrder
+                statsGrid.Parent = StatsFrame
+
+                -- Resize StatsFrame height automatically
+                statsGrid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                    StatsFrame.Size = UDim2.new(1, 0, 0, statsGrid.AbsoluteContentSize.Y)
+                end)
+
+                local function MakeStat(icon, labelText, valueText, order)
+                    local Cell = Instance.new("Frame")
+                    Cell.Name = "\0"
+                    Cell.BackgroundColor3 = Color3.fromRGB(18, 5, 5)
+                    Cell.BorderSizePixel = 0
+                    Cell.LayoutOrder = order
+                    Cell.Parent = StatsFrame
+
+                    local cellCorner = Instance.new("UICorner")
+                    cellCorner.CornerRadius = UDim.new(0, 6)
+                    cellCorner.Parent = Cell
+
+                    local cellPad = Instance.new("UIPadding")
+                    cellPad.PaddingLeft = UDim.new(0, 10)
+                    cellPad.PaddingTop = UDim.new(0, 6)
+                    cellPad.Parent = Cell
+
+                    local IconLbl = Instance.new("TextLabel")
+                    IconLbl.Name = "\0"
+                    IconLbl.Size = UDim2.new(0, 20, 0, 20)
+                    IconLbl.Position = UDim2.new(0, 0, 0, 0)
+                    IconLbl.BackgroundTransparency = 1
+                    IconLbl.BorderSizePixel = 0
+                    IconLbl.Text = icon
+                    IconLbl.TextSize = 14
+                    IconLbl.TextColor3 = Color3.fromRGB(220, 50, 50)
+                    IconLbl.FontFace = Library.Font
+                    IconLbl.Parent = Cell
+
+                    local StatLabel = Instance.new("TextLabel")
+                    StatLabel.Name = "\0"
+                    StatLabel.Size = UDim2.new(1, -10, 0, 14)
+                    StatLabel.Position = UDim2.new(0, 0, 0, 20)
+                    StatLabel.BackgroundTransparency = 1
+                    StatLabel.BorderSizePixel = 0
+                    StatLabel.Text = labelText
+                    StatLabel.TextColor3 = Color3.fromRGB(160, 100, 100)
+                    StatLabel.TextSize = 10
+                    StatLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    StatLabel.FontFace = Library.Font
+                    StatLabel.Parent = Cell
+
+                    local ValLabel = Instance.new("TextLabel")
+                    ValLabel.Name = "\0"
+                    ValLabel.Size = UDim2.new(1, -10, 0, 16)
+                    ValLabel.Position = UDim2.new(0, 0, 0, 32)
+                    ValLabel.BackgroundTransparency = 1
+                    ValLabel.BorderSizePixel = 0
+                    ValLabel.Text = valueText
+                    ValLabel.TextColor3 = Color3.fromRGB(250, 215, 215)
+                    ValLabel.TextSize = 13
+                    ValLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    ValLabel.FontFace = Library.Font
+                    ValLabel.Parent = Cell
+
+                    return ValLabel
+                end
+
+                local TimeLabel = MakeStat("🕐", "Script Use Time", "0s", 1)
+                local RunsLabel = MakeStat("↻", "Executions", "0x", 2)
+                local UserLabel = MakeStat("★", "Username", playerName, 3)
+                MakeStat("∞", "Access", "inf hours", 4)
+
+                -- Auto-increment run count on load
+                runCount = runCount + 1
+                RunsLabel.Text = runCount .. "x"
+
+                -- Live time ticker
+                Library:Connect(RunService.Heartbeat, function()
+                    local elapsed = tick() - startTime
+                    local h = math.floor(elapsed / 3600)
+                    local m = math.floor((elapsed % 3600) / 60)
+                    local s = math.floor(elapsed % 60)
+                    if h > 0 then
+                        TimeLabel.Text = string.format("%dh %dm %ds", h, m, s)
+                    elseif m > 0 then
+                        TimeLabel.Text = string.format("%dm %ds", m, s)
+                    else
+                        TimeLabel.Text = string.format("%ds", s)
+                    end
+                end)
+            end
+
             return GeneralSubTab
         end
 
@@ -6170,7 +6299,7 @@ local Library = {
             do
                 ThemeSection:Dropdown({
                     Name = "Preset Theme", Flag = "_ThemePreset",
-                    Items = {"Preset", "Pink", "Purple", "Cyan", "Green", "Blue"},
+                    Items = {"Preset", "Purple", "Cyan", "Green", "Blue"},
                     Default = "Preset",
                     Callback = function(Value) Library:SetTheme(Value) end
                 })
