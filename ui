@@ -3220,10 +3220,10 @@ local Library = {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-                    Color = Color3.fromRGB(130, 20, 28),
+                    Color = Color3.fromRGB(180, 25, 35),
                     Thickness = 1,
                     Transparency = 1
-                })
+                }):AddToTheme({Color = "Accent Start"})
 
                 Library:Create("UIPadding", {
                     Parent = Items["Inactive"].Instance,
@@ -3385,9 +3385,9 @@ local Library = {
                 if Bool then 
                     Items["ActiveBar"].Instance.BackgroundTransparency = 0
                     Items["TabLabel"]:Tween({TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)})
-                    -- clear any hover state since this tab is now active
-                    Items["Inactive"]:Tween({BackgroundTransparency = 1})
-                    Items["HoverStroke"]:Tween({Transparency = 1})
+                    -- keep hover look on active tab
+                    Items["Inactive"]:Tween({BackgroundTransparency = 0.82})
+                    Items["HoverStroke"]:Tween({Transparency = 0})
                     if Page.Page.Search then 
                         Page.Page.CurrentPage = Page
                     end
