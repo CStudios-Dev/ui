@@ -2409,7 +2409,7 @@ local Library = {
             Items["Pages"]:FadeDescendants(false, Debounce)
             Items["Content"]:FadeDescendants(false, Debounce)
             Items["MainFrame"].Instance.Visible = true
-            Items["MainFrame"]:Tween({BackgroundTransparency = 0})
+            Items["MainFrame"]:Tween({BackgroundTransparency = 0.12})
             task.wait(Library.Animation.Time - 0.05)
             Items["MainFrame"]:Tween({Size = UDim2.new(0, 660, 0, 430)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
             task.wait(1)
