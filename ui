@@ -3014,6 +3014,7 @@ local Library = {
                     Size = UDim2.new(0, 0, 0, 15),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
+                    Visible = false,
                     Position = UDim2.new(0, 62, 0, 12),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AutomaticSize = Enum.AutomaticSize.X,
@@ -3031,6 +3032,7 @@ local Library = {
                     Size = UDim2.new(1, -70, 0, 15),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
+                    Visible = false,
                     Position = UDim2.new(0, 62, 0, 32),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AutomaticSize = Enum.AutomaticSize.None,
@@ -3109,22 +3111,11 @@ local Library = {
 
                 if Bool then 
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 60)})
-
                     Items["UIStroke"]:Tween({Transparency = 0})
-
-                    Items["Text"]:Tween({TextTransparency = 0})
-                    Items["Description"]:ChangeItemTheme({TextColor3 = "Accent End"})
-                    Items["Description"]:Tween({TextTransparency = 0, TextColor3 = Library.Theme["Accent End"]})
-
                     Items["Inactive"]:Tween({BackgroundTransparency = 0})
                 else
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 80)})
                     Items["UIStroke"]:Tween({Transparency = 1})
-
-                    Items["Text"]:Tween({TextTransparency = 0.5})
-                    Items["Description"]:ChangeItemTheme({TextColor3 = "Text"})
-                    Items["Description"]:Tween({TextTransparency = 0.8, TextColor3 = Library.Theme["Text"]})
-
                     Items["Inactive"]:Tween({BackgroundTransparency = 1})
                 end
 
