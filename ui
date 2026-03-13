@@ -2293,9 +2293,9 @@ local Library = {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 8, 0, 46),
+                    Position = UDim2.new(0, 6, 0, 46),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 82, 1, -61),
+                    Size = UDim2.new(0, 70, 1, -61),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     ScrollingDirection = Enum.ScrollingDirection.Y,
@@ -2309,25 +2309,25 @@ local Library = {
                 Library:Create("UIPadding", {
                     Parent = Items["Pages"].Instance,
                     Name = "\0",
-                    PaddingTop = UDim.new(0, 4),
-                    PaddingBottom = UDim.new(0, 4),
-                    PaddingRight = UDim.new(0, 4),
-                    PaddingLeft = UDim.new(0, 4)
+                    PaddingTop = UDim.new(0, 6),
+                    PaddingBottom = UDim.new(0, 6),
+                    PaddingRight = UDim.new(0, 6),
+                    PaddingLeft = UDim.new(0, 6)
                 })
 
                 Library:Create("UIListLayout", {
                     Parent = Items["Pages"].Instance,
                     Name = "\0",
-                    Padding = UDim.new(0, 8),
+                    Padding = UDim.new(0, 6),
                     SortOrder = Enum.SortOrder.LayoutOrder
-                })                
+                })
 
                 Items["Content"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    Position = UDim2.new(0, 100, 0, 51),
+                    Position = UDim2.new(0, 82, 0, 51),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, -108, 1, -66),
+                    Size = UDim2.new(1, -88, 1, -66),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
