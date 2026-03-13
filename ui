@@ -2897,7 +2897,7 @@ local Library = {
             }
 
             local Items = { } do 
-                -- The tab IS the dark box
+                -- The tab is transparent with a visible outline
                 Items["Inactive"] = Library:Create("TextButton", {
                     Parent = Page.Window.Items["Pages"].Instance,
                     Name = "\0",
@@ -2906,12 +2906,12 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
-                    BackgroundTransparency = 0,
+                    BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 44),
                     BorderSizePixel = 0,
                     TextSize = 14,
                     BackgroundColor3 = Color3.fromRGB(18, 7, 7)
-                }):AddToTheme({BackgroundColor3 = "Element"})
+                })
                 
                 Library:Create("UICorner", {
                     Parent = Items["Inactive"].Instance,
@@ -2919,19 +2919,20 @@ local Library = {
                     CornerRadius = UDim.new(0, 8)
                 })
 
-                -- Accent border stroke, hidden until active
+                -- Grey outline always visible; turns accent on active
                 Items["UIStroke"] = Library:Create("UIStroke", {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-                    Color = Color3.fromRGB(160, 20, 40),
+                    Color = Color3.fromRGB(50, 50, 55),
                     Thickness = 1.5,
-                    Transparency = 1
+                    Transparency = 0
                 })
 
                 Library:Create("UIGradient", {
                     Parent = Items["UIStroke"].Instance,
                     Name = "\0",
+                    Enabled = false,
                     Color = ColorSequence.new{
                         ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
                         ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 10, 20))
@@ -2943,7 +2944,6 @@ local Library = {
                     }
                 end})
 
-                -- Stub Gradient so Turn() doesn't error
                 Items["Gradient"] = { Instance = { Enabled = false } }
                 
                 -- Icon background (transparent, just for positioning)
@@ -3121,15 +3121,15 @@ local Library = {
 
                 if Bool then 
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 60)})
+                    Items["UIStroke"].Instance.Color = Library.Theme["Accent Start"]
                     Items["UIStroke"]:Tween({Transparency = 0})
-                    Items["Inactive"]:Tween({BackgroundColor3 = Library.Theme["Hovered Element"]})
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
                         Items["Icon"]:Tween({ImageColor3 = Library.Theme["Accent Start"]})
                     end
                 else
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 80)})
-                    Items["UIStroke"]:Tween({Transparency = 1})
-                    Items["Inactive"]:Tween({BackgroundColor3 = Library.Theme["Element"]})
+                    Items["UIStroke"].Instance.Color = Color3.fromRGB(50, 50, 55)
+                    Items["UIStroke"]:Tween({Transparency = 0})
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
                         Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(100, 100, 110)})
                     end
