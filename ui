@@ -2165,25 +2165,13 @@ local Library = {
                     Name = "\0"
                 })
                 
-                local mainStroke = Library:Create("UIStroke", {
+                Library:Create("UIStroke", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    Color = Color3.fromRGB(60, 15, 15),
-                    Thickness = 1.5,
+                    Color = Color3.fromRGB(55, 55, 55),
+                    Thickness = 1,
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 })
-
-                Library:Create("UIGradient", {
-                    Parent = mainStroke.Instance,
-                    Name = "\0",
-                    Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 30, 30)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 0, 0))
-                    },
-                    Rotation = 45
-                }):AddToTheme({Color = function()
-                    return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
-                end})
                 
                 Items["Top"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
@@ -4156,169 +4144,157 @@ local Library = {
                 Items = { }
             }
 
-            local Items = { } do 
+            -- ── SLIDER REBUILD ──────────────────────────────────────────────
+            -- MouseButton1Down gives LOCAL coords → add AbsolutePosition.X to get absolute
+            -- InputChanged gives ABSOLUTE screen coords → use directly
+            -- Both paths go through calcValue(absoluteX) so NaN is impossible
+            -- Set() guards against NaN/nil before clamping
+            -- Fill fraction computed with range check so Min==Max can't divide by zero
+
+            local Items = {} do
+
                 Items["Slider"] = Library:Create("Frame", {
-                    Parent = Slider.Section.Items["Content"].Instance,
-                    Name = "\0",
+                    Parent          = Slider.Section.Items["Content"].Instance,
+                    Name            = "\0",
                     BackgroundTransparency = 1,
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, 0, 0, 35),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    Size            = UDim2.new(1, 0, 0, 36),
+                    BackgroundColor3 = Color3.fromRGB(255,255,255),
                 })
 
-                if Slider.Premium then 
+                if Slider.Premium then
                     Items["Background"] = Library:Create("TextButton", {
-                        Parent = Items["Slider"].Instance,
-                        Name = "\0",
-                        Active = false,
-                        BorderColor3 = Color3.fromRGB(0, 0, 0),
-                        Text = "",
-                        AutoButtonColor = false,
-                        ZIndex = 99999, 
-                        BackgroundTransparency = 0.20000000298023224,
-                        Position = UDim2.new(0, -20, 0, 0),
-                        Size = UDim2.new(1, 40, 1, 0),
-                        Selectable = false,
-                        BorderSizePixel = 0,
-                        BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                        Parent              = Items["Slider"].Instance,
+                        Name                = "\0",
+                        Active              = false,
+                        Text                = "",
+                        AutoButtonColor     = false,
+                        ZIndex              = 99999,
+                        BackgroundTransparency = 0.2,
+                        Position            = UDim2.new(0, -20, 0, 0),
+                        Size                = UDim2.new(1, 40, 1, 0),
+                        Selectable          = false,
+                        BorderSizePixel     = 0,
+                        BackgroundColor3    = Color3.fromRGB(0,0,0),
                     }):AddToTheme({BackgroundColor3 = "Background"})
-                    
                     Library:Create("UICorner", {
-                        Parent = Items["Background"].Instance,
-                        Name = "\0",
-                        CornerRadius = UDim.new(0, 5)
+                        Parent       = Items["Background"].Instance,
+                        Name         = "\0",
+                        CornerRadius = UDim.new(0, 5),
                     })
                 end
-                
+
                 Items["Text"] = Library:Create("TextLabel", {
-                    Parent = Items["Slider"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = Color3.fromRGB(220, 229, 247),
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Text = Slider.Name,
+                    Parent               = Items["Slider"].Instance,
+                    Name                 = "\0",
+                    FontFace             = Library.Font,
+                    TextColor3           = Color3.fromRGB(220,229,247),
+                    Text                 = Slider.Name,
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(0, 0, 0, 15),
-                    BorderSizePixel = 0,
-                    AutomaticSize = Enum.AutomaticSize.X,
-                    TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    AnchorPoint          = Vector2.new(0, 0),
+                    Position             = UDim2.new(0, 0, 0, 0),
+                    Size                 = UDim2.new(0, 0, 0, 16),
+                    AutomaticSize        = Enum.AutomaticSize.X,
+                    TextSize             = 14,
+                    BorderSizePixel      = 0,
+                    BackgroundColor3     = Color3.fromRGB(255,255,255),
                 }):AddToTheme({TextColor3 = "Text"})
 
-                -- Value label box (right side, outside track)
                 Items["Value"] = Library:Create("TextLabel", {
-                    Parent = Items["Slider"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = Color3.fromRGB(220, 229, 247),
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Text = tostring(Slider.Default) .. Slider.Suffix,
-                    AnchorPoint = Vector2.new(1, 0),
-                    Size = UDim2.new(0, 45, 0, 15),
+                    Parent               = Items["Slider"].Instance,
+                    Name                 = "\0",
+                    FontFace             = Library.Font,
+                    TextColor3           = Color3.fromRGB(220,229,247),
+                    Text                 = tostring(Slider.Default) .. Slider.Suffix,
+                    AnchorPoint          = Vector2.new(1, 0),
+                    Position             = UDim2.new(1, 0, 0, 0),
+                    Size                 = UDim2.new(0, 48, 0, 16),
                     BackgroundTransparency = 0,
-                    BackgroundColor3 = Color3.fromRGB(18, 7, 7),
-                    Position = UDim2.new(1, 0, 0, 0),
-                    BorderSizePixel = 0,
-                    TextSize = 12,
-                    TextXAlignment = Enum.TextXAlignment.Center,
-                    ZIndex = 2,
+                    BackgroundColor3     = Color3.fromRGB(18,7,7),
+                    TextSize             = 12,
+                    TextXAlignment       = Enum.TextXAlignment.Center,
+                    BorderSizePixel      = 0,
+                    ZIndex               = 2,
                 }):AddToTheme({TextColor3 = "Text", BackgroundColor3 = "Element"})
-
                 Library:Create("UICorner", {
-                    Parent = Items["Value"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDim.new(0, 4)
+                    Parent       = Items["Value"].Instance,
+                    Name         = "\0",
+                    CornerRadius = UDim.new(0, 4),
                 })
 
-                -- Track: flat bar underneath (full width minus value box)
                 Items["RealSlider"] = Library:Create("TextButton", {
-                    Parent = Items["Slider"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = Color3.fromRGB(0, 0, 0),
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Text = "",
-                    AutoButtonColor = false,
-                    AnchorPoint = Vector2.new(0, 1),
-                    ClipsDescendants = true,
-                    Position = UDim2.new(0, 0, 1, 0),
-                    Size = UDim2.new(1, -53, 0, 8),
-                    BorderSizePixel = 0,
-                    TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(22, 8, 10)
+                    Parent           = Items["Slider"].Instance,
+                    Name             = "\0",
+                    Text             = "",
+                    AutoButtonColor  = false,
+                    AnchorPoint      = Vector2.new(0, 1),
+                    Position         = UDim2.new(0, 0, 1, 0),
+                    Size             = UDim2.new(1, -54, 0, 8),
+                    BackgroundColor3 = Color3.fromRGB(30,10,14),
+                    BorderSizePixel  = 0,
+                    ClipsDescendants = false,
+                    FontFace         = Library.Font,
+                    TextColor3       = Color3.fromRGB(0,0,0),
+                    TextSize         = 14,
                 }):AddToTheme({BackgroundColor3 = "Element"})
-
                 Library:Create("UICorner", {
-                    Parent = Items["RealSlider"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDim.new(0, 3)
+                    Parent       = Items["RealSlider"].Instance,
+                    Name         = "\0",
+                    CornerRadius = UDim.new(0, 4),
                 })
 
-                -- Fill accent bar
                 Items["Accent"] = Library:Create("Frame", {
-                    Parent = Items["RealSlider"].Instance,
-                    Name = "\0",
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0.5, 0, 1, 0),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(220, 40, 80)
+                    Parent           = Items["RealSlider"].Instance,
+                    Name             = "\0",
+                    Size             = UDim2.new(0.5, 0, 1, 0),
+                    BackgroundColor3 = Color3.fromRGB(220,40,80),
+                    BorderSizePixel  = 0,
+                    ZIndex           = 2,
                 })
-
                 Library:Create("UICorner", {
-                    Parent = Items["Accent"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDim.new(0, 3)
+                    Parent       = Items["Accent"].Instance,
+                    Name         = "\0",
+                    CornerRadius = UDim.new(0, 4),
                 })
-
                 Library:Create("UIGradient", {
                     Parent = Items["Accent"].Instance,
-                    Name = "\0",
-                    Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 80)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(160, 15, 35))
-                    }
+                    Name   = "\0",
+                    Color  = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(220,40,80)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(160,15,35)),
+                    },
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{
                         ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),
-                        ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])
+                        ColorSequenceKeypoint.new(1, Library.Theme["Accent End"]),
                     }
                 end})
 
-                -- Bright leading edge dot
-                Items["AccentTip"] = Library:Create("Frame", {
-                    Parent = Items["Accent"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2.new(1, 0.5),
-                    Position = UDim2.new(1, 0, 0.5, 0),
-                    Size = UDim2.new(0, 8, 0, 8),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(255, 130, 160),
-                    ZIndex = 3,
-                })
+                Slider.Items = Items
+            end
 
-                Library:Create("UICorner", {
-                    Parent = Items["AccentTip"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDim.new(1, 0)
-                })
-                
-
-                
-
-                
-                Slider.Items = Items 
+            local function calcValue(absoluteX)
+                local inst = Items["RealSlider"].Instance
+                local w    = inst.AbsoluteSize.X
+                local l    = inst.AbsolutePosition.X
+                if w <= 0 then return Slider.Default end
+                local t = math.clamp((absoluteX - l) / w, 0, 1)
+                return Slider.Min + (Slider.Max - Slider.Min) * t
             end
 
             function Slider:Set(Value)
-                if IsPremiumLocked(Slider) then
-                    return
+                if IsPremiumLocked(Slider) then return end
+                if type(Value) ~= "number" or Value ~= Value then
+                    Value = Slider.Default
                 end
-
                 Slider.Value = Library:Round(math.clamp(Value, Slider.Min, Slider.Max), Slider.Decimals)
-
-                Items["Accent"]:Tween({Size = UDim2.new((Slider.Value - Slider.Min) / (Slider.Max - Slider.Min), 0, 1, 0)}, TweenInfo.new(Library.Animation.Time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
-                Items["Value"].Instance.Text = string.format("%s%s", Slider.Value, Slider.Suffix)
+                local range = Slider.Max - Slider.Min
+                local frac  = (range ~= 0) and ((Slider.Value - Slider.Min) / range) or 0
+                Items["Accent"]:Tween(
+                    {Size = UDim2.new(frac, 0, 1, 0)},
+                    TweenInfo.new(Library.Animation.Time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                )
+                Items["Value"].Instance.Text = tostring(Slider.Value) .. Slider.Suffix
                 Flags[Slider.Flag] = Slider.Value
                 Library:SafeCall(Slider.Callback, Slider.Value)
             end
@@ -4328,81 +4304,38 @@ local Library = {
             end
 
             function Slider:UpdatePrem(State)
-                local IsEnabled = State and true or false
-
-                Slider.Premium = IsEnabled
-                UpdatePremiumOverlay(Items, "Slider", IsEnabled)
-            end
-
-            function Slider:GetSize(Input)
-                -- Input.Position is ABSOLUTE screen coords (from InputBegan / InputChanged)
-                local sliderInst = Items["RealSlider"].Instance
-                local sliderSize = sliderInst.AbsoluteSize.X
-                if not sliderSize or sliderSize <= 0 then return Slider.Min end
-                local inputX = Input.Position.X
-                local SizeX = math.clamp((inputX - sliderInst.AbsolutePosition.X) / sliderSize, 0, 1)
-                local Value = Slider.Min + (Slider.Max - Slider.Min) * SizeX
-                return Value
-            end
-
-            function Slider:GetSizeFromLocal(localX)
-                -- localX is LOCAL to the button (0 = left edge) from MouseButton1Down
-                local sliderSize = Items["RealSlider"].Instance.AbsoluteSize.X
-                if not sliderSize or sliderSize <= 0 then return Slider.Min end
-                local SizeX = math.clamp(localX / sliderSize, 0, 1)
-                return Slider.Min + (Slider.Max - Slider.Min) * SizeX
+                Slider.Premium = State and true or false
+                UpdatePremiumOverlay(Items, "Slider", Slider.Premium)
             end
 
             function Slider:SetText(Text)
                 Items["Text"].Instance.Text = tostring(Text)
             end
 
-            local InputChanged
-
-            -- Primary: InputBegan (absolute coords)
-            Items["RealSlider"]:Connect("InputBegan", function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-                    Slider.Sliding = true
-                    Slider:Set(Slider:GetSize(Input))
-
-                    if InputChanged then return end
-                    InputChanged = Input.Changed:Connect(function()
-                        if Input.UserInputState == Enum.UserInputState.End then
-                            Slider.Sliding = false
-                            InputChanged:Disconnect()
-                            InputChanged = nil
-                        end
-                    end)
-                end
-            end)
-
-            -- Fallback: MouseButton1Down gives LOCAL coords relative to the button
+            -- MouseButton1Down: x,y are LOCAL to the GuiObject
             Items["RealSlider"].Instance.MouseButton1Down:Connect(function(localX, localY)
                 Slider.Sliding = true
-                Slider:Set(Slider:GetSizeFromLocal(localX))
+                local absX = Items["RealSlider"].Instance.AbsolutePosition.X + localX
+                Slider:Set(calcValue(absX))
             end)
 
-            -- Stop sliding on mouse release
             Library:Connect(UserInputService.InputEnded, function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-                    if Slider.Sliding then
-                        Slider.Sliding = false
-                        if InputChanged then
-                            InputChanged:Disconnect()
-                            InputChanged = nil
-                        end
+                if Input.UserInputType == Enum.UserInputType.MouseButton1
+                or Input.UserInputType == Enum.UserInputType.Touch then
+                    Slider.Sliding = false
+                end
+            end)
+
+            -- InputChanged: Position is ABSOLUTE screen coords
+            Library:Connect(UserInputService.InputChanged, function(Input)
+                if Slider.Sliding then
+                    if Input.UserInputType == Enum.UserInputType.MouseMovement
+                    or Input.UserInputType == Enum.UserInputType.Touch then
+                        Slider:Set(calcValue(Input.Position.X))
                     end
                 end
             end)
 
-            -- Drag: InputChanged gives ABSOLUTE coords
-            Library:Connect(UserInputService.InputChanged, function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
-                    if Slider.Sliding then
-                        Slider:Set(Slider:GetSize(Input))
-                    end
-                end
-            end)
 
             if Slider.Page.Page.Search then
                 local SearchData = {
