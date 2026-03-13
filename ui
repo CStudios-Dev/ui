@@ -2921,39 +2921,23 @@ local Library = {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    AnchorPoint = Vector2.new(0, 0.5),
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 10, 0.5, 0),
-                    Size = UDim2.new(0, 40, 0, 40),
+                    AnchorPoint = Vector2.new(0.5, 0.5),
+                    BackgroundTransparency = 0,
+                    Position = UDim2.new(0.5, 0, 0.5, 0),
+                    Size = UDim2.new(0, 36, 0, 36),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                })
+                    BackgroundColor3 = Color3.fromRGB(22, 8, 8)
+                }):AddToTheme({BackgroundColor3 = "Element"})
                 
                 Library:Create("UICorner", {
                     Parent = Items["IconBackground"].Instance,
-                    Name = "\0"
-                })
-                
-                Items["UIStroke"] = Library:Create("UIStroke", {
-                    Parent = Items["IconBackground"].Instance,
                     Name = "\0",
-                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-                    Color = Color3.fromRGB(220, 40, 40),
-                    Thickness = 1.5,
-                    Transparency = 1
+                    CornerRadius = UDim.new(0, 8)
                 })
-                
-                Items["Gradient"] = Library:Create("UIGradient", {
-                    Parent = Items["UIStroke"].Instance,
-                    Name = "\0",
-                    Enabled = true,
-                    Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 40, 40)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 8, 8))
-                }
-                }):AddToTheme({Color = function()
-                    return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
-                end})
+
+                -- Stub so Turn() doesn't error
+                Items["UIStroke"] = { Instance = { Transparency = 1 }, Tween = function() end }
+                Items["Gradient"] = { Instance = { Enabled = false } }
                 
                 -- Icon container frame (supports both asset ids and lucide icons)
                 Items["IconContainer"] = Library:Create("Frame", {
@@ -3111,11 +3095,11 @@ local Library = {
 
                 if Bool then 
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 60)})
-                    Items["UIStroke"]:Tween({Transparency = 0})
+                    Items["IconBackground"]:Tween({BackgroundColor3 = Library.Theme["Hovered Element"]})
                     Items["Inactive"]:Tween({BackgroundTransparency = 0})
                 else
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 80)})
-                    Items["UIStroke"]:Tween({Transparency = 1})
+                    Items["IconBackground"]:Tween({BackgroundColor3 = Library.Theme["Element"]})
                     Items["Inactive"]:Tween({BackgroundTransparency = 1})
                 end
 
