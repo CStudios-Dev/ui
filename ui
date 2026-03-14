@@ -2644,21 +2644,38 @@ local Library = {
                 Window:SetOpen(not Window.IsOpen)
             end)
 
-            -- init blur system - it handles BackgroundTransparency automatically
+            -- init blur system
             local ElBlurUI = ElBlurSource.new(Items["MainFrame"].Instance)
             Window.ElBlurUI = ElBlurUI
 
-            Items["MainFrame"].Instance.Size = UDim2.new(0, 50, 0, 50)
-            Items["Pages"]:FadeDescendants(false, Debounce)
-            Items["Content"]:FadeDescendants(false, Debounce)
-            Items["ContentHeader"]:FadeDescendants(false, Debounce)
+            -- Start fully invisible, correct final size, then fade everything in smoothly
+            Items["MainFrame"].Instance.Size = OriginalSize
+            Items["MainFrame"].Instance.BackgroundTransparency = 1
+
+            -- Hide all descendants instantly before showing
+            local function SetAllTransparency(parent, val)
+                for _, obj in parent:GetDescendants() do
+                    if obj:IsA("Frame") or obj:IsA("ScrollingFrame") then
+                        obj.BackgroundTransparency = 1
+                    elseif obj:IsA("TextLabel") or obj:IsA("TextButton") then
+                        obj.TextTransparency = 1
+                        obj.BackgroundTransparency = 1
+                    elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+                        obj.ImageTransparency = 1
+                        obj.BackgroundTransparency = 1
+                    elseif obj:IsA("UIStroke") then
+                        obj.Transparency = 1
+                    end
+                end
+            end
+
+            SetAllTransparency(Items["MainFrame"].Instance)
             Items["MainFrame"].Instance.Visible = true
-            task.wait(Library.Animation.Time - 0.05)
-            Items["MainFrame"]:Tween({Size = UDim2.new(0, 660, 0, 430)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
-            task.wait(1)
-            Items["Pages"]:FadeDescendants(true, Debounce)
-            Items["Content"]:FadeDescendants(true, Debounce)
-            Items["ContentHeader"]:FadeDescendants(true, Debounce)
+
+            -- Small delay then fade the whole window in via SetOpen
+            task.delay(0.1, function()
+                Window:SetOpen(true)
+            end)
 
             function Window:Center()
                 local AbsPos = Items["MainFrame"].Instance.AbsolutePosition
