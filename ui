@@ -3110,20 +3110,14 @@ local Library = {
                     TextSize = 14,
                     BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 })
-                
+
                 Library:Create("UICorner", {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
                     CornerRadius = UDim.new(0, 8)
                 })
 
-                -- No stroke needed — the circle itself is the visual container
-                Items["UIStroke"] = { Instance = { Transparency = 1, Color = Color3.fromRGB(0,0,0) }, Tween = function() end }
-                Items["StrokeGradient"] = { Instance = { Enabled = false } }
-                Items["Gradient"] = { Instance = { Enabled = false } }
-                
-                -- Icon background circle — ALWAYS visible.
-                -- Inactive = dark reddish tint; Active = bright red gradient
+                -- Icon background: dark rounded square, always visible
                 Items["IconBackground"] = Library:Create("Frame", {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
@@ -3133,21 +3127,28 @@ local Library = {
                     Position = UDim2.new(0.5, 0, 0.5, 0),
                     Size = UDim2.new(0, 34, 0, 34),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(22, 8, 8)
+                    BackgroundColor3 = Color3.fromRGB(18, 6, 6)
                 })
-                
+
                 Library:Create("UICorner", {
                     Parent = Items["IconBackground"].Instance,
                     Name = "\0",
-                    CornerRadius = UDim.new(1, 0)
+                    CornerRadius = UDim.new(0, 8)
                 })
 
-                -- Red gradient (disabled when inactive, enabled when active)
-                Items["IconBgGradient"] = Library:Create("UIGradient", {
+                -- UIStroke on the box: grey by default, accent gradient when active
+                Items["UIStroke"] = Library:Create("UIStroke", {
                     Parent = Items["IconBackground"].Instance,
                     Name = "\0",
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    Color = Color3.fromRGB(37, 14, 14),
+                    Thickness = 1.4
+                })
+
+                Items["Gradient"] = Library:Create("UIGradient", {
+                    Parent = Items["UIStroke"].Instance,
+                    Name = "\0",
                     Enabled = false,
-                    Rotation = 135,
                     Color = ColorSequence.new{
                         ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
                         ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 10, 10))
@@ -3159,20 +3160,24 @@ local Library = {
                     }
                 end})
 
-                -- Icon container frame (supports both asset ids and lucide icons)
+                -- Stub so Turn() doesn't error
+                Items["StrokeGradient"] = { Instance = { Enabled = false } }
+                Items["IconBgGradient"] = { Instance = { Enabled = false } }
+
+                -- Icon container
                 Items["IconContainer"] = Library:Create("Frame", {
                     Parent = Items["IconBackground"].Instance,
                     Name = "\0",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0.5, 0, 0.5, 0),
+                    Position = UDim2.new(0.5, 0, 0.5, -1),
                     Size = UDim2.new(0, 18, 0, 18),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
-                
-                -- Apply the icon (asset id or lucide)
+
+                -- Apply the icon (asset id or lucide via footagesus)
                 if IsAssetId(Page.Icon) then
                     Items["Icon"] = Library:Create("ImageLabel", {
                         Parent = Items["IconContainer"].Instance,
@@ -3184,12 +3189,12 @@ local Library = {
                         Position = UDim2.new(0.5, 0, 0.5, 0),
                         Size = UDim2.new(1, 0, 1, 0),
                         BorderSizePixel = 0,
-                        ImageColor3 = Color3.fromRGB(120, 55, 55),
+                        ImageColor3 = Color3.fromRGB(130, 60, 60),
                         BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     })
                 else
-                    -- Lucide icon - start dim reddish
-                    local iconCreated = ApplyIconToContainer(Items["IconContainer"].Instance, Page.Icon, UDim2.new(1, 0, 1, 0), Color3.fromRGB(120, 55, 55))
+                    -- Lucide icon via footagesus Icons library
+                    local iconCreated = ApplyIconToContainer(Items["IconContainer"].Instance, Page.Icon, UDim2.new(1, 0, 1, 0), Color3.fromRGB(130, 60, 60))
                     if iconCreated then
                         Items["Icon"] = { Instance = iconCreated, Tween = function() end, ChangeItemTheme = function() end }
                     else
@@ -3203,7 +3208,7 @@ local Library = {
                             Position = UDim2.new(0.5, 0, 0.5, 0),
                             Size = UDim2.new(1, 0, 1, 0),
                             BorderSizePixel = 0,
-                            ImageColor3 = Color3.fromRGB(100, 100, 110),
+                            ImageColor3 = Color3.fromRGB(130, 60, 60),
                             BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                         })
                     end
@@ -3290,11 +3295,12 @@ local Library = {
 
                 if Bool then 
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 0)})
-                    -- Active: red gradient circle, white icon
-                    Items["IconBgGradient"].Instance.Enabled = true
-                    Items["IconBackground"]:Tween({BackgroundColor3 = Library.Theme["Accent Start"]})
+                    -- Active: accent gradient stroke, bright icon
+                    Items["Gradient"].Instance.Enabled = true
+                    Items["UIStroke"].Instance.Color = Color3.fromRGB(255, 255, 255)
+                    Items["IconBackground"]:Tween({BackgroundColor3 = Color3.fromRGB(30, 10, 10)})
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
-                        Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(255, 255, 255)})
+                        Items["Icon"]:Tween({ImageColor3 = Library.Theme["Accent Start"]})
                     end
                     -- Update global page name label
                     if Page.Window.Items["PageNameLabel"] then
@@ -3302,11 +3308,12 @@ local Library = {
                     end
                 else
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 20)})
-                    -- Inactive: dark reddish circle, dim icon
-                    Items["IconBgGradient"].Instance.Enabled = false
-                    Items["IconBackground"]:Tween({BackgroundColor3 = Color3.fromRGB(22, 8, 8)})
+                    -- Inactive: dim stroke, dim icon
+                    Items["Gradient"].Instance.Enabled = false
+                    Items["UIStroke"].Instance.Color = Color3.fromRGB(37, 14, 14)
+                    Items["IconBackground"]:Tween({BackgroundColor3 = Color3.fromRGB(18, 6, 6)})
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
-                        Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(120, 55, 55)})
+                        Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(130, 60, 60)})
                     end
                 end
 
@@ -3379,7 +3386,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                    BackgroundColor3 = Color3.fromRGB(80, 20, 20),
                     ZIndex = 2,
                     BorderSizePixel = 0,
                     Visible = true,
@@ -3538,8 +3545,8 @@ local Library = {
                 if Bool then 
                     Items["StrokeGradient"].Instance.Enabled = false
                     Items["HoverStroke"]:Tween({Transparency = 1})
-                    Items["TabLabel"]:Tween({TextTransparency = 0, TextColor3 = Color3.fromRGB(10, 10, 12)})
-                    Items["Inactive"]:Tween({BackgroundTransparency = 0})
+                    Items["TabLabel"]:Tween({TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 200, 200)})
+                    Items["Inactive"]:Tween({BackgroundTransparency = 0.55})
                     if Page.Page.Search then 
                         Page.Page.CurrentPage = Page
                     end
@@ -3579,7 +3586,7 @@ local Library = {
             Items["Inactive"]:Connect("MouseEnter", function()
                 if not Page.Active then
                     Items["HoverStroke"]:Tween({Transparency = 1})
-                    Items["Inactive"]:Tween({BackgroundTransparency = 0.88, BackgroundColor3 = Color3.fromRGB(255, 255, 255)})
+                    Items["Inactive"]:Tween({BackgroundTransparency = 0.8, BackgroundColor3 = Color3.fromRGB(80, 20, 20)})
                 end
             end)
 
