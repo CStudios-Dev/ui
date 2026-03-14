@@ -2212,19 +2212,12 @@ local Library = {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
                     Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 5, 5)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(28, 5, 5)),
+                        ColorSequenceKeypoint.new(0.45, Color3.fromRGB(10, 3, 3)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(5, 5, 7))
                     },
                     Rotation = 135
-                }):AddToTheme({Color = function()
-                    local s = Library.Theme["Accent Start"]
-                    local dim = Color3.fromRGB(math.floor(s.R*255*0.12), math.floor(s.G*255*0.04), math.floor(s.B*255*0.04))
-                    return ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, dim),
-                        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(math.floor(s.R*255*0.05), 2, 2)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(6, 6, 8))
-                    }
-                end})
+                })
 
                 Items["MainFrame"]:MakeDraggable()
                 Window.ResizeHandler = Items["MainFrame"]:MakeResizeable(Vector2.new(Items["MainFrame"].Instance.AbsoluteSize.X, Items["MainFrame"].Instance.AbsoluteSize.Y))
@@ -2275,6 +2268,16 @@ local Library = {
                     Name = "\0",
                     CornerRadius = UDim.new(0, 8)
                 })
+
+                -- Top-left fill: covers the gap between main frame corner and sidebar top
+                Library:Create("Frame", {
+                    Parent = Items["Sidebar"].Instance,
+                    Name = "\0",
+                    Position = UDim2.new(0, 0, 0, 0),
+                    Size = UDim2.new(1, 0, 0, 8),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+                }):AddToTheme({BackgroundColor3 = "Background"})
 
                 -- Right-side fill to square off only the right edge of the sidebar
                 Library:Create("Frame", {
@@ -2410,8 +2413,8 @@ local Library = {
                 Items["ContentHeader"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    Position = UDim2.new(0, 63, 0, 5),
-                    Size = UDim2.new(1, -68, 0, 40),
+                    Position = UDim2.new(0, 60, 0, 5),
+                    Size = UDim2.new(1, -65, 0, 40),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(5, 5, 6)
                 }):AddToTheme({BackgroundColor3 = "Background"})
@@ -2521,9 +2524,9 @@ local Library = {
                 Items["Content"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    Position = UDim2.new(0, 63, 0, 45),
+                    Position = UDim2.new(0, 60, 0, 45),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, -68, 1, -50),
+                    Size = UDim2.new(1, -65, 1, -50),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
