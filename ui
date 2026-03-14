@@ -3047,7 +3047,7 @@ local Library = {
                         BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     })
                 else
-                    -- Lucide icon — start dim grey
+                    -- Lucide icon - start dim grey
                     local iconCreated = ApplyIconToContainer(Items["IconContainer"].Instance, Page.Icon, UDim2.new(1, 0, 1, 0), Color3.fromRGB(100, 100, 110))
                     if iconCreated then
                         Items["Icon"] = { Instance = iconCreated, Tween = function() end, ChangeItemTheme = function() end }
@@ -6144,10 +6144,10 @@ local Library = {
                     return ValLabel
                 end
 
-                local TimeLabel = MakeStat("🕐", "Script Use Time", "0s", 1)
-                local RunsLabel = MakeStat("↻", "Executions", "0x", 2)
-                local UserLabel = MakeStat("★", "Username", playerName, 3)
-                MakeStat("∞", "Access", "inf hours", 4)
+                local TimeLabel = MakeStat("-", "Script Use Time", "0s", 1)
+                local RunsLabel = MakeStat("-", "Executions", "0x", 2)
+                local UserLabel = MakeStat("-", "Username", playerName, 3)
+                MakeStat("-", "Access", "inf hours", 4)
 
                 -- Auto-increment run count on load
                 runCount = runCount + 1
@@ -6168,7 +6168,7 @@ local Library = {
                     end
                 end)
 
-                -- ── Discord Server Card ──────────────────────────────────────
+                -- - Discord Server Card -
                 -- CONFIGURE THESE TWO VALUES:
                 local DISCORD_INVITE = "qphZBPNDPZ"
                 local DISCORD_LINK   = "https://discord.gg/" .. DISCORD_INVITE
@@ -6248,7 +6248,7 @@ local Library = {
                 MembersLabel.Position = UDim2.new(0, 64, 0, 30)
                 MembersLabel.BackgroundTransparency = 1
                 MembersLabel.BorderSizePixel = 0
-                MembersLabel.Text = "Members: —"
+                MembersLabel.Text = "Members: -"
                 MembersLabel.TextColor3 = Color3.fromRGB(175, 130, 140)
                 MembersLabel.TextSize = 11
                 MembersLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -6264,7 +6264,7 @@ local Library = {
                 OnlineLabel.BackgroundTransparency = 1
                 OnlineLabel.BorderSizePixel = 0
                 OnlineLabel.RichText = true
-                OnlineLabel.Text = '<font color="rgb(87,242,135)">●</font> Online: —'
+                OnlineLabel.Text = '<font color="rgb(87,242,135)">-</font> Online: -'
                 OnlineLabel.TextColor3 = Color3.fromRGB(175, 130, 140)
                 OnlineLabel.TextSize = 11
                 OnlineLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -6328,7 +6328,7 @@ local Library = {
                             MembersLabel.Text = "Members: " .. string.format("%s", tostring(members))
                         end
                         if online then
-                            OnlineLabel.Text = '<font color="rgb(87,242,135)">●</font> Online: ' .. tostring(online)
+                            OnlineLabel.Text = '<font color="rgb(87,242,135)">-</font> Online: ' .. tostring(online)
                         end
 
                         -- Server icon
@@ -6340,7 +6340,7 @@ local Library = {
                         end
                     else
                         ServerName.Text = "Set DISCORD_INVITE code"
-                        MembersLabel.Text = "Members: —"
+                        MembersLabel.Text = "Members: -"
                     end
                 end)
             end
