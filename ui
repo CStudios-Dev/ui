@@ -3143,7 +3143,7 @@ local Library = {
 
                 Items["Gradient"] = { Instance = { Enabled = false } }
                 
-                -- Icon background (transparent, just for positioning)
+                -- Icon background (transparent by default; solid red circle when active)
                 Items["IconBackground"] = Library:Create("Frame", {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
@@ -3151,15 +3151,33 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0.5, 0, 0.5, 0),
-                    Size = UDim2.new(0, 22, 0, 22),
+                    Size = UDim2.new(0, 34, 0, 34),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    BackgroundColor3 = Color3.fromRGB(220, 30, 30)
                 })
                 
                 Library:Create("UICorner", {
                     Parent = Items["IconBackground"].Instance,
-                    Name = "\0"
+                    Name = "\0",
+                    CornerRadius = UDim.new(1, 0)
                 })
+
+                -- Red gradient applied to the circle background
+                Items["IconBgGradient"] = Library:Create("UIGradient", {
+                    Parent = Items["IconBackground"].Instance,
+                    Name = "\0",
+                    Enabled = false,
+                    Rotation = 135,
+                    Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 10, 10))
+                    }
+                }):AddToTheme({Color = function()
+                    return ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),
+                        ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])
+                    }
+                end})
 
                 -- Icon container frame (supports both asset ids and lucide icons)
                 Items["IconContainer"] = Library:Create("Frame", {
@@ -3168,8 +3186,8 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0.5, 0, 0.5, -1),
-                    Size = UDim2.new(0, 14, 0, 14),
+                    Position = UDim2.new(0.5, 0, 0.5, 0),
+                    Size = UDim2.new(0, 18, 0, 18),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
@@ -3292,12 +3310,14 @@ local Library = {
 
                 if Bool then 
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 0)})
-                    Items["StrokeGradient"].Instance.Enabled = true
-                    Items["UIStroke"].Instance.Color = Library.Theme["Accent Start"]
-                    Items["UIStroke"]:Tween({Transparency = 0})
-                    Items["Inactive"]:Tween({BackgroundTransparency = 0, BackgroundColor3 = Library.Theme["Element"]})
+                    Items["StrokeGradient"].Instance.Enabled = false
+                    Items["UIStroke"]:Tween({Transparency = 1})
+                    Items["Inactive"]:Tween({BackgroundTransparency = 1})
+                    -- Show the red gradient circle
+                    Items["IconBgGradient"].Instance.Enabled = true
+                    Items["IconBackground"]:Tween({BackgroundTransparency = 0})
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
-                        Items["Icon"]:Tween({ImageColor3 = Library.Theme["Accent Start"]})
+                        Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(255, 255, 255)})
                     end
                     -- Update global page name label
                     if Page.Window.Items["PageNameLabel"] then
@@ -3309,6 +3329,9 @@ local Library = {
                     Items["UIStroke"].Instance.Color = Color3.fromRGB(32, 32, 36)
                     Items["UIStroke"]:Tween({Transparency = 0})
                     Items["Inactive"]:Tween({BackgroundTransparency = 1})
+                    -- Hide the red gradient circle
+                    Items["IconBgGradient"].Instance.Enabled = false
+                    Items["IconBackground"]:Tween({BackgroundTransparency = 1})
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
                         Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(70, 70, 80)})
                     end
@@ -3383,7 +3406,7 @@ local Library = {
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
-                    BackgroundColor3 = Color3.fromRGB(20, 5, 5),
+                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     ZIndex = 2,
                     BorderSizePixel = 0,
                     Visible = true,
@@ -3470,17 +3493,17 @@ local Library = {
                 Items["LeftColumn"] = Library:Create("ScrollingFrame", {
                     Parent = Items["Page"].Instance,
                     Name = "\0",
-                    ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0),
+                    ScrollBarImageColor3 = Color3.fromRGB(220, 30, 30),
                     Active = true,
                     AutomaticCanvasSize = Enum.AutomaticSize.Y,
-                    ScrollBarThickness = 0,
+                    ScrollBarThickness = 3,
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 1, 0),
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     BorderSizePixel = 0,
                     CanvasSize = UDim2.new(0, 0, 0, 0)
-                })
+                }):AddToTheme({ScrollBarImageColor3 = "Accent Start"})
                 
                 Library:Create("UIPadding", {
                     Parent = Items["LeftColumn"].Instance,
@@ -3540,17 +3563,18 @@ local Library = {
                 Page.Active = Bool 
 
                 if Bool then 
-                    Items["StrokeGradient"].Instance.Enabled = true
-                    Items["HoverStroke"].Instance.Color = Library.Theme["Accent Start"]
-                    Items["TabLabel"]:Tween({TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)})
-                    Items["Inactive"]:Tween({BackgroundTransparency = 0.88})
+                    Items["StrokeGradient"].Instance.Enabled = false
+                    Items["HoverStroke"]:Tween({Transparency = 1})
+                    Items["TabLabel"]:Tween({TextTransparency = 0, TextColor3 = Color3.fromRGB(10, 10, 12)})
+                    Items["Inactive"]:Tween({BackgroundTransparency = 0})
                     if Page.Page.Search then 
                         Page.Page.CurrentPage = Page
                     end
                 else
                     Items["StrokeGradient"].Instance.Enabled = false
                     Items["HoverStroke"].Instance.Color = Color3.fromRGB(55, 55, 60)
-                    Items["TabLabel"]:Tween({TextTransparency = 0.5, TextColor3 = Library.Theme.Text})
+                    Items["HoverStroke"]:Tween({Transparency = 1})
+                    Items["TabLabel"]:Tween({TextTransparency = 0.45, TextColor3 = Library.Theme.Text})
                     Items["Inactive"]:Tween({BackgroundTransparency = 1})
                 end
 
@@ -3581,15 +3605,13 @@ local Library = {
 
             Items["Inactive"]:Connect("MouseEnter", function()
                 if not Page.Active then
-                    Items["HoverStroke"]:Tween({Transparency = 0})
-                    Items["HoverStroke"].Instance.Color = Color3.fromRGB(100, 100, 108)
-                    Items["Inactive"]:Tween({BackgroundTransparency = 0.92})
+                    Items["HoverStroke"]:Tween({Transparency = 1})
+                    Items["Inactive"]:Tween({BackgroundTransparency = 0.88, BackgroundColor3 = Color3.fromRGB(255, 255, 255)})
                 end
             end)
 
             Items["Inactive"]:Connect("MouseLeave", function()
                 if not Page.Active then
-                    Items["HoverStroke"].Instance.Color = Color3.fromRGB(55, 55, 60)
                     Items["Inactive"]:Tween({BackgroundTransparency = 1})
                 end
             end)
