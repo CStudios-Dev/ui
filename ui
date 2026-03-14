@@ -2192,7 +2192,7 @@ local Library = {
                 })
             end
 
-            local OriginalSize = UDim2.new(0, 660, 0, 520)
+            local OriginalSize = UDim2.new(0, 660, 0, 430)
 
             local Items = { } do 
                 Items["MainFrame"] = Library:Create("Frame", {
@@ -2201,7 +2201,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     Position = UDim2.new(0.5, 0, 0.5, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 660, 0, 520),
+                    Size = UDim2.new(0, 660, 0, 430),
                     Visible = false,
                     BackgroundTransparency = 0,
                     BorderSizePixel = 0,
@@ -2641,7 +2641,7 @@ local Library = {
             Items["ContentHeader"]:FadeDescendants(false, Debounce)
             Items["MainFrame"].Instance.Visible = true
             task.wait(Library.Animation.Time - 0.05)
-            Items["MainFrame"]:Tween({Size = UDim2.new(0, 660, 0, 520)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
+            Items["MainFrame"]:Tween({Size = UDim2.new(0, 660, 0, 430)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
             task.wait(1)
             Items["Pages"]:FadeDescendants(true, Debounce)
             Items["Content"]:FadeDescendants(true, Debounce)
