@@ -329,6 +329,14 @@ local Library = {
     local Flags = Library.Flags 
     local SetFlags = Library.SetFlags
 
+    -- Fix: NextFlag auto-generator so Label:Keybind() / Label:Colorpicker()
+    -- never crash when Flag is omitted
+    Library._FlagCounter = Library._FlagCounter or 0
+    Library.NextFlag = function()
+        Library._FlagCounter += 1
+        return "__auto_flag_" .. Library._FlagCounter
+    end
+
     -- Folders
     if not isfolder(Library.Directory) then 
         makefolder(Library.Directory)
@@ -2233,126 +2241,125 @@ local Library = {
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 })
                 
+                -- ── Blended "no-topbar" approach ──────────────────────────
+                -- Top is a zero-height invisible stub so existing code that
+                -- references Items["Top"] / FadeDescendants doesn't break.
                 Items["Top"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, 0, 0, 35),
+                    Size = UDim2.new(1, 0, 0, 0),   -- zero height → invisible
                     BorderSizePixel = 0,
+                    BackgroundTransparency = 1,
                     BackgroundColor3 = Color3.fromRGB(4, 4, 4)
-                }):AddToTheme({BackgroundColor3 = "Topbar"})
-                
-                Library:Create("UICorner", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0"
                 })
 
-                -- Cover fill so rounded corners don't gap below topbar
-                Library:Create("Frame", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2.new(0, 1),
-                    Position = UDim2.new(0, 0, 1, 0),
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, 0, 0, 6),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(4, 4, 4)
-                }):AddToTheme({BackgroundColor3 = "Topbar"})
-                
-                Items["Logo"] = Library:Create("ImageLabel", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0",
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    AnchorPoint = Vector2.new(0, 0.5),
-                    Image = Window.Logo,
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 10, 0.5, 0),
-                    Size = UDim2.new(0, 20, 0, 20),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                })
-                
-                Library:Create("UIGradient", {
-                    Parent = Items["Logo"].Instance,
-                    Name = "\0",
-                    Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
-                }
-                }):AddToTheme({Color = function()
-                    return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
-                end})
-                
-                Items["Title"] = Library:Create("TextLabel", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    RichText = true,
-                    TextColor3 = Color3.fromRGB(220, 229, 247),
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Text = Window.Name,
-                    Size = UDim2.new(0, 0, 0, 15),
-                    TextWrapped = false,
-                    AnchorPoint = Vector2.new(0, 0.5),
-                    BorderSizePixel = 0,
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 42, 0.5, 0),
-                    AutomaticSize = Enum.AutomaticSize.X,
-                    TextSize = 17,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                }):AddToTheme({TextColor3 = "Text"})
-                
-                Items["_"] = Library:Create("Frame", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2.new(0, 1),
-                    Position = UDim2.new(0, 0, 1, 0),
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, 0, 0, 0),
-                    BorderSizePixel = 0,
-                    BackgroundTransparency = 1,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                })
-                
-                Items["CloseButton"] = Library:Create("ImageButton", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0",
-                    ImageColor3 = Color3.fromRGB(220, 229, 247),
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    AutoButtonColor = false,
-                    AnchorPoint = Vector2.new(1, 0.5),
-                    Image = "rbxassetid://135014211526638",
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(1, -10, 0.5, 0),
-                    Size = UDim2.new(0, 18, 0, 18),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                }):AddToTheme({ImageColor3 = "Text"})
-                
+                -- Invisible stubs for old references
+                Items["Logo"]     = Library:Create("Frame", { Parent = Items["Top"].Instance, Name = "\0", BackgroundTransparency = 1, Size = UDim2.new(0,0,0,0), BorderSizePixel = 0, BackgroundColor3 = Color3.fromRGB(0,0,0) })
+                Items["Title"]    = Library:Create("TextLabel", { Parent = Items["Top"].Instance, Name = "\0", Text = Window.Name, BackgroundTransparency = 1, BorderSizePixel = 0, Size = UDim2.new(0,0,0,0), TextSize = 1, FontFace = Library.Font, TextColor3 = Color3.fromRGB(0,0,0), BackgroundColor3 = Color3.fromRGB(0,0,0) })
+                Items["_"]        = Library:Create("Frame", { Parent = Items["Top"].Instance, Name = "\0", BackgroundTransparency = 1, Size = UDim2.new(0,0,0,0), BorderSizePixel = 0, BackgroundColor3 = Color3.fromRGB(0,0,0) })
 
-                
-                Items["MinimizeButton"] = Library:Create("ImageButton", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0",
-                    ImageColor3 = Color3.fromRGB(220, 229, 247),
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    AutoButtonColor = false,
-                    AnchorPoint = Vector2.new(1, 0.5),
-                    Image = "rbxassetid://117286241528046",
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(1, -65, 0.5, 0),
-                    Size = UDim2.new(0, 18, 0, 18),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                }):AddToTheme({ImageColor3 = "Text"})
-                
-                Items["Pages"] = Library:Create("ScrollingFrame", {
+                -- ── Sidebar (full height, left edge) ─────────────────────
+                Items["Sidebar"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
+                    Position = UDim2.new(0, 0, 0, 0),
+                    Size = UDim2.new(0, 62, 1, 0),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+                }):AddToTheme({BackgroundColor3 = "Background"})
+
+                Library:Create("UICorner", {
+                    Parent = Items["Sidebar"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDim.new(0, 8)
+                })
+
+                -- Right-side fill to square off only the right edge of the sidebar
+                Library:Create("Frame", {
+                    Parent = Items["Sidebar"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2.new(1, 0),
+                    Position = UDim2.new(1, 0, 0, 0),
+                    Size = UDim2.new(0, 8, 1, 0),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+                }):AddToTheme({BackgroundColor3 = "Background"})
+
+                -- Thin accent divider line between sidebar and content
+                Library:Create("Frame", {
+                    Parent = Items["MainFrame"].Instance,
+                    Name = "\0",
+                    Position = UDim2.new(0, 62, 0, 8),
+                    Size = UDim2.new(0, 1, 1, -16),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+                })
+
+                -- Logo at the top of the sidebar
+                local SidebarLogo = Library:Create("ImageLabel", {
+                    Parent = Items["Sidebar"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2.new(0.5, 0),
+                    Position = UDim2.new(0.5, 0, 0, 10),
+                    Size = UDim2.new(0, 32, 0, 32),
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 6, 0, 46),
+                    BorderSizePixel = 0,
+                    Image = Window.Logo,
+                    BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                })
+                Library:Create("UIGradient", {
+                    Parent = SidebarLogo.Instance,
+                    Name = "\0",
+                    Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 0, 0))
+                    }
+                }):AddToTheme({Color = function()
+                    return ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),
+                        ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])
+                    }
+                end})
+
+                -- Close button at bottom of sidebar
+                Items["CloseButton"] = Library:Create("ImageButton", {
+                    Parent = Items["Sidebar"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2.new(0.5, 1),
+                    Position = UDim2.new(0.5, 0, 1, -10),
+                    Size = UDim2.new(0, 20, 0, 20),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    AutoButtonColor = false,
+                    Image = "rbxassetid://135014211526638",
+                    ImageColor3 = Color3.fromRGB(80, 80, 90),
+                    BackgroundColor3 = Color3.fromRGB(0,0,0)
+                }):AddToTheme({ImageColor3 = "Text 2"})
+
+                -- Minimize button above close button
+                Items["MinimizeButton"] = Library:Create("ImageButton", {
+                    Parent = Items["Sidebar"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2.new(0.5, 1),
+                    Position = UDim2.new(0.5, 0, 1, -38),
+                    Size = UDim2.new(0, 20, 0, 20),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    AutoButtonColor = false,
+                    Image = "rbxassetid://117286241528046",
+                    ImageColor3 = Color3.fromRGB(80, 80, 90),
+                    BackgroundColor3 = Color3.fromRGB(0,0,0)
+                }):AddToTheme({ImageColor3 = "Text 2"})
+
+                -- ── Page icon strip (inside sidebar, below logo) ──────────
+                Items["Pages"] = Library:Create("ScrollingFrame", {
+                    Parent = Items["Sidebar"].Instance,
+                    Name = "\0",
+                    BackgroundTransparency = 1,
+                    Position = UDim2.new(0, 0, 0, 52),   -- below logo
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 70, 1, -61),
+                    Size = UDim2.new(1, 0, 1, -110),      -- leave room for close/minimize
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     ScrollingDirection = Enum.ScrollingDirection.Y,
@@ -2368,8 +2375,8 @@ local Library = {
                     Name = "\0",
                     PaddingTop = UDim.new(0, 6),
                     PaddingBottom = UDim.new(0, 6),
-                    PaddingRight = UDim.new(0, 6),
-                    PaddingLeft = UDim.new(0, 6)
+                    PaddingRight = UDim.new(0, 8),
+                    PaddingLeft = UDim.new(0, 8)
                 })
 
                 Library:Create("UIListLayout", {
@@ -2380,12 +2387,13 @@ local Library = {
                     HorizontalAlignment = Enum.HorizontalAlignment.Center
                 })
 
+                -- ── Main content (starts right of sidebar) ────────────────
                 Items["Content"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    Position = UDim2.new(0, 82, 0, 51),
+                    Position = UDim2.new(0, 68, 0, 6),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, -88, 1, -66),
+                    Size = UDim2.new(1, -74, 1, -12),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
@@ -2502,14 +2510,12 @@ local Library = {
             Window.ElBlurUI = ElBlurUI
 
             Items["MainFrame"].Instance.Size = UDim2.new(0, 50, 0, 50)
-            Items["Top"]:FadeDescendants(false, Debounce)
             Items["Pages"]:FadeDescendants(false, Debounce)
             Items["Content"]:FadeDescendants(false, Debounce)
             Items["MainFrame"].Instance.Visible = true
             task.wait(Library.Animation.Time - 0.05)
             Items["MainFrame"]:Tween({Size = UDim2.new(0, 660, 0, 430)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
             task.wait(1)
-            Items["Top"]:FadeDescendants(true, Debounce)
             Items["Pages"]:FadeDescendants(true, Debounce)
             Items["Content"]:FadeDescendants(true, Debounce)
 
@@ -2900,7 +2906,6 @@ local Library = {
             end)
 
             Items["CloseButton"]:Connect("MouseButton1Down", function()
-                Items["Top"]:FadeDescendants(false, Debounce)
                 Items["Pages"]:FadeDescendants(false, Debounce)
                 Items["Content"]:FadeDescendants(false, Debounce)
                 task.wait(Library.Animation.Time - 0.05)
@@ -2966,7 +2971,7 @@ local Library = {
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
                     AnchorPoint = Vector2.new(0.5, 0),
-                    Size = UDim2.new(0, 44, 0, 44),
+                    Size = UDim2.new(1, 0, 0, 40),
                     Position = UDim2.new(0.5, 0, 0, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
@@ -3188,16 +3193,18 @@ local Library = {
                     Items["StrokeGradient"].Instance.Enabled = true
                     Items["UIStroke"].Instance.Color = Library.Theme["Accent Start"]
                     Items["UIStroke"]:Tween({Transparency = 0})
+                    Items["Inactive"]:Tween({BackgroundTransparency = 0, BackgroundColor3 = Library.Theme["Element"]})
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
                         Items["Icon"]:Tween({ImageColor3 = Library.Theme["Accent Start"]})
                     end
                 else
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 80)})
                     Items["StrokeGradient"].Instance.Enabled = false
-                    Items["UIStroke"].Instance.Color = Color3.fromRGB(50, 50, 55)
+                    Items["UIStroke"].Instance.Color = Color3.fromRGB(32, 32, 36)
                     Items["UIStroke"]:Tween({Transparency = 0})
+                    Items["Inactive"]:Tween({BackgroundTransparency = 1})
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
-                        Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(100, 100, 110)})
+                        Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(70, 70, 80)})
                     end
                 end
 
@@ -4651,12 +4658,21 @@ local Library = {
                     Size = UDim2.new(0, 263, 0, 146),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                    BackgroundColor3 = Color3.fromRGB(6, 6, 7)
                 }):AddToTheme({BackgroundColor3 = "Background"})
                 
                 Library:Create("UICorner", {
                     Parent = Items["OptionHolder"].Instance,
-                    Name = "\0"
+                    Name = "\0",
+                    CornerRadius = UDim.new(0, 10)
+                })
+
+                Library:Create("UIStroke", {
+                    Parent = Items["OptionHolder"].Instance,
+                    Name = "\0",
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    Color = Color3.fromRGB(28, 28, 32),
+                    Thickness = 1.2
                 })
                 
                 Items["Search"] = Library:Create("Frame", {
@@ -4664,14 +4680,23 @@ local Library = {
                     Name = "\0",
                     Position = UDim2.new(0, 10, 0, 10),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, -20, 0, 35),
+                    Size = UDim2.new(1, -20, 0, 30),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(24, 24, 26)
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 16)
                 }):AddToTheme({BackgroundColor3 = "Element"})
                 
                 Library:Create("UICorner", {
                     Parent = Items["Search"].Instance,
-                    Name = "\0"
+                    Name = "\0",
+                    CornerRadius = UDim.new(0, 7)
+                })
+
+                Library:Create("UIStroke", {
+                    Parent = Items["Search"].Instance,
+                    Name = "\0",
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    Color = Color3.fromRGB(35, 35, 40),
+                    Thickness = 1
                 })
                 
                 Items["Icon"] = Library:Create("ImageLabel", {
@@ -4681,11 +4706,11 @@ local Library = {
                     AnchorPoint = Vector2.new(0, 0.5),
                     Image = "rbxassetid://79227204687245",
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 10, 0.5, 0),
-                    Size = UDim2.new(0, 18, 0, 18),
+                    Position = UDim2.new(0, 9, 0.5, 0),
+                    Size = UDim2.new(0, 14, 0, 14),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                }):AddToTheme({ImageColor3 = "Text"})
+                }):AddToTheme({ImageColor3 = "Text 2"})
                 
                 Items["Input"] = Library:Create("TextBox", {
                     Parent = Items["Search"].Instance,
@@ -4694,15 +4719,15 @@ local Library = {
                     TextColor3 = Color3.fromRGB(220, 229, 247),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     Text = "",
-                    Size = UDim2.new(1, -46, 0, 15),
-                    Position = UDim2.new(0, 38, 0.5, -1),
+                    Size = UDim2.new(1, -40, 0, 14),
+                    Position = UDim2.new(0, 32, 0.5, -1),
                     AnchorPoint = Vector2.new(0, 0.5),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    PlaceholderColor3 = Color3.fromRGB(145, 151, 163),
+                    PlaceholderColor3 = Color3.fromRGB(90, 90, 100),
                     AutomaticSize = Enum.AutomaticSize.None,
-                    PlaceholderText = "Search..",
-                    TextSize = 14,
+                    PlaceholderText = "Search...",
+                    TextSize = 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 }):AddToTheme({TextColor3 = "Text", PlaceholderColor3 = "Text 2"})
@@ -4718,9 +4743,9 @@ local Library = {
                     MidImage = "rbxassetid://81680855285439",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     ScrollBarThickness = 2,
-                    Size = UDim2.new(1, -20, 1, -60),
+                    Size = UDim2.new(1, -20, 1, -55),
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 10, 0, 50),
+                    Position = UDim2.new(0, 10, 0, 48),
                     BottomImage = "rbxassetid://81680855285439",
                     TopImage = "rbxassetid://81680855285439",
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
