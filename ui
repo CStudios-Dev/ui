@@ -353,7 +353,7 @@ local Library = {
             ["Background"]      = Color3.fromRGB(4, 4, 4),
             ["Inline"]          = Color3.fromRGB(10, 10, 10),
             ["Accent Start"]    = Color3.fromRGB(220, 30, 30),
-            ["Accent End"]      = Color3.fromRGB(10, 0, 0),
+            ["Accent End"]      = Color3.fromRGB(18, 14, 14),
             ["Text"]            = Color3.fromRGB(220, 220, 225),
             ["Text 2"]          = Color3.fromRGB(140, 140, 148),
             ["Element"]         = Color3.fromRGB(16, 16, 18),
@@ -2387,21 +2387,150 @@ local Library = {
                     HorizontalAlignment = Enum.HorizontalAlignment.Center
                 })
 
-                -- ── Main content (starts right of sidebar) ────────────────
-                Items["Content"] = Library:Create("Frame", {
+                -- ── Content header bar (sub-tabs + X/- live here) ───────
+                Items["ContentHeader"] = Library:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
                     Position = UDim2.new(0, 68, 0, 6),
+                    Size = UDim2.new(1, -74, 0, 46),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.fromRGB(5, 5, 6)
+                }):AddToTheme({BackgroundColor3 = "Background"})
+
+                Library:Create("UICorner", {
+                    Parent = Items["ContentHeader"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDim.new(0, 8)
+                })
+
+                -- Right-side fill so only TOP corners are rounded
+                Library:Create("Frame", {
+                    Parent = Items["ContentHeader"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2.new(0, 1),
+                    Position = UDim2.new(0, 0, 1, 0),
+                    Size = UDim2.new(1, 0, 0, 8),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.fromRGB(5, 5, 6)
+                }):AddToTheme({BackgroundColor3 = "Background"})
+
+                -- Page name label (top-left of header, updated when page changes)
+                Items["PageNameLabel"] = Library:Create("TextLabel", {
+                    Parent = Items["ContentHeader"].Instance,
+                    Name = "\0",
+                    Text = "",
+                    FontFace = Library.Font,
+                    RichText = false,
+                    TextColor3 = Color3.fromRGB(180, 180, 190),
+                    TextSize = 13,
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    AnchorPoint = Vector2.new(0, 0.5),
+                    Position = UDim2.new(0, 12, 0.5, 0),
+                    Size = UDim2.new(0, 0, 0, 16),
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                }):AddToTheme({TextColor3 = "Text 2"})
+
+                -- Close button (top-right of header)
+                Items["CloseButton"] = Library:Create("ImageButton", {
+                    Parent = Items["ContentHeader"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2.new(1, 0.5),
+                    Position = UDim2.new(1, -10, 0.5, 0),
+                    Size = UDim2.new(0, 16, 0, 16),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    AutoButtonColor = false,
+                    Image = "rbxassetid://135014211526638",
+                    ImageColor3 = Color3.fromRGB(80, 80, 90),
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                }):AddToTheme({ImageColor3 = "Text 2"})
+
+                -- Minimize button (top-right of header, beside close)
+                Items["MinimizeButton"] = Library:Create("ImageButton", {
+                    Parent = Items["ContentHeader"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2.new(1, 0.5),
+                    Position = UDim2.new(1, -34, 0.5, 0),
+                    Size = UDim2.new(0, 16, 0, 16),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    AutoButtonColor = false,
+                    Image = "rbxassetid://117286241528046",
+                    ImageColor3 = Color3.fromRGB(80, 80, 90),
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                }):AddToTheme({ImageColor3 = "Text 2"})
+
+                -- Sub-tabs strip (sits inside header, scrollable, leaves room for X/-)
+                Items["SubTabsHolder"] = Library:Create("ScrollingFrame", {
+                    Parent = Items["ContentHeader"].Instance,
+                    Name = "\0",
+                    BackgroundTransparency = 1,
+                    Position = UDim2.new(0, 55, 0, 0),   -- after page name
+                    Size = UDim2.new(1, -115, 1, 0),      -- leave room for X/- on right
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+                    ScrollingDirection = Enum.ScrollingDirection.X,
+                    AutomaticCanvasSize = Enum.AutomaticSize.X,
+                    CanvasSize = UDim2.new(0, 0, 0, 0),
+                    ScrollBarThickness = 0,
+                })
+
+                Library:Create("UIListLayout", {
+                    Parent = Items["SubTabsHolder"].Instance,
+                    Name = "\0",
+                    Padding = UDim.new(0, 6),
+                    FillDirection = Enum.FillDirection.Horizontal,
+                    SortOrder = Enum.SortOrder.LayoutOrder,
+                    VerticalAlignment = Enum.VerticalAlignment.Center
+                })
+
+                Library:Create("UIPadding", {
+                    Parent = Items["SubTabsHolder"].Instance,
+                    Name = "\0",
+                    PaddingLeft = UDim.new(0, 6),
+                    PaddingRight = UDim.new(0, 6),
+                    PaddingTop = UDim.new(0, 6),
+                    PaddingBottom = UDim.new(0, 6)
+                })
+
+                -- Thin divider line below header
+                Library:Create("Frame", {
+                    Parent = Items["MainFrame"].Instance,
+                    Name = "\0",
+                    Position = UDim2.new(0, 68, 0, 52),
+                    Size = UDim2.new(1, -74, 0, 1),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.fromRGB(22, 22, 26)
+                })
+
+                -- ── Main content (below header) ───────────────────────────
+                Items["Content"] = Library:Create("Frame", {
+                    Parent = Items["MainFrame"].Instance,
+                    Name = "\0",
+                    Position = UDim2.new(0, 68, 0, 53),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, -74, 1, -12),
+                    Size = UDim2.new(1, -74, 1, -59),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(8, 8, 8)
                 }):AddToTheme({BackgroundColor3 = "Inline"})
-                
+
                 Library:Create("UICorner", {
                     Parent = Items["Content"].Instance,
-                    Name = "\0"
-                })          
+                    Name = "\0",
+                    CornerRadius = UDim.new(0, 8)
+                })
+
+                -- Left-side fill so only BOTTOM corners are rounded on content
+                Library:Create("Frame", {
+                    Parent = Items["Content"].Instance,
+                    Name = "\0",
+                    Position = UDim2.new(0, 0, 0, 0),
+                    Size = UDim2.new(1, 0, 0, 8),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+                }):AddToTheme({BackgroundColor3 = "Inline"})          
                 
                 Items["DialogBackground"] = Library:Create("TextButton", {
                     Parent = Items["MainFrame"].Instance,
@@ -2512,12 +2641,14 @@ local Library = {
             Items["MainFrame"].Instance.Size = UDim2.new(0, 50, 0, 50)
             Items["Pages"]:FadeDescendants(false, Debounce)
             Items["Content"]:FadeDescendants(false, Debounce)
+            Items["ContentHeader"]:FadeDescendants(false, Debounce)
             Items["MainFrame"].Instance.Visible = true
             task.wait(Library.Animation.Time - 0.05)
             Items["MainFrame"]:Tween({Size = UDim2.new(0, 660, 0, 430)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
             task.wait(1)
             Items["Pages"]:FadeDescendants(true, Debounce)
             Items["Content"]:FadeDescendants(true, Debounce)
+            Items["ContentHeader"]:FadeDescendants(true, Debounce)
 
             function Window:Center()
                 local AbsPos = Items["MainFrame"].Instance.AbsolutePosition
@@ -2643,7 +2774,7 @@ local Library = {
                             Name = "\0",
                             Color = ColorSequence.new{
                             ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
-                            ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
+                            ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 14, 14))
                         }
                         }):AddToTheme({Color = function()
                             return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -2908,6 +3039,7 @@ local Library = {
             Items["CloseButton"]:Connect("MouseButton1Down", function()
                 Items["Pages"]:FadeDescendants(false, Debounce)
                 Items["Content"]:FadeDescendants(false, Debounce)
+                Items["ContentHeader"]:FadeDescendants(false, Debounce)
                 task.wait(Library.Animation.Time - 0.05)
                 local frame = Items["MainFrame"].Instance
                 local absPos = frame.AbsolutePosition
@@ -3127,48 +3259,18 @@ local Library = {
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
-                
-                Items["SubPages"] = Library:Create("ScrollingFrame", {
-                    Parent = Items["Page"].Instance,
-                    Name = "\0",
-                    BackgroundTransparency = 1,
-                    BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, 0, 0, 44),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                    ScrollingDirection = Enum.ScrollingDirection.X,
-                    AutomaticCanvasSize = Enum.AutomaticSize.X,
-                    CanvasSize = UDim2.new(0, 0, 0, 0),
-                    ScrollBarThickness = 0,
-                    ScrollBarImageColor3 = Color3.fromRGB(20, 20, 20),
-                    ScrollBarImageTransparency = 0.5
-                })
 
-                Library:Create("UIListLayout", {
-                    Parent = Items["SubPages"].Instance,
-                    Name = "\0",
-                    Padding = UDim.new(0, 8),
-                    FillDirection = Enum.FillDirection.Horizontal,
-                    SortOrder = Enum.SortOrder.LayoutOrder,
-                    VerticalAlignment = Enum.VerticalAlignment.Center
-                })
-                
-                Library:Create("UIPadding", {
-                    Parent = Items["SubPages"].Instance,
-                    Name = "\0",
-                    PaddingTop = UDim.new(0, 6),
-                    PaddingBottom = UDim.new(0, 6),
-                    PaddingLeft = UDim.new(0, 8),
-                    PaddingRight = UDim.new(0, 8)
-                })
+                -- Sub-tabs for this page live in the global SubTabsHolder
+                -- We keep a reference so SubPage buttons can parent into it
+                Items["SubPages"] = Page.Window.Items["SubTabsHolder"]
 
                 Items["Columns"] = Library:Create("Frame", {
                     Parent = Items["Page"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 0, 0, 48),
+                    Position = UDim2.new(0, 0, 0, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(1, 0, 1, -48),
+                    Size = UDim2.new(1, 0, 1, 0),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
@@ -3189,7 +3291,7 @@ local Library = {
                 Page.Active = Bool 
 
                 if Bool then 
-                    Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 60)})
+                    Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 0)})
                     Items["StrokeGradient"].Instance.Enabled = true
                     Items["UIStroke"].Instance.Color = Library.Theme["Accent Start"]
                     Items["UIStroke"]:Tween({Transparency = 0})
@@ -3197,8 +3299,12 @@ local Library = {
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
                         Items["Icon"]:Tween({ImageColor3 = Library.Theme["Accent Start"]})
                     end
+                    -- Update global page name label
+                    if Page.Window.Items["PageNameLabel"] then
+                        Page.Window.Items["PageNameLabel"].Instance.Text = Page.Name
+                    end
                 else
-                    Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 80)})
+                    Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 20)})
                     Items["StrokeGradient"].Instance.Enabled = false
                     Items["UIStroke"].Instance.Color = Color3.fromRGB(32, 32, 36)
                     Items["UIStroke"]:Tween({Transparency = 0})
@@ -3221,6 +3327,17 @@ local Library = {
                         end)
                     end
                 end)
+
+                -- Re-parent each sub-tab button so UIListLayout spacing is correct
+                for _, SubP in Page.SubPages do
+                    if SubP.Items and SubP.Items["Inactive"] then
+                        if Bool then
+                            SubP.Items["Inactive"].Instance.Parent = Page.Window.Items["SubTabsHolder"].Instance
+                        else
+                            SubP.Items["Inactive"].Instance.Parent = Library.UnusedHolder.Instance
+                        end
+                    end
+                end
             end
 
             Items["Inactive"]:Connect("MouseButton1Down", function()
@@ -3261,7 +3378,7 @@ local Library = {
                 local tabName = Page.Name ~= "" and Page.Name or "Tab"
 
                 Items["Inactive"] = Library:Create("TextButton", {
-                    Parent = Page.Page.Items["SubPages"].Instance,
+                    Parent = Library.UnusedHolder.Instance,
                     Name = "\0",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AutoButtonColor = false,
@@ -3269,6 +3386,7 @@ local Library = {
                     BackgroundColor3 = Color3.fromRGB(20, 5, 5),
                     ZIndex = 2,
                     BorderSizePixel = 0,
+                    Visible = true,
                     Size = UDim2.new(0, 0, 1, 0),
                     AutomaticSize = Enum.AutomaticSize.X,
                     Text = "",
@@ -3299,7 +3417,7 @@ local Library = {
                     Enabled = false,
                     Color = ColorSequence.new{
                         ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 14, 14))
                     }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{
@@ -3476,11 +3594,17 @@ local Library = {
                 end
             end)
 
-            if #Page.Page.SubPages == 0 then 
+            table.insert(Page.Page.SubPages, Page)
+
+            if #Page.Page.SubPages == 1 then 
                 Page:Turn(true)
             end
 
-            table.insert(Page.Page.SubPages, Page)
+            -- If parent page is already active (e.g. added after initial load), move button into strip
+            if Page.Page.Active then
+                Items["Inactive"].Instance.Parent = Page.Page.Window.Items["SubTabsHolder"].Instance
+            end
+
             return setmetatable(Page, Library)
         end
 
@@ -4577,7 +4701,7 @@ local Library = {
                     Name = "\0",
                     Color = ColorSequence.new{
                     ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 14, 14))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -4851,7 +4975,7 @@ local Library = {
                     Name = "\0",
                     Color = ColorSequence.new{
                     ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 14, 14))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
@@ -5414,7 +5538,7 @@ local Library = {
                     Name = "\0",
                     Color = ColorSequence.new{
                     ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 14, 14))
                 }
                 }):AddToTheme({Color = function()
                     return ColorSequence.new{ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])}
