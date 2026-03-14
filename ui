@@ -2192,7 +2192,7 @@ local Library = {
                 })
             end
 
-            local OriginalSize = UDim2.new(0, 660, 0, 450)
+            local OriginalSize = UDim2.new(0, 660, 0, 520)
 
             local Items = { } do 
                 Items["MainFrame"] = Library:Create("Frame", {
@@ -2201,7 +2201,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     Position = UDim2.new(0.5, 0, 0.5, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 660, 0, 450),
+                    Size = UDim2.new(0, 660, 0, 520),
                     Visible = false,
                     BackgroundTransparency = 0,
                     BorderSizePixel = 0,
@@ -2224,7 +2224,8 @@ local Library = {
                 
                 Library:Create("UICorner", {
                     Parent = Items["MainFrame"].Instance,
-                    Name = "\0"
+                    Name = "\0",
+                    CornerRadius = UDim.new(0, 10)
                 })
                 
                 Library:Create("UIStroke", {
@@ -2424,17 +2425,7 @@ local Library = {
                     Name = "\0",
                     CornerRadius = UDim.new(0, 8)
                 })
-
-                -- Bottom fill so only top corners round
-                Library:Create("Frame", {
-                    Parent = Items["ContentHeader"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2.new(0, 1),
-                    Position = UDim2.new(0, 0, 1, 0),
-                    Size = UDim2.new(1, 0, 0, 8),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(5, 5, 6)
-                }):AddToTheme({BackgroundColor3 = "Background"})
+                -- All 4 corners rounded - no fill frame needed
 
                 -- Page name label (hidden)
                 Items["PageNameLabel"] = Library:Create("TextLabel", {
@@ -2536,16 +2527,7 @@ local Library = {
                     Name = "\0",
                     CornerRadius = UDim.new(0, 8)
                 })
-
-                -- Top fill so only bottom corners round
-                Library:Create("Frame", {
-                    Parent = Items["Content"].Instance,
-                    Name = "\0",
-                    Position = UDim2.new(0, 0, 0, 0),
-                    Size = UDim2.new(1, 0, 0, 8),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(8, 8, 8)
-                }):AddToTheme({BackgroundColor3 = "Inline"})          
+                -- No top fill - all 4 corners are fully rounded          
                 
                 Items["DialogBackground"] = Library:Create("TextButton", {
                     Parent = Items["MainFrame"].Instance,
@@ -2659,7 +2641,7 @@ local Library = {
             Items["ContentHeader"]:FadeDescendants(false, Debounce)
             Items["MainFrame"].Instance.Visible = true
             task.wait(Library.Animation.Time - 0.05)
-            Items["MainFrame"]:Tween({Size = UDim2.new(0, 660, 0, 450)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
+            Items["MainFrame"]:Tween({Size = UDim2.new(0, 660, 0, 520)}, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out))
             task.wait(1)
             Items["Pages"]:FadeDescendants(true, Debounce)
             Items["Content"]:FadeDescendants(true, Debounce)
