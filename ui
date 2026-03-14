@@ -464,12 +464,24 @@ local Library = {
     Library.SetTheme = function(Self, ThemeName)
         local NewTheme = Themes[ThemeName]
         if not NewTheme then return end
+        -- Copy values into Library.Theme (don't mutate the source table)
         for Key, Value in NewTheme do
+            Library.Theme[Key] = Value
             Library:ChangeTheme(Key, Value)
+        end
+        -- Also update any colorpicker flags that mirror theme keys
+        for Key, Value in NewTheme do
+            if Library.SetFlags[Key] then
+                Library.SetFlags[Key](Value)
+            end
         end
     end
 
-    Library.Theme = Themes.Preset
+    -- Init Theme as a COPY of Preset (not a reference) so resets always work
+    Library.Theme = {}
+    for Key, Value in Themes.Preset do
+        Library.Theme[Key] = Value
+    end
 
     -- Custom Font
     local CustomFont = { } do
@@ -2267,18 +2279,8 @@ local Library = {
                 Library:Create("UICorner", {
                     Parent = Items["Sidebar"].Instance,
                     Name = "\0",
-                    CornerRadius = UDim.new(0, 8)
+                    CornerRadius = UDim.new(0, 10)
                 })
-
-                -- Top-left fill: covers the gap between main frame corner and sidebar top
-                Library:Create("Frame", {
-                    Parent = Items["Sidebar"].Instance,
-                    Name = "\0",
-                    Position = UDim2.new(0, 0, 0, 0),
-                    Size = UDim2.new(1, 0, 0, 8),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(5, 5, 5)
-                }):AddToTheme({BackgroundColor3 = "Background"})
 
                 -- Right-side fill to square off only the right edge of the sidebar
                 Library:Create("Frame", {
@@ -2287,6 +2289,17 @@ local Library = {
                     AnchorPoint = Vector2.new(1, 0),
                     Position = UDim2.new(1, 0, 0, 0),
                     Size = UDim2.new(0, 8, 1, 0),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+                }):AddToTheme({BackgroundColor3 = "Background"})
+
+                -- Bottom-right fill to square off bottom-right corner only
+                Library:Create("Frame", {
+                    Parent = Items["Sidebar"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2.new(1, 1),
+                    Position = UDim2.new(1, 0, 1, 0),
+                    Size = UDim2.new(0, 8, 0, 10),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(5, 5, 5)
                 }):AddToTheme({BackgroundColor3 = "Background"})
@@ -3100,7 +3113,7 @@ local Library = {
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
                     AnchorPoint = Vector2.new(0.5, 0),
-                    Size = UDim2.new(1, 0, 0, 40),
+                    Size = UDim2.new(1, 0, 0, 44),
                     Position = UDim2.new(0.5, 0, 0, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
@@ -3121,7 +3134,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     BackgroundTransparency = 0,
                     Position = UDim2.new(0.5, 0, 0.5, 0),
-                    Size = UDim2.new(0, 34, 0, 34),
+                    Size = UDim2.new(0, 38, 0, 38),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(18, 6, 6)
                 })
@@ -3168,7 +3181,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0.5, 0, 0.5, -1),
-                    Size = UDim2.new(0, 18, 0, 18),
+                    Size = UDim2.new(0, 20, 0, 20),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
@@ -6647,7 +6660,7 @@ local Library = {
             do
                 ThemeSection:Dropdown({
                     Name = "Preset Theme", Flag = "_ThemePreset",
-                    Items = {"Preset", "Purple", "Cyan", "Green", "Blue"},
+                    Items = {"Preset", "Pink", "Purple", "Cyan", "Green", "Blue", "Gold", "Orange", "Rose", "Midnight"},
                     Default = "Preset",
                     Callback = function(Value) Library:SetTheme(Value) end
                 })
@@ -6658,9 +6671,8 @@ local Library = {
                 for Index, Value in Library.Theme do
                     ThemeSection:Label({Name = Index}):Colorpicker({
                         Flag = Index, Default = Value,
-                        Callback = function(Value)
-                            Library.Theme[Index] = Value
-                            Library:ChangeTheme(Index, Value)
+                        Callback = function(NewValue)
+                            Library:ChangeTheme(Index, NewValue)
                         end
                     })
                 end
