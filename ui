@@ -2192,7 +2192,7 @@ local Library = {
                 })
             end
 
-            local OriginalSize = UDim2.new(0, 660, 0, 430)
+            local OriginalSize = UDim2.new(0, 660, 0, 450)
 
             local Items = { } do 
                 Items["MainFrame"] = Library:Create("Frame", {
@@ -2201,7 +2201,7 @@ local Library = {
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     Position = UDim2.new(0.5, 0, 0.5, 0),
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
-                    Size = UDim2.new(0, 660, 0, 430),
+                    Size = UDim2.new(0, 660, 0, 450),
                     Visible = false,
                     BackgroundTransparency = 0,
                     BorderSizePixel = 0,
@@ -2414,7 +2414,7 @@ local Library = {
                     BackgroundColor3 = Color3.fromRGB(5, 5, 6)
                 }):AddToTheme({BackgroundColor3 = "Background"})
 
-                -- Page name label (top-left of header, updated when page changes)
+                -- Page name label (hidden - sub-tabs are flush-left in image 1 style)
                 Items["PageNameLabel"] = Library:Create("TextLabel", {
                     Parent = Items["ContentHeader"].Instance,
                     Name = "\0",
@@ -2427,8 +2427,9 @@ local Library = {
                     BorderSizePixel = 0,
                     AnchorPoint = Vector2.new(0, 0.5),
                     Position = UDim2.new(0, 12, 0.5, 0),
-                    Size = UDim2.new(0, 0, 0, 16),
-                    AutomaticSize = Enum.AutomaticSize.X,
+                    Size = UDim2.new(0, 0, 0, 0),
+                    Visible = false,
+                    AutomaticSize = Enum.AutomaticSize.None,
                     BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 }):AddToTheme({TextColor3 = "Text 2"})
 
@@ -2462,13 +2463,13 @@ local Library = {
                     BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 }):AddToTheme({ImageColor3 = "Text 2"})
 
-                -- Sub-tabs strip (sits inside header, scrollable, leaves room for X/-)
+                -- Sub-tabs strip (sits inside header, flush-left, leaves room for X/- on right)
                 Items["SubTabsHolder"] = Library:Create("ScrollingFrame", {
                     Parent = Items["ContentHeader"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 55, 0, 0),   -- after page name
-                    Size = UDim2.new(1, -115, 1, 0),      -- leave room for X/- on right
+                    Position = UDim2.new(0, 8, 0, 0),   -- flush left
+                    Size = UDim2.new(1, -70, 1, 0),      -- leave room for X/- on right
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(0, 0, 0),
                     ScrollingDirection = Enum.ScrollingDirection.X,
@@ -2489,10 +2490,10 @@ local Library = {
                 Library:Create("UIPadding", {
                     Parent = Items["SubTabsHolder"].Instance,
                     Name = "\0",
-                    PaddingLeft = UDim.new(0, 6),
-                    PaddingRight = UDim.new(0, 6),
-                    PaddingTop = UDim.new(0, 6),
-                    PaddingBottom = UDim.new(0, 6)
+                    PaddingLeft = UDim.new(0, 4),
+                    PaddingRight = UDim.new(0, 4),
+                    PaddingTop = UDim.new(0, 8),
+                    PaddingBottom = UDim.new(0, 8)
                 })
 
                 -- Thin divider line below header
@@ -3452,8 +3453,8 @@ local Library = {
                 Library:Create("UIPadding", {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
-                    PaddingLeft = UDim.new(0, 10),
-                    PaddingRight = UDim.new(0, 10),
+                    PaddingLeft = UDim.new(0, 14),
+                    PaddingRight = UDim.new(0, 14),
                 })
 
                 Items["TabLabel"] = Library:Create("TextLabel", {
@@ -3462,8 +3463,8 @@ local Library = {
                     FontFace = Library.Font,
                     Text = tabName,
                     TextColor3 = Color3.fromRGB(200, 200, 200),
-                    TextTransparency = 0.5,
-                    TextSize = 13,
+                    TextTransparency = 0.45,
+                    TextSize = 14,
                     Size = UDim2.new(1, 0, 1, 0),
                     AnchorPoint = Vector2.new(0, 0),
                     Position = UDim2.new(0, 0, 0, 0),
