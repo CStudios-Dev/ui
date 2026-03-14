@@ -711,13 +711,19 @@ local Library = {
             end
         end
 
-        Library:Connect(NewTween.Completed, function()
+        if NewTween then
+            Library:Connect(NewTween.Completed, function()
+                if Callback and type(Callback) == "function" then 
+                    Callback()
+                end
+                Self.Instance.Visible = Visibility
+            end)
+        else
+            Self.Instance.Visible = Visibility
             if Callback and type(Callback) == "function" then 
                 Callback()
             end
-
-            Self.Instance.Visible = Visibility
-        end)
+        end
     end
 
     Library.MakeDraggable = function(Self)
@@ -3376,13 +3382,13 @@ local Library = {
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
 
-                -- RightColumn stub - safe to destroy, won't affect LeftColumn
+                -- RightColumn stub - safe to destroy, parented to nowhere
                 local _dummyFrame = Instance.new("Frame")
                 _dummyFrame.Name = "RightColumnDummy"
                 _dummyFrame.Visible = false
                 _dummyFrame.Size = UDim2.new(0,0,0,0)
                 _dummyFrame.BackgroundTransparency = 1
-                _dummyFrame.Parent = Items["Page"].Instance
+                -- NOT parented to Items["Page"] - keeps it out of FadeDescendants
                 Items["RightColumn"] = {
                     Instance = _dummyFrame,
                     Tween = function() end,
