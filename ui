@@ -3375,9 +3375,21 @@ local Library = {
                     Padding = UDim.new(0, 0),
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
-                
-                -- RightColumn points to same column so existing Section calls work
-                Items["RightColumn"] = Items["LeftColumn"]
+
+                -- RightColumn stub - safe to destroy, won't affect LeftColumn
+                local _dummyFrame = Instance.new("Frame")
+                _dummyFrame.Name = "RightColumnDummy"
+                _dummyFrame.Visible = false
+                _dummyFrame.Size = UDim2.new(0,0,0,0)
+                _dummyFrame.BackgroundTransparency = 1
+                _dummyFrame.Parent = Items["Page"].Instance
+                Items["RightColumn"] = {
+                    Instance = _dummyFrame,
+                    Tween = function() end,
+                    FadeDescendants = function(_, _, cb) if cb then cb() end end,
+                    ChangeItemTheme = function() end,
+                    Connect = function() end,
+                }
                 
                 Page.ColumnsData[1] = Items["LeftColumn"].Instance
                 Page.ColumnsData[2] = Items["LeftColumn"].Instance
