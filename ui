@@ -3093,7 +3093,7 @@ local Library = {
             }
 
             local Items = { } do 
-                -- The tab is transparent with a visible outline
+                -- The tab button is fully transparent - just a click target
                 Items["Inactive"] = Library:Create("TextButton", {
                     Parent = Page.Window.Items["Pages"].Instance,
                     Name = "\0",
@@ -3108,7 +3108,7 @@ local Library = {
                     Position = UDim2.new(0.5, 0, 0, 0),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = Color3.fromRGB(18, 7, 7)
+                    BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 })
                 
                 Library:Create("UICorner", {
@@ -3117,44 +3117,23 @@ local Library = {
                     CornerRadius = UDim.new(0, 8)
                 })
 
-                -- Grey outline always visible; turns accent on active
-                Items["UIStroke"] = Library:Create("UIStroke", {
-                    Parent = Items["Inactive"].Instance,
-                    Name = "\0",
-                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-                    Color = Color3.fromRGB(50, 50, 55),
-                    Thickness = 1.5,
-                    Transparency = 0
-                })
-
-                Items["StrokeGradient"] = Library:Create("UIGradient", {
-                    Parent = Items["UIStroke"].Instance,
-                    Name = "\0",
-                    Enabled = false,
-                    Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 10, 20))
-                    }
-                }):AddToTheme({Color = function()
-                    return ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),
-                        ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])
-                    }
-                end})
-
+                -- No stroke needed — the circle itself is the visual container
+                Items["UIStroke"] = { Instance = { Transparency = 1, Color = Color3.fromRGB(0,0,0) }, Tween = function() end }
+                Items["StrokeGradient"] = { Instance = { Enabled = false } }
                 Items["Gradient"] = { Instance = { Enabled = false } }
                 
-                -- Icon background (transparent by default; solid red circle when active)
+                -- Icon background circle — ALWAYS visible.
+                -- Inactive = dark reddish tint; Active = bright red gradient
                 Items["IconBackground"] = Library:Create("Frame", {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
                     BorderColor3 = Color3.fromRGB(0, 0, 0),
                     AnchorPoint = Vector2.new(0.5, 0.5),
-                    BackgroundTransparency = 1,
+                    BackgroundTransparency = 0,
                     Position = UDim2.new(0.5, 0, 0.5, 0),
                     Size = UDim2.new(0, 34, 0, 34),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Color3.fromRGB(220, 30, 30)
+                    BackgroundColor3 = Color3.fromRGB(22, 8, 8)
                 })
                 
                 Library:Create("UICorner", {
@@ -3163,7 +3142,7 @@ local Library = {
                     CornerRadius = UDim.new(1, 0)
                 })
 
-                -- Red gradient applied to the circle background
+                -- Red gradient (disabled when inactive, enabled when active)
                 Items["IconBgGradient"] = Library:Create("UIGradient", {
                     Parent = Items["IconBackground"].Instance,
                     Name = "\0",
@@ -3205,12 +3184,12 @@ local Library = {
                         Position = UDim2.new(0.5, 0, 0.5, 0),
                         Size = UDim2.new(1, 0, 1, 0),
                         BorderSizePixel = 0,
-                        ImageColor3 = Color3.fromRGB(100, 100, 110),
+                        ImageColor3 = Color3.fromRGB(120, 55, 55),
                         BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     })
                 else
-                    -- Lucide icon - start dim grey
-                    local iconCreated = ApplyIconToContainer(Items["IconContainer"].Instance, Page.Icon, UDim2.new(1, 0, 1, 0), Color3.fromRGB(100, 100, 110))
+                    -- Lucide icon - start dim reddish
+                    local iconCreated = ApplyIconToContainer(Items["IconContainer"].Instance, Page.Icon, UDim2.new(1, 0, 1, 0), Color3.fromRGB(120, 55, 55))
                     if iconCreated then
                         Items["Icon"] = { Instance = iconCreated, Tween = function() end, ChangeItemTheme = function() end }
                     else
@@ -3311,12 +3290,9 @@ local Library = {
 
                 if Bool then 
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 0)})
-                    Items["StrokeGradient"].Instance.Enabled = false
-                    Items["UIStroke"]:Tween({Transparency = 1})
-                    Items["Inactive"]:Tween({BackgroundTransparency = 1})
-                    -- Show the red gradient circle
+                    -- Active: red gradient circle, white icon
                     Items["IconBgGradient"].Instance.Enabled = true
-                    Items["IconBackground"]:Tween({BackgroundTransparency = 0})
+                    Items["IconBackground"]:Tween({BackgroundColor3 = Library.Theme["Accent Start"]})
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
                         Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(255, 255, 255)})
                     end
@@ -3326,15 +3302,11 @@ local Library = {
                     end
                 else
                     Items["Columns"]:Tween({Position = UDim2.new(0, 0, 0, 20)})
-                    Items["StrokeGradient"].Instance.Enabled = false
-                    Items["UIStroke"].Instance.Color = Color3.fromRGB(32, 32, 36)
-                    Items["UIStroke"]:Tween({Transparency = 0})
-                    Items["Inactive"]:Tween({BackgroundTransparency = 1})
-                    -- Hide the red gradient circle
+                    -- Inactive: dark reddish circle, dim icon
                     Items["IconBgGradient"].Instance.Enabled = false
-                    Items["IconBackground"]:Tween({BackgroundTransparency = 1})
+                    Items["IconBackground"]:Tween({BackgroundColor3 = Color3.fromRGB(22, 8, 8)})
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
-                        Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(70, 70, 80)})
+                        Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(120, 55, 55)})
                     end
                 end
 
