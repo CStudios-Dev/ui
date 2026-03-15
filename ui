@@ -3125,7 +3125,20 @@ local Library = {
                     Size = UDim2.new(0, 38, 0, 38),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Color3.fromRGB(18, 6, 6)
-                })
+                }):AddToTheme({BackgroundColor3 = function()
+                    if Page.Active then
+                        return Color3.fromRGB(
+                            math.floor(Library.Theme["Accent Start"].R * 255 * 0.18),
+                            math.floor(Library.Theme["Accent Start"].G * 255 * 0.08),
+                            math.floor(Library.Theme["Accent Start"].B * 255 * 0.08)
+                        )
+                    end
+                    return Color3.fromRGB(
+                        math.floor(Library.Theme["Accent Start"].R * 255 * 0.08),
+                        math.floor(Library.Theme["Accent Start"].G * 255 * 0.03),
+                        math.floor(Library.Theme["Accent Start"].B * 255 * 0.03)
+                    )
+                end})
 
                 Library:Create("UICorner", {
                     Parent = Items["IconBackground"].Instance,
@@ -3188,12 +3201,34 @@ local Library = {
                         BorderSizePixel = 0,
                         ImageColor3 = Color3.fromRGB(130, 60, 60),
                         BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                    })
+                    }):AddToTheme({ImageColor3 = function()
+                        return Page.Active and Library.Theme["Accent Start"] or Color3.fromRGB(
+                            math.floor(Library.Theme["Accent Start"].R * 255 * 0.5),
+                            math.floor(Library.Theme["Accent Start"].G * 255 * 0.3),
+                            math.floor(Library.Theme["Accent Start"].B * 255 * 0.3)
+                        )
+                    end})
                 else
-                    -- Lucide icon via footagesus Icons library
                     local iconCreated = ApplyIconToContainer(Items["IconContainer"].Instance, Page.Icon, UDim2.new(1, 0, 1, 0), Color3.fromRGB(130, 60, 60))
                     if iconCreated then
                         Items["Icon"] = { Instance = iconCreated, Tween = function() end, ChangeItemTheme = function() end }
+                        -- Register the lucide icon frame for theme updates
+                        local iconImg = iconCreated:FindFirstChildWhichIsA("ImageLabel", true)
+                        if iconImg then
+                            Library:AddToTheme({Instance = iconImg}):AddToTheme and nil
+                            table.insert(Library.ThemingStuff, {
+                                Item = iconImg,
+                                Properties = {
+                                    ImageColor3 = function()
+                                        return Page.Active and Library.Theme["Accent Start"] or Color3.fromRGB(
+                                            math.floor(Library.Theme["Accent Start"].R * 255 * 0.5),
+                                            math.floor(Library.Theme["Accent Start"].G * 255 * 0.3),
+                                            math.floor(Library.Theme["Accent Start"].B * 255 * 0.3)
+                                        )
+                                    end
+                                }
+                            })
+                        end
                     else
                         Items["Icon"] = Library:Create("ImageLabel", {
                             Parent = Items["IconContainer"].Instance,
@@ -3207,7 +3242,13 @@ local Library = {
                             BorderSizePixel = 0,
                             ImageColor3 = Color3.fromRGB(130, 60, 60),
                             BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                        })
+                        }):AddToTheme({ImageColor3 = function()
+                            return Page.Active and Library.Theme["Accent Start"] or Color3.fromRGB(
+                                math.floor(Library.Theme["Accent Start"].R * 255 * 0.5),
+                                math.floor(Library.Theme["Accent Start"].G * 255 * 0.3),
+                                math.floor(Library.Theme["Accent Start"].B * 255 * 0.3)
+                            )
+                        end})
                     end
                 end
                 
@@ -3308,9 +3349,17 @@ local Library = {
                     -- Inactive: dim stroke, dim icon
                     Items["Gradient"].Instance.Enabled = false
                     Items["UIStroke"].Instance.Color = Color3.fromRGB(37, 14, 14)
-                    Items["IconBackground"]:Tween({BackgroundColor3 = Color3.fromRGB(18, 6, 6)})
+                    Items["IconBackground"]:Tween({BackgroundColor3 = Color3.fromRGB(
+                        math.floor(Library.Theme["Accent Start"].R * 255 * 0.08),
+                        math.floor(Library.Theme["Accent Start"].G * 255 * 0.03),
+                        math.floor(Library.Theme["Accent Start"].B * 255 * 0.03)
+                    )})
                     if Items["Icon"].Instance and Items["Icon"].Instance:IsA("ImageLabel") then
-                        Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(130, 60, 60)})
+                        Items["Icon"]:Tween({ImageColor3 = Color3.fromRGB(
+                            math.floor(Library.Theme["Accent Start"].R * 255 * 0.5),
+                            math.floor(Library.Theme["Accent Start"].G * 255 * 0.3),
+                            math.floor(Library.Theme["Accent Start"].B * 255 * 0.3)
+                        )})
                     end
                 end
 
