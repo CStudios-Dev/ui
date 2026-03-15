@@ -3212,10 +3212,8 @@ local Library = {
                     local iconCreated = ApplyIconToContainer(Items["IconContainer"].Instance, Page.Icon, UDim2.new(1, 0, 1, 0), Color3.fromRGB(130, 60, 60))
                     if iconCreated then
                         Items["Icon"] = { Instance = iconCreated, Tween = function() end, ChangeItemTheme = function() end }
-                        -- Register the lucide icon frame for theme updates
                         local iconImg = iconCreated:FindFirstChildWhichIsA("ImageLabel", true)
                         if iconImg then
-                            Library:AddToTheme({Instance = iconImg}):AddToTheme and nil
                             table.insert(Library.ThemingStuff, {
                                 Item = iconImg,
                                 Properties = {
