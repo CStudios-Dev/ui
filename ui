@@ -6714,3 +6714,4 @@ end
 
 getgenv().Library = Library
 return Library
+-- ideas taken from efes/ather
