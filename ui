@@ -1,14 +1,12 @@
--- Made by samet
--- Example at bottom
+-- Made by Mommy Melissa hehe :}
 
 if getgenv().Library and getgenv().Library.Exit then
     getgenv().Library:Exit()
 end
 
--- Bad executor support (atleast by a bit)
 cloneref = cloneref or function(Object) return Object end 
 
---#region Services
+
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -16,9 +14,7 @@ local Workspace = game:GetService("Workspace")
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = cloneref(game:GetService("CoreGui"))
---#endregion
 
--- Blur background system (ported from sugar ui)
 local ElBlurSource = (function()
     local GuiSystem = {}
     function GuiSystem.new(frame)
@@ -6715,140 +6711,6 @@ local Library = {
         end
     end
 end
-
--- local Window = Library:Window({
---     Name = '<font color="rgb(175, 102, 126)">SAMET UI.</font>hub',
---     Logo = "rbxassetid://133218922939038"
--- })
-
--- local Combat = Window:Page({
---     Name = "Combat", 
---     Description = "combat page", 
---     Icon = "lucide:house",
---     Search = false, -- will decide if the page will have a search functionality or nott
--- })
-
--- local Visuals = Window:Page({Name = "Visuals", Description = "visuals page", Icon = "rbxassetid://111233133354469", Search = false})
--- local Misc = Window:Page({Name = "Misc", Description = "misc page", Icon = "rbxassetid://111233133354469", Search = false})
-
--- local MovementSubPage = Combat:SubPage({Icon = "rbxassetid://134546249616852"})
--- local CombatSubPage = Combat:SubPage({Icon = "rbxassetid://134546249616852"})
--- local VisualsSubPage = Visuals:SubPage({Icon = "rbxassetid://134546249616852"})
--- local MiscSubPage = Misc:SubPage({Icon = "rbxassetid://134546249616852"})
-
--- local SettingsPage = Window:CreateSettingsPage()
--- SettingsPage:CreateConfigsSection()
--- SettingsPage:CreateThemingSection()
-
--- local SectionLeft = MovementSubPage:Section({
---     Name = "Section Left",
---     Side = 1
--- })
-
--- local SectionRight = MovementSubPage:Section({
---     Name = "Section Right",
---     Side = 2
--- })
-
--- local ListSection = CombatSubPage:Section({
---     Name = "List Section",
---     Side = 1
--- })
-
--- local example toggle = SectionLeft:Toggle({
---     Name = "Toggle",
---     Flag = "Toggle",
---     Default = false,
---     Callback = function(Value)
---         print(Value)
---     end
--- })
-
--- SectionLeft:Button({
---     Name = "Button",
---     Callback = function()
---         print("Button")
---     end
--- })
-
--- SectionLeft:Slider({
---     Name = "Slider",
---     Flag = "Slider",
---     Default = 50,
---     Min = 0,
---     Max = 100,
---     Decimals = 1,
---     Suffix = "%",
---     Callback = function(Value)
---         print(Value)
---     end
--- })
-
--- SectionLeft:Dropdown({
---     Name = "Dropdown",
---     Flag = "Dropdown",
---     Items = { "Item 1", "Item 2", "Item 3" },
---     Default = "Item 1",
---     Callback = function(Value)
---         print(Value)
---     end
--- })
-
--- SectionLeft:Label({Name = "This is a label by itself"})
--- SectionLeft:Label({Name = "This is a label but colorpicker"}):Colorpicker({
---     Flag = "Colorpicker",
---     Default = Color3.fromRGB(255, 255, 255),
---     Callback = function(Value)
---         print(Value)
---     end
--- })
-
--- SectionLeft:Label({Name = "This is a label but keybind"}):Keybind({
---     Name = "Keybind",
---     Flag = "Keybind",
---     Default = Enum.KeyCode.E,
---     Callback = function(Value)
---         print(Value)
---     end
--- })
-
--- SectionLeft:Textbox({
---     Name = "Textbox",
---     Flag = "Textbox",
---     Default = "Text",
---     Numeric = false,
---     Finished = false,
---     Callback = function(Value)
---         print(Value)
---     end
--- })
-
--- local Status = SectionLeft:Status({Name = "status"})
-
--- for Index = 1, 5 do 
---     local newsttatus = Status:AddStatus("value: " .. Index)
---     --newstatus:Set("new value: " .. Index)
--- end
-
--- ListSection:List({
---     Items = {
---         {"Item 1", "1$", "10$"},
---         {"Item 2", "2$", "20$"},
---         {"Item 3", "3$", "30$"},
---         {"Item 4", "4$", "40$"},
---         {"Item 5", "5$", "50$"},
---         {"Item 6", "6$", "60$"},
---         {"Item 7", "7$", "70$"},
---         {"Item 8", "8$", "80$"},
---         {"Item 9", "9$", "90$"},
---         {"Item 10", "10$", "100$"},
---     },
---     Callback = function(Value)
---         print(Value)
---     end
--- })
-
--- Library:CheckForAutoLoad()
 
 getgenv().Library = Library
 return Library
