@@ -2184,7 +2184,7 @@ local Library = {
 
             local Window = {
                 Name = Params.Name or Params.name or '<font color="rgb(220, 40, 40)">carbon studios</font>',
-                Logo = Params.Logo or Params.logo or "rbxassetid://133218922939038",
+                Logo = Params.Logo or Params.logo or "rbxassetid://121248423190525",
 
                 IsOpen = true,
                 IsMinimized = false,
@@ -2306,7 +2306,7 @@ local Library = {
 
                 -- NO divider line (removed)
 
-                -- Logo at the top of the sidebar
+                -- Logo at the top of the sidebar (no gradient - show real image)
                 local SidebarLogo = Library:Create("ImageLabel", {
                     Parent = Items["Sidebar"].Instance,
                     Name = "\0",
@@ -2318,19 +2318,6 @@ local Library = {
                     Image = Window.Logo,
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 })
-                Library:Create("UIGradient", {
-                    Parent = SidebarLogo.Instance,
-                    Name = "\0",
-                    Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 30, 30)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 0, 0))
-                    }
-                }):AddToTheme({Color = function()
-                    return ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Library.Theme["Accent Start"]),
-                        ColorSequenceKeypoint.new(1, Library.Theme["Accent End"])
-                    }
-                end})
 
                 -- Player avatar circle at the bottom of the sidebar (light red, NO gradient)
                 local AvatarCircle = Library:Create("Frame", {
@@ -2604,7 +2591,7 @@ local Library = {
             local toggleSize = UDim2.new(0, 70, 0, 70)
             local togglePos = UDim2.new(0, 20, 1, -90)
             local toggleAnchor = Vector2.new(0, 1)
-            local toggleIconSize = UDim2.fromOffset(42, 42)
+            local toggleIconSize = UDim2.fromOffset(70, 70)
 
             Items["ToggleButton"] = Library:Create("TextButton", {
                 Parent = Library.Holder.Instance,
@@ -2615,7 +2602,8 @@ local Library = {
                 BackgroundColor3 = Color3.fromRGB(14, 14, 14),
                 BorderSizePixel = 0,
                 Text = "",
-                AutoButtonColor = false
+                AutoButtonColor = false,
+                ClipsDescendants = true
             }):AddToTheme({BackgroundColor3 = "Element"})
 
             Library:Create("UICorner", {
